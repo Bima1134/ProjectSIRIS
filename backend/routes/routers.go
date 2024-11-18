@@ -20,7 +20,7 @@ func Init() *echo.Echo {
 	e.GET("/mahasiswa/:nim/jadwal", controller.GetJadwalIRS)        // Mendapatkan jadwal untuk IRS
 	e.POST("/mahasiswa/irs", controller.AddJadwalToIRS)             // Tambahkan jadwal ke IRS
 	e.DELETE("/mahasiswa/irs/:nim", controller.RemoveJadwalFromIRS) // Hapus jadwal dari IRS
-	e.GET("/jadwal", controller.GetJadwal)
+	e.GET("/mahasiswa/jadwal", controller.GetJadwal)
 
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian

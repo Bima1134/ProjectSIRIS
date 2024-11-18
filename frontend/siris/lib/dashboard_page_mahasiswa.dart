@@ -235,6 +235,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                   Expanded(
                     child: Column(
                       children: [
+                        const SizedBox(height: 16),
                         GestureDetector(
                           onTap: () {
                             // Navigate to IRS page
@@ -248,7 +249,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => JadwalPage(),
+                                builder: (context) => JadwalPage(userData: userData),
                               )
                             );
                           },
