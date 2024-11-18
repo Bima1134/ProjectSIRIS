@@ -17,13 +17,17 @@ func Init() *echo.Echo {
 	// protected.Use(middleware.JWTMiddleware) // Hanya bisa diakses dengan JWT valid
 
 	// Route mahasiswa
-	e.GET("/mahasiswa/:nim/jadwal", controller.GetJadwalIRS)        // Mendapatkan jadwal untuk IRS
-	e.POST("/mahasiswa/irs", controller.AddJadwalToIRS)             // Tambahkan jadwal ke IRS
-	e.DELETE("/mahasiswa/irs/:nim", controller.RemoveJadwalFromIRS) // Hapus jadwal dari IRS
-	e.GET("/mahasiswa/jadwal", controller.GetJadwal)
+	e.GET("/mahasiswa/:nim/jadwal", controller.GetJadwalIRS).Name = "get-jadwal-IRS-nim"        // Mendapatkan jadwal untuk IRS
+	e.POST("/mahasiswa/irs", controller.AddJadwalToIRS).Name = "add-jadwal-IRS"             // Tambahkan jadwal ke IRS
+	e.DELETE("/mahasiswa/irs/:nim", controller.RemoveJadwalFromIRS).Name = "remove-jadwal-IRS" // Hapus jadwal dari IRS
+	e.GET("/mahasiswa/jadwal", controller.GetJadwal).Name = "get-jadwal-IRS"
 
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
+
+	// Route Mail/Inbox
+	e.GET("/dosen/:nip/inbox", controller.GetMails).Name = "getMails"
+	e.GET("/dosen/:nip/inbox/:idMail", controller.GetMailDetails).Name = "getMailDetails"
 
 	return e
 }
