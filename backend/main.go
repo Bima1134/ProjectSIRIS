@@ -19,10 +19,12 @@ func main() {
 	// protected.Use(middleware.JWTMiddleware) // Hanya bisa diakses dengan JWT valid
 
 	// Route mahasiswa
-	e.GET("/mahasiswa/:nim/jadwal", controller.GetJadwalIRS)        // Mendapatkan jadwal untuk IRS
-	e.POST("/mahasiswa/irs", controller.AddJadwalToIRS)             // Tambahkan jadwal ke IRS
-	e.DELETE("/mahasiswa/irs/:nim", controller.RemoveJadwalFromIRS) // Hapus jadwal dari IRS
-	e.GET("/jadwal", controller.GetJadwal)
+	e.GET("/mahasiswa/:nim/jadwal", controller.GetJadwalIRS)               // Mendapatkan jadwal untuk IRS
+	e.POST("/mahasiswa/:nim/add-irs", controller.AddJadwalToIRS)           // Tambahkan jadwal ke IRS
+	e.DELETE("/mahasiswa/:nim/remove-irs", controller.RemoveJadwalFromIRS) // Hapus jadwal dari IRS
+	e.GET("/mahasiswa/jadwal", controller.GetJadwal)
+	e.GET("/mahasiswa/:nim/mata-kuliah", controller.GetMataKuliahBySemester)
+	e.GET("/mahasiswa/:kode_mk/jadwal-mata-kuliah", controller.GetJadwalByMataKuliah)
 
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
