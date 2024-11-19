@@ -2,248 +2,70 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:siris/jadwal_page.dart';
+import 'package:siris/mahasiswa_irs.dart';
+
 
 class DashboardPageMahasiswa extends StatelessWidget {
   final Map<String, dynamic> userData;
 
-  DashboardPageMahasiswa({required this.userData});
+  const DashboardPageMahasiswa({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 240,
-              color: const Color(0xFF162953),
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+       appBar: AppBar(
+        automaticallyImplyLeading: false, 
+        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+          child: Row (
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Title Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'SIRIS',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Sistem Informasi Isian Rencana Studi',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      _buildMenuItem(Icons.person, 'Profile'),
-                      const SizedBox(width: 16),
-                      _buildMenuItem(Icons.settings, 'Setting'),
-                      const SizedBox(width: 16),
-                      _buildLogoutButton(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 0),
-              height: 160,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF00549C),
-                    const Color(0xFF003664),
-                    const Color(0xFF001D36),
-                  ],
-                ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
+                  const Text(
+                    'SIRIS',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      border: Border.all(width: 4, color: Colors.white),
-                    ),
-                    child: ClipOval(
-                      child: Image.memory(
-                        base64Decode(userData['profile_image_base64']), 
-                        fit: BoxFit.cover,
-                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Hi, ${userData['name']}',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'NIM : ${userData['identifier']}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          ' ${userData['jurusan']} S1',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Text(
-                      'Sudah Registrasi',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+                  const SizedBox(width: 8),
+
+                  const Text(
+                    'Sistem Informasi Isian Rencana Studi',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              
+              // Actions Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildStatusWidget('Status Mahasiswa:', '${userData['status']}', Colors.green),
-                  _buildStatusWidget('IPK:', '2.3', Colors.black),
-                  _buildStatusWidget('SKS:', '80', Colors.black),
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF162953), width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.school, size: 30, color: Color(0xFF162953)),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Status Akademik',
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Dosen Wali',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          Text('${userData['dosen_wali_name']}', style: TextStyle(fontSize: 16)),
-                          Text('${userData['dosen_wali_nip']}', style: TextStyle(fontSize: 16)),
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFF00549C),
-                                  const Color(0xFF003664),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.headset, color: Colors.white),
-                                SizedBox(width: 8),
-                                Text('Konsultasi', style: TextStyle(color: Colors.white)),
-                              ],
-                            ),
-                          ),
-                          const Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildSemesterInfo('Semester Akademik Sekarang', '2024/2025 Ganjil'),
-                              _buildSemesterInfo('Semester Studi', '${userData['semester']}'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        GestureDetector(
+                  GestureDetector(
                           onTap: () {
-                            // Navigate to IRS page
+                            // Navigate to Jadwal page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => IRSPage(),
+                              )
+                            );
                           },
-                          child: _buildDashboardButton('IRS', Icons.book),
+                          child: _buildMenuItem(Icons.book, 'IRS'),
                         ),
-                        const SizedBox(height: 16),
-                        GestureDetector(
+                  
+                  const SizedBox(width: 16),
+                    GestureDetector(
                           onTap: () {
                             // Navigate to Jadwal page
                             Navigator.push(
@@ -253,13 +75,263 @@ class DashboardPageMahasiswa extends StatelessWidget {
                               )
                             );
                           },
-                          child: _buildDashboardButton('Jadwal', Icons.schedule),
+                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
+                        ),
+                  const SizedBox(width: 16),
+                  _buildMenuItem(Icons.settings, 'Setting'),
+                  const SizedBox(width: 16),
+                  _buildLogoutButton(),
+                ],
+              ),
+            ],
+          ),
+        )
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 160,
+              decoration: const BoxDecoration(
+                color: const Color(0xFF162953),
+              ),
+            ),
+            Transform.translate(
+              offset: Offset(0, -80),  // Translate 50 units up (negative y value)
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal:64),
+                    padding: const EdgeInsets.symmetric(horizontal: 100),
+                    height: 100,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF00549C),
+                          Color(0xFF003664),
+                          Color(0xFF001D36),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: Row(
+                      children: [
+                        Transform.translate(
+                           offset: const Offset(0, -20), // Adjust the offset as needed
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsets.all(3), // Border thickness
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white, // Border color
+                              ),
+                              child: CircleAvatar(
+                                radius: 50, // Adjust the size of the profile image
+                                backgroundImage: MemoryImage(
+                                  base64Decode(userData['profile_image_base64']),
+                                ),
+                                backgroundColor: Colors.transparent, // Set background color to transparent
+                              ),
+                            ),
+                        ),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Hi, ${userData['name']}',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    'NIM : ${userData['identifier']}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  // Vertical Divider to separate the text items
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),  // Adds spacing around the pipe
+                                    child: Text(
+                                      '|',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,  // Adjust the font size to make the pipe symbol visible
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${userData['jurusan']} S1',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Text(
+                            'Sudah Registrasi',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal:64),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatusWidget('Status Mahasiswa:', '${userData['status']}', Colors.green, Colors.white),
+                        _buildStatusWidget('IPK:', '2.3',Colors.transparent, Colors.black),
+                        _buildStatusWidget('SKS:', '80',Colors.transparent, Colors.black),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 160, vertical: 32),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal:16, vertical: 24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFF162953), // Bottom border color
+                                  width: 6.0,               // Bottom border width
+                                ),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Icon(Icons.school, size: 30, color: Color(0xFF162953)),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Status Akademik',
+                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Dosen Wali',
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                                Text('${userData['dosen_wali_name']}', style: const TextStyle(fontSize: 16)),
+                                Text('${userData['dosen_wali_nip']}', style: const TextStyle(fontSize: 16)),
+                                Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF00549C),
+                                        Color(0xFF003664),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.headset, color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('Konsultasi', style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+
+                                const Divider(),
+
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildSemesterInfo('Semester Akademik Sekarang', '2024/2025 Ganjil', Colors.green, Colors.white),
+                                    _buildSemesterInfo('Semester Studi', '${userData['semester']}', Colors.transparent, Colors.black),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // const SizedBox(width: 16),
+                        // Expanded(
+                        //   child: Column(
+                        //     children: [
+                        //       GestureDetector(
+                        //         onTap: () {
+                        //           // Navigate to IRS page
+                        //         },
+                        //         child: _buildDashboardButton('IRS', Icons.book),
+                        //       ),
+                        //       const SizedBox(height: 16, width: 16),
+                        //       GestureDetector(
+                        //         onTap: () {
+                        //           // Navigate to Jadwal page
+                        //           Navigator.push(
+                        //             context,
+                        //             MaterialPageRoute(
+                        //               builder: (context) => JadwalPage(),
+                        //             )
+                        //           );
+                        //         },
+                        //         child: _buildDashboardButton('Jadwal', Icons.schedule),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+              )
             ),
           ],
         ),
@@ -272,7 +344,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
       children: [
         Icon(icon, color: Colors.white),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white)),
+        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
       ],
     );
   }
@@ -286,59 +358,39 @@ class DashboardPageMahasiswa extends StatelessWidget {
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
-      child: const Text('Logout'),
+      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
 
-  Widget _buildStatusWidget(String title, String value, Color color) {
+ 
+  Widget _buildStatusWidget(String title, String value, Color color, Color fontcolor ) {
     return Column(
       children: [
-        Text(title, style: const TextStyle(fontSize: 16)),
+        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 16, color: color)),
+        Container( 
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(color: color, borderRadius:BorderRadius.circular(8),),  // Corrected here
+          child: Text(value, style: TextStyle(fontSize: 16, color: fontcolor),
+          )
+        )
       ],
     );
   }
 
-  Widget _buildSemesterInfo(String title, String value) {
+  Widget _buildSemesterInfo(String title, String value, Color color, Color fontcolor) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16)),
+        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 16)),
-      ],
-    );
-  }
-
-  Widget _buildDashboardButton(String label, IconData icon) {
-    return Container(
-      height: 160,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF00549C),
-            const Color(0xFF003664),
-          ],
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(color: color, borderRadius:BorderRadius.circular(8),),  // Corrected here
+          child: Text(value, style: TextStyle(fontSize: 16, color: fontcolor)),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 40, color: Colors.white),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 24, color: Colors.white)),
-        ],
-      ),
+      ],
     );
   }
 }
+
