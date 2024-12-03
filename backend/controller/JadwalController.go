@@ -5,30 +5,35 @@ import (
 	"SIRIS/models"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 // Fungsi untuk menambahkan jadwal ke IRS mahasiswa
+// Fungsi untuk menambahkan jadwal ke IRS mahasiswa
 func AddJadwalToIRS(c echo.Context) error {
 	nim := c.Param("nim")                 // Mendapatkan NIM dari parameter URL
 	kodeMK := c.QueryParam("kode_mk")     // Mendapatkan kode mata kuliah dari parameter query
 	jadwalID := c.QueryParam("jadwal_id") // Mendapatkan jadwal_id dari parameter query
-	fmt.Println("AddJadwalToIRS called")
-	fmt.Println("NIM:", nim, "Kode MK:", kodeMK, "Jadwal ID:", jadwalID)
 
 	// Memastikan kode mata kuliah dan jadwal_id tidak kosong
 	if kodeMK == "" || jadwalID == "" {
+		log.Println("Error: Kode mata kuliah dan jadwal_id harus disediakan")
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Kode mata kuliah dan jadwal_id harus disediakan"})
 	}
 
 	// Membuat koneksi ke database
 	connection := db.CreateCon()
+	log.Println("Koneksi ke database berhasil")
 
 	// Memulai transaksi database
 	tx, err := connection.Begin()
 	if err != nil {
+		log.Println("Error: Gagal memulai transaksi:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memulai transaksi"})
 	}
 	defer tx.Rollback()
@@ -37,68 +42,169 @@ func AddJadwalToIRS(c echo.Context) error {
 	var irsID int
 	err = tx.QueryRow("SELECT irs_id FROM irs WHERE nim = ?", nim).Scan(&irsID)
 	if err == sql.ErrNoRows {
+		log.Println("Error: IRS tidak ditemukan untuk mahasiswa ini")
 		return c.JSON(http.StatusNotFound, map[string]string{"message": "IRS tidak ditemukan untuk mahasiswa ini"})
 	} else if err != nil {
+		log.Println("Error: Gagal mengambil IRS ID:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil IRS ID"})
 	}
+	log.Printf("IRS ID ditemukan: %d\n", irsID)
 
-	// Debug print untuk irsID
-	fmt.Println("IRS ID:", irsID)
+	// Mengecek apakah jadwal sudah penuh
+	var jadwalKapasitas, ruanganKapasitas int
+	err = tx.QueryRow(`
+		SELECT j.kapasitas, r.kapasitas 
+		FROM jadwal j 
+		JOIN ruangan r ON j.kode_ruangan = r.kode_ruangan 
+		WHERE j.jadwal_id = ?`, jadwalID).Scan(&jadwalKapasitas, &ruanganKapasitas)
+	if err == sql.ErrNoRows {
+		log.Println("Error: Jadwal tidak ditemukan")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Jadwal tidak ditemukan"})
+	} else if err != nil {
+		log.Println("Error: Gagal memeriksa kapasitas jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memeriksa kapasitas jadwal"})
+	}
+	log.Printf("Kapasitas jadwal: %d, Kapasitas ruangan: %d\n", jadwalKapasitas, ruanganKapasitas)
+
+	// Membandingkan kapasitas jadwal dengan kapasitas ruangan
+	if jadwalKapasitas >= ruanganKapasitas {
+		log.Println("Error: Kapasitas jadwal sudah penuh")
+		return c.JSON(http.StatusConflict, map[string]string{"message": "Kapasitas jadwal sudah penuh"})
+	}
 
 	// Mengecek apakah kode mata kuliah sudah ada di irs_detail
 	var existingID int
-	err = tx.QueryRow("SELECT id FROM irs_detail WHERE irs_id = ? AND kode_mk = ?", irsID, kodeMK).Scan(&existingID)
+	err = tx.QueryRow("SELECT irs_detail_id FROM irs_detail WHERE irs_id = ? AND kode_mk = ?", irsID, kodeMK).Scan(&existingID)
 	if err != nil && err != sql.ErrNoRows {
+		log.Println("Error: Gagal memeriksa keberadaan mata kuliah di IRS:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memeriksa keberadaan mata kuliah di IRS"})
 	}
-
 	if existingID != 0 {
+		log.Println("Error: Mata kuliah sudah ada di IRS")
 		return c.JSON(http.StatusConflict, map[string]string{"message": "Mata kuliah sudah ada di IRS"})
 	}
+	log.Println("Mata kuliah belum ada di IRS")
 
-	// Memasukkan data jadwal ke tabel irs_detail
+	// Memasukkan data ke tabel irs_detail
 	_, err = tx.Exec("INSERT INTO irs_detail (irs_id, kode_mk, jadwal_id) VALUES (?, ?, ?)", irsID, kodeMK, jadwalID)
 	if err != nil {
+		log.Println("Error: Gagal menambahkan jadwal ke IRS:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menambahkan jadwal ke IRS"})
 	}
+	log.Println("Jadwal berhasil ditambahkan ke IRS detail")
+
+	// Memasukkan data ke tabel pesertajadwal
+	_, err = tx.Exec("INSERT INTO pesertajadwal (jadwal_id, nim) VALUES (?, ?)", jadwalID, nim)
+	if err != nil {
+		log.Println("Error: Gagal menambahkan peserta ke jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menambahkan peserta ke jadwal"})
+	}
+	log.Println("Peserta berhasil ditambahkan ke jadwal")
+
+	// Menambah kapasitas di tabel jadwal
+	_, err = tx.Exec("UPDATE jadwal SET kapasitas = kapasitas + 1 WHERE jadwal_id = ?", jadwalID)
+	if err != nil {
+		log.Println("Error: Gagal memperbarui kapasitas jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memperbarui kapasitas jadwal"})
+	}
+	log.Println("Kapasitas jadwal berhasil diperbarui")
 
 	// Commit transaksi
 	if err := tx.Commit(); err != nil {
+		log.Println("Error: Gagal melakukan commit transaksi:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal melakukan commit transaksi"})
 	}
+	log.Println("Transaksi berhasil dilakukan")
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal berhasil ditambahkan ke IRS"})
 }
 
 // Fungsi untuk menghapus jadwal dari IRS mahasiswa
 func RemoveJadwalFromIRS(c echo.Context) error {
+	fmt.Println("RemoveJadwalFromIRS called")
+
 	nim := c.Param("nim")                 // Mendapatkan NIM dari parameter URL
 	kodeMK := c.QueryParam("kode_mk")     // Mendapatkan kode mata kuliah dari parameter query
 	jadwalID := c.QueryParam("jadwal_id") // Mendapatkan jadwal_id dari parameter query
 
+	fmt.Println("NIM:", nim)
+	fmt.Println("Kode MK:", kodeMK)
+	fmt.Println("Jadwal ID:", jadwalID)
+
 	// Memastikan kode mata kuliah dan jadwal_id tidak kosong
 	if kodeMK == "" || jadwalID == "" {
+		fmt.Println("Kode mata kuliah atau jadwal_id kosong")
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Kode mata kuliah dan jadwal_id harus disediakan"})
 	}
 
 	// Membuat koneksi ke database
 	connection := db.CreateCon()
+	fmt.Println("Database connection created")
+
+	// Memulai transaksi database
+	tx, err := connection.Begin()
+	if err != nil {
+		fmt.Println("Error starting transaction:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memulai transaksi"})
+	}
+	defer tx.Rollback()
+	fmt.Println("Transaction started")
 
 	// Mengambil IRS ID berdasarkan NIM
 	var irsID int
-	err := connection.QueryRow("SELECT irs_id FROM irs WHERE nim = ? AND semester = ?", nim, 1).Scan(&irsID)
+	err = tx.QueryRow("SELECT irs_id FROM irs WHERE nim = ?", nim).Scan(&irsID)
 	if err == sql.ErrNoRows {
+		fmt.Println("IRS tidak ditemukan untuk NIM:", nim)
 		return c.JSON(http.StatusNotFound, map[string]string{"message": "IRS tidak ditemukan"})
 	} else if err != nil {
+		fmt.Println("Error getting IRS ID:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil IRS ID"})
 	}
+	fmt.Println("IRS ID:", irsID)
 
-	// Menghapus jadwal dari IRSDetail
-	_, err = connection.Exec("DELETE FROM irs_detail WHERE irs_id = ? AND kode_mk = ? AND jadwal_id = ?", irsID, kodeMK, jadwalID)
+	// Menghapus data dari tabel irs_detail
+	fmt.Println("Menghapus data dari tabel irs_detail")
+	result, err := tx.Exec("DELETE FROM irs_detail WHERE irs_id = ? AND kode_mk = ? AND jadwal_id = ?", irsID, kodeMK, jadwalID)
 	if err != nil {
+		fmt.Println("Error deleting from irs_detail:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus jadwal dari IRS"})
 	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		fmt.Println("Error getting rows affected:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan jumlah baris yang terhapus"})
+	}
+	fmt.Println("Rows affected in irs_detail:", rowsAffected)
 
+	if rowsAffected == 0 {
+		fmt.Println("Data tidak ditemukan di IRS")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Data tidak ditemukan di IRS"})
+	}
+
+	// Menghapus data dari tabel pesertajadwal
+	fmt.Println("Menghapus data dari tabel pesertajadwal")
+	_, err = tx.Exec("DELETE FROM pesertajadwal WHERE jadwal_id = ? AND nim = ?", jadwalID, nim)
+	if err != nil {
+		fmt.Println("Error deleting from pesertajadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus data dari tabel pesertajadwal"})
+	}
+
+	// Mengurangi kapasitas pada tabel jadwal
+	fmt.Println("Mengurangi kapasitas pada tabel jadwal")
+	_, err = tx.Exec("UPDATE jadwal SET kapasitas = kapasitas - 1 WHERE jadwal_id = ? AND kapasitas > 0", jadwalID)
+	if err != nil {
+		fmt.Println("Error updating kapasitas in jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memperbarui kapasitas jadwal"})
+	}
+
+	// Commit transaksi
+	fmt.Println("Committing transaction")
+	if err := tx.Commit(); err != nil {
+		fmt.Println("Error committing transaction:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal melakukan commit transaksi"})
+	}
+
+	fmt.Println("Jadwal berhasil dihapus dari IRS")
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal berhasil dihapus dari IRS"})
 }
 
@@ -165,28 +271,37 @@ func GetJadwal(c echo.Context) error {
 	return c.JSON(http.StatusOK, jadwals)
 }
 
-// Fungsi untuk menampilkan daftar mata kuliah berdasarkan semester mahasiswa
 func GetMataKuliahBySemester(c echo.Context) error {
 	nim := c.Param("nim") // Mendapatkan NIM dari parameter URL
 	fmt.Println("GetMataKuliahBySemester called")
 	fmt.Println("NIM:", nim)
+
 	// Query untuk mendapatkan semester mahasiswa
 	var semesterMahasiswa int
 	err := db.CreateCon().QueryRow("SELECT semester FROM mahasiswa WHERE nim = ?", nim).Scan(&semesterMahasiswa)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan semester mahasiswa"})
 	}
-	fmt.Println("NIM:", semesterMahasiswa)
+	fmt.Println("Semester Mahasiswa:", semesterMahasiswa)
+
 	// Menentukan tipe semester (ganjil/genap)
 	isGanjil := semesterMahasiswa%2 != 0
 
 	// Query untuk mendapatkan daftar mata kuliah berdasarkan tipe semester
+	// dan mengecualikan mata kuliah yang sudah diambil
 	query := `
-		SELECT kode_mk, nama_mk, sks, status, semester
-		FROM mata_kuliah
-		WHERE semester % 2 = ? AND semester <= ?
+		SELECT mk.kode_mk, mk.nama_mk, mk.sks, mk.status, mk.semester
+		FROM mata_kuliah mk
+		WHERE mk.semester % 2 = ? 
+		AND mk.semester <= ?
+		AND mk.kode_mk NOT IN (
+			SELECT d.kode_mk
+			FROM irs_detail d
+			INNER JOIN irs i ON d.irs_id = i.irs_id
+			WHERE i.nim = ?
+		)
 	`
-	rows, err := db.CreateCon().Query(query, isGanjil, semesterMahasiswa)
+	rows, err := db.CreateCon().Query(query, isGanjil, semesterMahasiswa, nim)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan daftar mata kuliah"})
 	}
@@ -239,7 +354,8 @@ func GetJadwalByMataKuliah(c echo.Context) error {
 	var jadwalList []map[string]interface{}
 	for rows.Next() {
 		var namaMK, status, kodeMK, hari, jamMulai, jamSelesai string
-		var semester, sks, jadwalID, kodeRuangan string
+		var semester, sks, kodeRuangan string
+		var jadwalID int
 
 		// Scan data dari query
 		if err := rows.Scan(&namaMK, &status, &kodeMK, &semester, &sks, &jadwalID, &kodeRuangan, &hari, &jamMulai, &jamSelesai); err != nil {
@@ -262,5 +378,234 @@ func GetJadwalByMataKuliah(c echo.Context) error {
 	}
 
 	// Kembalikan data dalam format JSON
+	return c.JSON(http.StatusOK, jadwalList)
+}
+
+// Fungsi untuk menghitung idsem berdasarkan angkatan dan semester mahasiswa
+func calculateIDSem(angkatan int, semester int) string {
+	tahun := angkatan + (semester-1)/2 // Menghitung tahun berdasarkan semester
+	semesterType := (semester-1)%2 + 1 // Gasal (1) atau Genap (2)
+	return strconv.Itoa(tahun) + strconv.Itoa(semesterType)
+}
+
+type JadwalIRS struct {
+	JadwalID      int      `json:"jadwal_id"` // Tambahkan field ini
+	KodeMK        string   `json:"kode_mk"`
+	NamaMK        string   `json:"nama_mk"`
+	Ruangan       string   `json:"kode_ruangan"`
+	Hari          string   `json:"hari"`
+	JamMulai      string   `json:"jam_mulai"`
+	JamSelesai    string   `json:"jam_selesai"`
+	Kelas         string   `json:"kelas"`
+	SKS           int      `json:"sks"`
+	DosenPengampu []string `json:"dosen_pengampu"`
+	Status        string   `json:"status"`
+}
+
+func GetIRSJadwal(c echo.Context) error {
+	fmt.Println("GetIRSJadwal called")
+	nim := c.Param("nim")                     // NIM dari parameter URL
+	semesterParam := c.QueryParam("semester") // Semester dari query parameter
+
+	fmt.Println("NIM:", nim)
+	fmt.Println("Semester:", semesterParam)
+
+	// Validasi semester
+	semester, err := strconv.Atoi(semesterParam)
+	if err != nil || semester <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Semester tidak valid"})
+	}
+
+	// Dapatkan angkatan mahasiswa dari database
+	connection := db.CreateCon()
+	var angkatan int
+
+	err = connection.QueryRow("SELECT angkatan FROM mahasiswa WHERE nim = ?", nim).Scan(&angkatan)
+	if err == sql.ErrNoRows {
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Mahasiswa tidak ditemukan"})
+	} else if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data mahasiswa"})
+	}
+
+	// Hitung idsem berdasarkan angkatan dan semester
+	idsem := calculateIDSem(angkatan, semester)
+
+	// Query untuk mendapatkan jadwal IRS mahasiswa
+	query := `
+		SELECT 
+			j.kode_mk, 
+			mk.nama_mk, 
+			r.kode_ruangan AS ruangan, 
+			j.hari, 
+			j.jam_mulai, 
+			j.jam_selesai, 
+			j.kelas, 
+			mk.sks, 
+			GROUP_CONCAT(d.nama SEPARATOR ', ') AS dosen_pengampu
+		FROM 
+			irs_detail id
+		JOIN 
+			jadwal j ON id.jadwal_id = j.jadwal_id
+		JOIN 
+			mata_kuliah mk ON j.kode_mk = mk.kode_mk
+		JOIN 
+			ruangan r ON j.kode_ruangan = r.kode_ruangan
+		JOIN 
+			dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
+		JOIN 
+			dosen d ON dp.nip = d.nip
+		WHERE 
+			id.irs_id IN (
+				SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?
+			)
+		GROUP BY 
+			j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+			j.kelas, mk.sks`
+
+	rows, err := connection.Query(query, nim, idsem)
+	if err != nil {
+		fmt.Println("Query error:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data jadwal"})
+	}
+	defer rows.Close()
+
+	// Inisialisasi slice untuk menyimpan data jadwal
+	var jadwalList []JadwalIRS
+
+	// Iterasi melalui hasil query
+	for rows.Next() {
+		var jadwal JadwalIRS
+		var dosenPengampuString string
+		if err := rows.Scan(&jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan, &jadwal.Hari,
+			&jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas, &jadwal.SKS, &dosenPengampuString); err != nil {
+			fmt.Println("Scan error:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
+		}
+
+		// Pisahkan nama dosen ke dalam array
+		jadwal.DosenPengampu = strings.Split(dosenPengampuString, ", ")
+
+		jadwalList = append(jadwalList, jadwal)
+	}
+
+	// Jika tidak ada jadwal ditemukan
+	if len(jadwalList) == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Tidak ada jadwal untuk semester ini"})
+	}
+
+	// Return data jadwal
+	return c.JSON(http.StatusOK, jadwalList)
+}
+
+func GetAllJadwalByMataKuliah(c echo.Context) error {
+	fmt.Println("GetAllJadwalByMataKuliah called")
+	nim := c.Param("nim")                     // NIM dari parameter URL
+	semesterParam := c.QueryParam("semester") // Semester dari query parameter
+
+	fmt.Println("NIM:", nim)
+	fmt.Println("Semester:", semesterParam)
+
+	// Validasi semester
+	semester, err := strconv.Atoi(semesterParam)
+	if err != nil || semester <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Semester tidak valid"})
+	}
+
+	// Dapatkan angkatan mahasiswa dari database
+	connection := db.CreateCon()
+	var angkatan int
+
+	err = connection.QueryRow("SELECT angkatan FROM mahasiswa WHERE nim = ?", nim).Scan(&angkatan)
+	if err == sql.ErrNoRows {
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Mahasiswa tidak ditemukan"})
+	} else if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data mahasiswa"})
+	}
+
+	// Hitung idsem berdasarkan angkatan dan semester
+	idsem := calculateIDSem(angkatan, semester)
+
+	// Query untuk mendapatkan semua jadwal mata kuliah beserta statusnya
+	query := `
+		SELECT 
+    j.jadwal_id, -- Tambahkan ini
+    j.kode_mk, 
+    mk.nama_mk, 
+    r.kode_ruangan AS ruangan, 
+    j.hari, 
+    j.jam_mulai, 
+    j.jam_selesai, 
+    j.kelas, 
+    mk.sks, 
+    GROUP_CONCAT(d.nama SEPARATOR ', ') AS dosen_pengampu,
+    COALESCE(CASE 
+        WHEN id.jadwal_id IS NOT NULL THEN 'diambil'
+        ELSE 'tidak diambil'
+    END, 'tidak diambil') AS status
+FROM 
+    jadwal j
+JOIN 
+    mata_kuliah mk ON j.kode_mk = mk.kode_mk
+JOIN 
+    ruangan r ON j.kode_ruangan = r.kode_ruangan
+LEFT JOIN 
+    irs_detail id ON id.jadwal_id = j.jadwal_id 
+    AND id.irs_id IN (SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?)
+LEFT JOIN 
+    dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
+LEFT JOIN 
+    dosen d ON dp.nip = d.nip
+WHERE 
+    mk.kode_mk IN (
+        SELECT kode_mk 
+        FROM irs_detail 
+        JOIN irs ON irs.irs_id = irs_detail.irs_id 
+        WHERE nim = ? AND idsem = ?
+    )
+GROUP BY 
+    j.jadwal_id, -- Tambahkan ini
+    j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+    j.kelas, mk.sks, id.jadwal_id
+
+	`
+
+	rows, err := connection.Query(query, nim, idsem, nim, idsem)
+	if err != nil {
+		fmt.Println("Query error:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data jadwal"})
+	}
+	defer rows.Close()
+
+	// Inisialisasi slice untuk menyimpan data jadwal
+	var jadwalList []JadwalIRS
+
+	// Iterasi melalui hasil query
+	for rows.Next() {
+		var jadwal JadwalIRS
+		var dosenPengampuString string
+		var status string
+
+		// Tambahkan j.jadwal_id di sini
+		if err := rows.Scan(&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan,
+			&jadwal.Hari, &jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas,
+			&jadwal.SKS, &dosenPengampuString, &status); err != nil {
+			fmt.Println("Scan error:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
+		}
+
+		fmt.Println("Status setelah scan:", status)
+		jadwal.DosenPengampu = strings.Split(dosenPengampuString, ", ")
+		jadwal.Status = status
+
+		jadwalList = append(jadwalList, jadwal)
+	}
+
+	// Jika tidak ada jadwal ditemukan
+	if len(jadwalList) == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Tidak ada jadwal untuk semester ini"})
+	}
+
+	// Return data jadwal
+
 	return c.JSON(http.StatusOK, jadwalList)
 }

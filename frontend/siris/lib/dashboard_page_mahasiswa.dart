@@ -57,7 +57,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => IRSPage(),
+                                builder: (context) => IRSPage(userData: userData),
                               )
                             );
                           },
