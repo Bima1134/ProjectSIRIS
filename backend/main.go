@@ -25,6 +25,8 @@ func main() {
 	e.GET("/mahasiswa/jadwal", controller.GetJadwal)
 	e.GET("/mahasiswa/:nim/mata-kuliah", controller.GetMataKuliahBySemester)
 	e.GET("/mahasiswa/:kode_mk/jadwal-mata-kuliah", controller.GetJadwalByMataKuliah)
+	e.GET("/mahasiswa/:nim/jadwal-irs", controller.GetIRSJadwal) //Mendapatkan jadwal IRS by semester
+	e.GET("/mahasiswa/all-jadwal/:nim", controller.GetAllJadwalByMataKuliah)
 
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
