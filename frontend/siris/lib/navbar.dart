@@ -6,7 +6,48 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
   
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth > 1200){
+      return _buildDesktopLayout(context);
+    }
+    else{
+      return _buildMobileLayout(context);
+    }
     // TODO: implement build
+  }
+
+  List<Widget> _buildButtons(BuildContext context){
+    List<Widget> buttons = [];
+
+    // Role based buttons
+    if(userData['role'] == 'Mahasiswa'){
+      // Button IRS
+      buttons.add(_buildMenuItem(Icons.book, 'IRS', onTap: (){
+        Navigator.pushNamed(context, '/irs', arguments: userData);
+      }));
+
+      // Button Jadwal
+      buttons.add(_buildMenuItem(Icons.schedule, 'Jadwal', onTap: (){
+        Navigator.pushNamed(context, '/Jadwal', arguments: userData);
+      }));
+    }
+    else if(userData['role'] == 'Dosen'){
+      //Button Mhs Wali
+      buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: (){
+        Navigator.pushNamed(context, '/Perwalian', arguments: userData);
+      }));
+    }
+
+    // Universal Buttons
+    buttons.add(_buildMenuItem(Icons.settings, 'Settings', onTap: (){
+
+    }));
+
+    buttons.add(_buildLogoutButton());
+    return buttons;
+  }
+
+  Widget _buildDesktopLayout(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -50,35 +91,14 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
     );
   }
 
-  List<Widget> _buildButtons(BuildContext context){
-    List<Widget> buttons = [];
-
-    // Role based buttons
-    if(userData['role'] == 'Mahasiswa'){
-      // Button IRS
-      buttons.add(_buildMenuItem(Icons.book, 'IRS', onTap: (){
-        Navigator.pushNamed(context, '/irs', arguments: userData);
-      }));
-
-      // Button Jadwal
-      buttons.add(_buildMenuItem(Icons.schedule, 'Jadwal', onTap: (){
-        Navigator.pushNamed(context, '/Jadwal', arguments: userData);
-      }));
-    }
-    else if(userData['role'] == 'Dosen'){
-      //Button Mhs Wali
-      buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: (){
-        Navigator.pushNamed(context, '/Perwalian', arguments: userData);
-      }));
-    }
-
-    // Universal Buttons
-    buttons.add(_buildMenuItem(Icons.settings, 'Settings', onTap: (){
-
-    }));
-
-    buttons.add(_buildLogoutButton());
-    return buttons;
+  Widget _buildMobileLayout(BuildContext context){
+    var screenWidth = MediaQuery.of(context).size.width;
+    return Scaffold(
+      backgroundColor: Colors.deepOrange[300],
+      body: Center(
+        child: Text(screenWidth.toString()),
+      ),
+    );
   }
 
   Widget _buildMenuItem(IconData icon, String label, {required VoidCallback onTap}) {
