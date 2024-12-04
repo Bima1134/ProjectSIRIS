@@ -47,7 +47,7 @@ class _IRSPageState extends State<IRSPage> {
       // Handle error
       print('Error fetching data: ${response.statusCode}, body: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
+        const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
       );
     }
   }
@@ -225,9 +225,9 @@ class _IRSPageState extends State<IRSPage> {
             onPressed: () {
               // Add button action here
             },
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min, // Keeps the button compact
-              children: const [
+              children: [
                 Icon(
                   Icons.edit, // Edit icon
                   color: Colors.white,
@@ -245,29 +245,6 @@ class _IRSPageState extends State<IRSPage> {
           );
   }
 
-Widget _buildMenuItem(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
-      ],
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle logout
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-    );
-  }
-
 class DropdownSelection extends StatefulWidget {
   final int currentSemester;
   final Function(int) onSemesterChanged;
@@ -283,6 +260,7 @@ class _DropdownSelectionState extends State<DropdownSelection> {
   late List<int> semesterItems;
   int? selectedSemester;
 
+  @override
   void initState() {
     super.initState();
     selectedSemester = widget.currentSemester;

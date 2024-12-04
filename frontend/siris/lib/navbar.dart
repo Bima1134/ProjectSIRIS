@@ -17,10 +17,10 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Title Section
-              Row(
+              const Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'SIRIS',
                     style: TextStyle(
                       fontSize: 36,
@@ -28,10 +28,8 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
                       color: Colors.white,
                     ),
                   ),
-
-              const SizedBox(width: 8),
-
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'Sistem Informasi Isian Rencana Studi',
                     style: TextStyle(
                       fontSize: 20,
@@ -41,7 +39,6 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
                   ),
                 ],
               ),
-              
               // Actions Section
               Row(
                 children: _buildButtons(context),

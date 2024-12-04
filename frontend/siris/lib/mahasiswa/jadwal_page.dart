@@ -44,7 +44,7 @@ class _JadwalPageState extends State<JadwalPage> {
     } else {
       print('Error: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data mata kuliah')),
+        const SnackBar(content: Text('Gagal mengambil data mata kuliah')),
       );
     }
   }
@@ -107,7 +107,7 @@ class _JadwalPageState extends State<JadwalPage> {
     } else {
       print('Error: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data jadwal xx')),
+        const SnackBar(content: Text('Gagal mengambil data jadwal xx')),
       );
     }
   }
@@ -126,13 +126,13 @@ class _JadwalPageState extends State<JadwalPage> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
+        const SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
       );
       fetchJadwalIRS(); // Refresh jadwal IRS list
     } else {
       print('Error: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menambahkan jadwal ke IRS')),
+        const SnackBar(content: Text('Gagal menambahkan jadwal ke IRS')),
       );
     }
   }
@@ -145,23 +145,23 @@ class _JadwalPageState extends State<JadwalPage> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Jadwal berhasil dihapus dari IRS')),
+        const SnackBar(content: Text('Jadwal berhasil dihapus dari IRS')),
       );
       fetchJadwalIRS(); // Refresh jadwal IRS list
     } else if (response.statusCode == 404) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Data tidak ditemukan di IRS')),
+        const SnackBar(content: Text('Data tidak ditemukan di IRS')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus jadwal dari IRS')),
+        const SnackBar(content: Text('Gagal menghapus jadwal dari IRS')),
       );
       print('Error: ${response.statusCode}, ${response.body}');
     }
   } catch (e) {
     print('Error: $e');
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Terjadi kesalahan, coba lagi nanti')),
+      const SnackBar(content: Text('Terjadi kesalahan, coba lagi nanti')),
     );
   }
 }
@@ -180,7 +180,7 @@ class _JadwalPageState extends State<JadwalPage> {
     } else {
       print('Error: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
+        const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
       );
     }
   }
@@ -190,8 +190,8 @@ class _JadwalPageState extends State<JadwalPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Konfirmasi Penghapusan'),
-          content: Text('Apakah Anda yakin ingin menghapus jadwal ini?'),
+          title: const Text('Konfirmasi Penghapusan'),
+          content: const Text('Apakah Anda yakin ingin menghapus jadwal ini?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -206,7 +206,7 @@ class _JadwalPageState extends State<JadwalPage> {
                     context: context,
                     barrierDismissible: false,
                     builder: (BuildContext context) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     },
                   );
                   await removeJadwalFromIRS(kodeMK, jadwalID);
@@ -218,7 +218,7 @@ class _JadwalPageState extends State<JadwalPage> {
                 fetchIRSJadwal();
               });
               },
-              child: Text('Ya'),
+              child: const Text('Ya'),
             ),
           ],
         );
@@ -250,11 +250,11 @@ int getTimeIndex(String time) {
             child: Container(
               color: Colors.grey[200],  // Set the background color to light gray
               child: Padding(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Column(
                   children: [
                     Container( 
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       // decoration: BoxDecoration(
                       //   border: Border.all(
                       //     color: Colors.blue, // Border color
@@ -265,13 +265,13 @@ int getTimeIndex(String time) {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          const Row(
                             children: [
                               Icon(
                                 Icons.person, // Edit icon
                                 color: Colors.black,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Text(
                                 'Detail Mahasiswa',
                                 textAlign: TextAlign.left,
@@ -280,15 +280,15 @@ int getTimeIndex(String time) {
                             ],),
                           const SizedBox(height: 20),
                           Table(
-                            columnWidths: {
+                            columnWidths: const {
                               0: FractionColumnWidth(0.4),
                               1: FractionColumnWidth(0.6),
                             },
-                            children: [
+                            children: const  [
                               TableRow(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -298,7 +298,7 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
@@ -306,7 +306,7 @@ int getTimeIndex(String time) {
                               TableRow(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -316,7 +316,7 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
@@ -324,7 +324,7 @@ int getTimeIndex(String time) {
                               TableRow(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -334,7 +334,7 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
@@ -342,7 +342,7 @@ int getTimeIndex(String time) {
                               TableRow(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -352,7 +352,7 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
@@ -360,7 +360,7 @@ int getTimeIndex(String time) {
                               TableRow(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -370,7 +370,7 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
@@ -383,7 +383,7 @@ int getTimeIndex(String time) {
                     const Divider(),
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         children: [
                           DropdownButton<dynamic>(
@@ -428,7 +428,7 @@ int getTimeIndex(String time) {
                                   }
 
                                 : null,
-                            child: Row (
+                            child: const Row (
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
@@ -494,18 +494,18 @@ int getTimeIndex(String time) {
                     //   ),
                     // ),
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Column(
                       children: [
                         Container( 
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Column(
                             children: [
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                                 width: double.infinity,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
                                     top: BorderSide(color: Colors.grey, width: 4),
@@ -514,7 +514,7 @@ int getTimeIndex(String time) {
                                     left: BorderSide(color: Colors.grey, width: 16)
                                   )
                                 ),
-                                child: Text("MATEMATIKA 1 - PAIK6101"),
+                                child: const Text("MATEMATIKA 1 - PAIK6101"),
                               )
                             ],
                           ),
@@ -531,20 +531,20 @@ int getTimeIndex(String time) {
           Expanded(
             flex : 3,
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 24, horizontal:16),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal:16),
               child :Column(
                 children: [
                   Row( 
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         "Tabel Jadwal",
                         textAlign: TextAlign.left,
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "Jumlah SKS Diambil :"
                           ),
                           const SizedBox(width: 20),
@@ -563,9 +563,9 @@ int getTimeIndex(String time) {
                         TableRow(
                           children: [
                             Container(
-                              padding: EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(8),
                               color: Colors.blueGrey,
-                              child: Text(
+                              child: const Text(
                                 'Time\\Day',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -573,15 +573,15 @@ int getTimeIndex(String time) {
                             ),
                             ...['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) {
                               return Container(
-                                padding: EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
                                 color: Colors.blueGrey,
                                 child: Text(
                                   day,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ],
                         ),
                         // Rows with time slots
@@ -592,7 +592,7 @@ int getTimeIndex(String time) {
                             
                             children: [
                               Container(
-                                padding: EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
                                 color: Colors.blueGrey[100],
                                 child: Text(time, textAlign: TextAlign.center),
                               ),
@@ -613,7 +613,7 @@ int getTimeIndex(String time) {
 
 
                                     if (dayIndex == dayIndexMap && index == timeIndexMap) {
-                                       String eventText = '${jadwal['nama_mk']} (${kodeMk})\n'
+                                       String eventText = '${jadwal['nama_mk']} ($kodeMk)\n'
                                         '${jadwal['hari']} ${jadwal['jam_mulai']} - ${jadwal['jam_selesai']}\n'
                                         '${jadwal['kode_ruangan']} • ${jadwal['sks']} SKS'; // Tambahkan enter (\n) antar elemen
                                       events.add(
@@ -627,7 +627,7 @@ int getTimeIndex(String time) {
                                             } else {
                                               // Tambahkan jadwal ke IRS
                                               addJadwalToIRS(jadwal['kode_mk'], jadwal['jadwal_id']);
-        }
+                                            }
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: status == 'diambil' ? Colors.blue : Colors.grey,
@@ -640,11 +640,10 @@ int getTimeIndex(String time) {
                                 });
 
                                 return Container(
-                                  padding: EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(8),
                                   child: Column(
-                  children: events, // Add all events in column to avoid overlap
-                ),
- // Empty if no event
+                                    children: events, // Add all events in column to avoid overlap
+                                  ),// Empty if no event
                                 );
                               }),
                             ],
@@ -676,7 +675,7 @@ int getTimeIndex(String time) {
             onPressed: () {
               // Add button action here
             },
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min, // Keeps the button compact
               children: const [
                 Icon(

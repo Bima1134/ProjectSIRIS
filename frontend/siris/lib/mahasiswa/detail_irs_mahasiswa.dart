@@ -41,7 +41,7 @@ class _IRSDetailPageState extends State<IRSDetailPage> {
       // Handle error
       print('Error fetching data: ${response.statusCode}, body: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
+        const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
       );
     }
   }
@@ -89,8 +89,8 @@ class _IRSDetailPageState extends State<IRSDetailPage> {
       appBar: Navbar(userData: userData),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
           ),
           Expanded(
             child: SingleChildScrollView(

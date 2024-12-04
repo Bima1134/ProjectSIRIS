@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/mahasiswa/detail_irs_mahasiswa.dart';
 import 'package:siris/navbar.dart';

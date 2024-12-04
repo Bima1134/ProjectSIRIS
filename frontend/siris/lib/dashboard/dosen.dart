@@ -19,7 +19,7 @@ class DashboardPageDosen extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(top: 0),
               height: 160,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     const Color(0xFF00549C),
