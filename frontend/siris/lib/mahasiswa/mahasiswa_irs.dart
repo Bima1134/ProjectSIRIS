@@ -1,51 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'package:siris/jadwal_page.dart';
-
-class JadwalIRS {
-  final String KodeMK;
-  final String NamaMK;
-  final String Ruangan;
-  final String Hari;
-  final String JamMulai;
-  final String JamSelesai;
-  final String Kelas;
-  final int SKS;
-  final List<String> DosenPengampu;
-  final String status;
-
-  JadwalIRS({
-    required this.KodeMK,
-    required this.NamaMK,
-    required this.Ruangan,
-    required this.Hari,
-    required this.JamMulai,
-    required this.JamSelesai,
-    required this.Kelas,
-    required this.SKS,
-    required this.DosenPengampu,
-    required this.status,
-  });
-
-  factory JadwalIRS.fromJson(Map<String, dynamic> json) {
-    return JadwalIRS(
-      KodeMK: json['kode_mk'],
-      NamaMK: json['nama_mk'],
-      Ruangan: json['kode_ruangan'],
-      Hari: json['hari'],
-      JamMulai: json['jam_mulai'],
-      JamSelesai: json['jam_selesai'],
-      Kelas: json['kelas'],
-      SKS: json['sks'],
-      DosenPengampu: List<String>.from(json['dosen_pengampu']),
-      status: json['status'],
-    );
-  }
-}
-
-
+import 'package:siris/navbar.dart';
+import 'package:siris/class/JadwalIRS.dart';
 
 class IRSPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -58,11 +15,13 @@ class IRSPage extends StatefulWidget {
 }
 
 
-class _IRSPageState extends State<IRSPage> {
+class _IRSPageState extends State<IRSPage> {  
   List<JadwalIRS> jadwalIRS = [];
   int? selectedSemester;
-
+  
   late int semester;
+  
+  get userData => widget.userData;
 
   @override
   void initState() {
@@ -97,66 +56,7 @@ class _IRSPageState extends State<IRSPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-          title: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-            child: Row (
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Title Section
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'SIRIS',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Sistem Informasi Isian Rencana Studi',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                // Actions Section
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => JadwalPage(userData: widget.userData),
-                          ),
-                        );
-                      },
-                      child: _buildMenuItem(Icons.book, 'IRS'),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-                    ),
-                    const SizedBox(width: 16),
-                    _buildMenuItem(Icons.settings, 'Setting'),
-                    const SizedBox(width: 16),
-                    _buildLogoutButton(),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+        appBar: Navbar(userData: userData),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Column(
@@ -164,7 +64,7 @@ class _IRSPageState extends State<IRSPage> {
                 // Row Above the Table
                 Container(
                   margin: EdgeInsets.only(top: 32),
-                  child: Text(
+                  child: const Text(
                     'Isian Rencana Studi',
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
@@ -197,7 +97,7 @@ class _IRSPageState extends State<IRSPage> {
                         constraints: BoxConstraints(minWidth: constraints.maxWidth),
                         child: DataTable(
                           columnSpacing: 16.0, // Adjust spacing between columns
-                          headingRowColor: MaterialStateProperty.resolveWith(
+                          headingRowColor: WidgetStateProperty.resolveWith(
                             (states) => const Color(0xFF162953),
                           ),
                           columns: const [

@@ -25,9 +25,5 @@ func Init() *echo.Echo {
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
 
-	// Route Mail/Inbox
-	e.GET("/dosen/:nip/inbox", controller.GetMails).Name = "getMails"
-	e.GET("/dosen/:nip/inbox/:idMail", controller.GetMailDetails).Name = "getMailDetails"
-
 	return e
 }

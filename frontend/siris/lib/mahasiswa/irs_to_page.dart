@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:siris/mahasiswa_irs.dart';
+import 'package:siris/class/JadwalIRS.dart';
 
 class JadwalPDFPage extends StatelessWidget {
   final List<JadwalIRS> jadwalIRS;
-
+  var userData;
+  
   JadwalPDFPage({required this.jadwalIRS, required this.userData});
 
   // Fungsi untuk membuat PDF
@@ -20,7 +21,7 @@ class JadwalPDFPage extends StatelessWidget {
           children: [
             pw.Text('Daftar Jadwal IRS', style: pw.TextStyle(fontSize: 32, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
+            pw.TableHelper.fromTextArray(
               headers: ['Kode MK', 'Nama MK', 'Ruangan', 'Hari', 'Jam Mulai', 'Jam Selesai', 'Kelas', 'SKS', 'Dosen Pengampu'],
               data: jadwalIRS.map((jadwal) {
                 return [

@@ -1,8 +1,6 @@
-import 'dart:convert';
-
+import 'dart:convert';  
 import 'package:flutter/material.dart';
-import 'package:siris/jadwal_page.dart';
-import 'package:siris/mahasiswa_irs.dart';
+import 'package:siris/navbar.dart';
 
 
 class DashboardPageMahasiswa extends StatelessWidget {
@@ -13,91 +11,18 @@ class DashboardPageMahasiswa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-          child: Row (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Title Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'SIRIS',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  const Text(
-                    'Sistem Informasi Isian Rencana Studi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              
-              // Actions Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                          onTap: () {
-                            // Navigate to Jadwal page
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => IRSPage(userData: userData),
-                              )
-                            );
-                          },
-                          child: _buildMenuItem(Icons.book, 'IRS'),
-                        ),
-                  
-                  const SizedBox(width: 16),
-                    GestureDetector(
-                          onTap: () {
-                            // Navigate to Jadwal page
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => JadwalPage(userData: userData),
-                              )
-                            );
-                          },
-                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-                        ),
-                  const SizedBox(width: 16),
-                  _buildMenuItem(Icons.settings, 'Setting'),
-                  const SizedBox(width: 16),
-                  _buildLogoutButton(),
-                ],
-              ),
-            ],
-          ),
-        )
-      ),
+      appBar: Navbar(userData: userData),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
               height: 160,
               decoration: const BoxDecoration(
-                color: const Color(0xFF162953),
+                color:Color(0xFF162953),
               ),
             ),
             Transform.translate(
-              offset: Offset(0, -80),  // Translate 50 units up (negative y value)
+              offset: const Offset(0, -80),  // Translate 50 units up (negative y value)
               child: Column(
                 children: [
                   Container(
@@ -121,7 +46,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                             child: Container(
                               margin: const EdgeInsets.only(right: 16),
                               padding: const EdgeInsets.all(3), // Border thickness
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: Colors.white, // Border color
                               ),
@@ -159,8 +84,8 @@ class DashboardPageMahasiswa extends StatelessWidget {
                                     ),
                                   ),
                                   // Vertical Divider to separate the text items
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),  // Adds spacing around the pipe
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 8.0),  // Adds spacing around the pipe
                                     child: Text(
                                       '|',
                                       style: TextStyle(
@@ -201,7 +126,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.2),
@@ -231,7 +156,7 @@ class DashboardPageMahasiswa extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border(
+                              border: const Border(
                                 bottom: BorderSide(
                                   color: Color(0xFF162953), // Bottom border color
                                   width: 6.0,               // Bottom border width
@@ -301,32 +226,6 @@ class DashboardPageMahasiswa extends StatelessWidget {
                             ),
                           ),
                         ),
-                        // const SizedBox(width: 16),
-                        // Expanded(
-                        //   child: Column(
-                        //     children: [
-                        //       GestureDetector(
-                        //         onTap: () {
-                        //           // Navigate to IRS page
-                        //         },
-                        //         child: _buildDashboardButton('IRS', Icons.book),
-                        //       ),
-                        //       const SizedBox(height: 16, width: 16),
-                        //       GestureDetector(
-                        //         onTap: () {
-                        //           // Navigate to Jadwal page
-                        //           Navigator.push(
-                        //             context,
-                        //             MaterialPageRoute(
-                        //               builder: (context) => JadwalPage(),
-                        //             )
-                        //           );
-                        //         },
-                        //         child: _buildDashboardButton('Jadwal', Icons.schedule),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
                       ],
                     ),
                   ),
@@ -338,30 +237,6 @@ class DashboardPageMahasiswa extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildMenuItem(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
-      ],
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle logout
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-    );
-  }
-
  
   Widget _buildStatusWidget(String title, String value, Color color, Color fontcolor ) {
     return Column(

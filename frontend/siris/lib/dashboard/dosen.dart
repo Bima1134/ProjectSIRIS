@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:siris/daftar_mahasiswa_perwalian_page.dart';
+import 'package:siris/navbar.dart';
+
 
 class DashboardPageDosen extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -10,62 +11,10 @@ class DashboardPageDosen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: Navbar(userData: userData),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
-            Container(
-              height: 240,
-              color: const Color(0xFF162953),
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'SIRIS',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Sistem Informasi Isian Rencana Studi',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      _buildMenuItem(Icons.person, 'Profile'),
-                      const SizedBox(width: 16),
-                      ElevatedButton(
-                        child: const Text('Daftar Mahasiswa Perwalian'),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => DaftarMahasiswaPerwalianPage(userData: userData), // Kirimkan userData sebagai parameter
-                            ),
-                          );
-                        },
-                      ),
-                      _buildMenuItem(Icons.settings, 'Setting'),
-                      const SizedBox(width: 16),
-                      _buildLogoutButton(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
             // Profile section
             Container(
               margin: const EdgeInsets.only(top: 0),
@@ -137,29 +86,5 @@ class DashboardPageDosen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildMenuItem(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white)),
-      ],
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle logout
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text('Logout'),
-    );
-  }
-  
   
 }

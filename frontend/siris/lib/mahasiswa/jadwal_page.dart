@@ -1,51 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-class JadwalIRS {
-  final int jadwalID;
-  final String kodeMK;
-  final String namaMK;
-  final String ruangan;
-  final String hari;
-  final String jamMulai;
-  final String jamSelesai;
-  final String kelas;
-  final int sks;
-  final List<String> dosenPengampu;
-  final String status;
-
-  JadwalIRS({
-    required this.jadwalID,
-    required this.kodeMK,
-    required this.namaMK,
-    required this.ruangan,
-    required this.hari,
-    required this.jamMulai,
-    required this.jamSelesai,
-    required this.kelas,
-    required this.sks,
-    required this.dosenPengampu,
-    required this.status,
-  });
-
-  factory JadwalIRS.fromJson(Map<String, dynamic> json) {
-    return JadwalIRS(
-      jadwalID: json['jadwal_id'],
-      kodeMK: json['kode_mk'],
-      namaMK: json['nama_mk'],
-      ruangan: json['kode_ruangan'],
-      hari: json['hari'],
-      jamMulai: json['jam_mulai'],
-      jamSelesai: json['jam_selesai'],
-      kelas: json['kelas'],
-      sks: json['sks'],
-      dosenPengampu: List<String>.from(json['dosen_pengampu']),
-      status: (json['status']?.isEmpty ?? true) ? 'Tidak Diambil' : json['status'],
-    );
-  }
-}
-
+import 'package:siris/class/JadwalIRS.dart';
+import 'package:siris/navbar.dart';
 
 class JadwalPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -65,6 +22,7 @@ class _JadwalPageState extends State<JadwalPage> {
   List<dynamic> SelectedMatKul = [];
   List<dynamic> SelectedMatKulFetchJadwal = [];
   Map<String, List<dynamic>> jadwalMap = {}; // Map to store kode_mk as key and list of jadwal as value
+  get userData => widget.userData;
 
   @override
   void initState() {
@@ -257,7 +215,7 @@ class _JadwalPageState extends State<JadwalPage> {
                   // Refresh data di halaman utama
               setState(() {
                 // Panggil ulang fungsi yang mengambil data jadwal, misalnya:
-                initState();
+                fetchIRSJadwal();
               });
               },
               child: Text('Ya'),
@@ -284,15 +242,7 @@ int getTimeIndex(String time) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Daftar Mata Kuliah dan Jadwal'),
-      // ),
-      // body: Column(
-      //   children: [
-          
-      //   ],
-      // ),
-
+      appBar: Navbar(userData: userData),
       body: Row(
         children: [
           Expanded(
