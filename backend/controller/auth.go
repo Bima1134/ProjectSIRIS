@@ -188,59 +188,78 @@ func Register(c echo.Context) error {
 func Login(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
+		log.Println("Bind error:", err) // Debugging error pada bind request
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
+	log.Printf("Received login request for email: %s", req.Email)
 
 	// Verifikasi email dan password
 	var passwordHash string
 	connection := db.CreateCon()
+	log.Println("Database connection established")
 	err := connection.QueryRow("SELECT password FROM user WHERE email = ?", req.Email).Scan(&passwordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Println("Email not found:", req.Email)
 			return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Invalid email or password"})
 		}
+		log.Println("Error querying password:", err) // Debugging error saat query password
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
 	}
+	log.Println("Password found for email:", req.Email)
 
 	// Mengambil informasi pengguna berdasarkan email
 	var role string
 	err = connection.QueryRow("SELECT r.role_name FROM user u JOIN user_role ur ON u.user_id = ur.user_id JOIN role r ON ur.role_id = r.role_id WHERE u.email = ?", req.Email).Scan(&role)
 	if err != nil {
+		log.Println("Error querying role:", err) // Debugging error saat query role
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
 	}
+	log.Printf("Role found for user %s: %s", req.Email, role)
 
 	// Mempersiapkan response berdasarkan role
 	var userResponse UserResponse
 	switch role {
 	case "Mahasiswa":
+		log.Println("Fetching data for Mahasiswa role...")
 		err = connection.QueryRow(`
-			SELECT m.nim, m.nama, m.angkatan,m.jurusan, m.semester,m.status,d.nama AS dosen_wali_name, d.nip AS dosen_wali_nip , m.gambar
-			FROM mahasiswa m 
-			JOIN user u ON m.user_id = u.user_id 
-			LEFT JOIN dosen d ON m.nip_wali = d.nip 
+			SELECT m.nim, m.nama, m.angkatan, m.jurusan, m.semester, m.status, 
+				d.nama AS dosen_wali_name, d.nip AS dosen_wali_nip, m.gambar
+			FROM mahasiswa m
+			JOIN user u ON m.user_id = u.user_id
+			LEFT JOIN dosen d ON m.nip_wali = d.nip
 			WHERE u.email = ?`, req.Email).
 			Scan(&userResponse.Identifier, &userResponse.Name, &userResponse.Angkatan, &userResponse.Jurusan, &userResponse.Semester, &userResponse.Status, &userResponse.DosenWaliName, &userResponse.DosenWaliNIP, &userResponse.ProfileImage)
 
 		if err != nil {
 			if err == sql.ErrNoRows {
+				log.Println("User not found for Mahasiswa:", req.Email) // Debugging error jika user tidak ditemukan
 				return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
 			}
-			log.Println("Query Error:", err) // Tambahkan log error untuk lebih jelas
+			log.Println("Query Error fetching Mahasiswa data:", err) // Debugging query error untuk mahasiswa
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
 		}
 		userResponse.Role = "Mahasiswa"
 		userResponse.ProfileImageBase64 = base64.StdEncoding.EncodeToString(userResponse.ProfileImage)
+		log.Println("Mahasiswa data fetched successfully")
+
 	case "Dosen":
+		log.Println("Fetching data for Dosen role...")
 		err = connection.QueryRow("SELECT d.nip, d.nama FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
 			Scan(&userResponse.Identifier, &userResponse.Name)
 		if err != nil {
+			log.Println("Error fetching Dosen data:", err) // Debugging error saat query dosen
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
 		}
 		userResponse.Role = "Dosen"
+		log.Println("Dosen data fetched successfully")
+
 	default:
+		log.Println("Invalid role for user:", req.Email) // Debugging jika role tidak ditemukan
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "User role not found"})
 	}
 
 	// Mengembalikan response dengan informasi pengguna
+	log.Printf("Login successful for %s with role %s", req.Email, role)
 	return c.JSON(http.StatusOK, userResponse)
 }
