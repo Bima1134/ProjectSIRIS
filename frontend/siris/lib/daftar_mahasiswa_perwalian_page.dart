@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:siris/detail_irs_mahasiswa.dart';
 
 class DaftarMahasiswaPerwalianPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -22,7 +23,6 @@ class _DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianP
 
   Future<void> fetchMahasiswaPerwalian() async {
     final nip = widget.userData['identifier']; // Ambil nip dari userData
-    print("NIP dari userData: $nip"); // Tambahkan log untuk memeriksa NIP
     final url = 'http://localhost:8080/dosen/$nip/mahasiswa';
     final response = await http.get(Uri.parse(url));
 
@@ -31,9 +31,8 @@ class _DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianP
         mahasiswaList = json.decode(response.body);
       });
     } else {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengambil data mahasiswa dan nip =$nip')),
+        SnackBar(content: Text('Gagal mengambil data mahasiswa')),
       );
     }
   }
@@ -44,15 +43,45 @@ class _DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianP
       appBar: AppBar(
         title: const Text('Daftar Mahasiswa Perwalian'),
       ),
-      body: ListView.builder(
-        itemCount: mahasiswaList.length,
-        itemBuilder: (context, index) {
-          final mahasiswa = mahasiswaList[index];
-          return ListTile(
-            title: Text(mahasiswa['nama']),
-            subtitle: Text('NIM: ${mahasiswa['nim']} - Angkatan: ${mahasiswa['angkatan']}'),
-          );
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text('No')),
+              DataColumn(label: Text('Nama')),
+              DataColumn(label: Text('NIM')),
+              DataColumn(label: Text('Angkatan')),
+              DataColumn(label: Text('Aksi')),
+            ],
+            rows: mahasiswaList.asMap().entries.map((entry) {
+              final index = entry.key + 1;
+              final mahasiswa = entry.value;
+              return DataRow(cells: [
+                DataCell(Text(index.toString())),
+                DataCell(Text(mahasiswa['nama'])),
+                DataCell(Text(mahasiswa['nim'])),
+                DataCell(Text(mahasiswa['angkatan'].toString())),
+                DataCell(
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => IRSDetailPage(
+                            mahasiswa: mahasiswa,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('IRS Detail'),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
+        ),
       ),
     );
   }

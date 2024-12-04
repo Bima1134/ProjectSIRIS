@@ -30,6 +30,7 @@ func main() {
 
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
+	e.POST("/mahasiswa/:nim/approve-irs", controller.ApproveIRS)
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

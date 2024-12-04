@@ -113,7 +113,7 @@ class DashboardPageDosen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Identifier: ${userData['identifier']}',
+                          'NIP: ${userData['identifier']}',
                           style: const TextStyle(
                             fontSize: 16,
                             color: Colors.white,
