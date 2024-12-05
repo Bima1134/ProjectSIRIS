@@ -4,37 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:siris/BA/BA_add_ruang.dart';
 import 'package:siris/BA/BA_add_ruang_single.dart';
 import 'package:siris/BA/BA_edit_ruang_page.dart';
-
-
-class Ruang {
-  final String kodeRuang;
-  final String namaRuang;
-  final String gedung;
-  final int lantai;
-  final String fungsi;
-  final int kapasitas;
-
-  Ruang({
-    required this.kodeRuang,
-    required this.namaRuang,
-    required this.gedung,
-    required this.lantai,
-    required this.fungsi,
-    required this.kapasitas,
-  });
-
-  factory Ruang.fromJson(Map<String, dynamic> json) {
-    return Ruang(
-      kodeRuang: json['kode_ruang'],
-      namaRuang: json['nama_ruang'],
-      gedung: json['gedung'],
-      lantai: json['lantai'],
-      fungsi: json['fungsi'],
-      kapasitas: json['kapasitas'],
-    );
-  }
-}
-
+import 'package:siris/class/Ruang.dart';
 
 class ListRuangPage extends StatefulWidget {
   @override

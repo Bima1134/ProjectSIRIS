@@ -31,10 +31,13 @@ Future<void> _login() async {
     final data = json.decode(response.body);
     
     // Pengecekan role
-    if (data['role'] == 'Mahasiswa') {
-      Navigator.pushNamed(context, '/mahasiswa/dashboard', arguments: data);
-    } else {
-      Navigator.pushNamed(context, '/dosen/dashboard', arguments: data);
+    if(mounted){
+      if (data['role'] == 'Mahasiswa') {
+        Navigator.pushNamed(context, '/mahasiswa/dashboard', arguments: data);
+      } 
+      else {
+        Navigator.pushNamed(context, '/dosen/dashboard', arguments: data);
+      }
     }
   } else {
     // Jika gagal login, tampilkan pesan error

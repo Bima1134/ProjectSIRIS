@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/class/JadwalIRS.dart';
 import 'package:siris/navbar.dart';
+import 'package:logging/logging.dart';
+
+final loggerIRSDetail = Logger('IRSDetailPageState');
 
 class IRSDetailPage extends StatefulWidget {
   final Map<String, dynamic> mahasiswa;
 
-  IRSDetailPage({required this.mahasiswa});
+  const IRSDetailPage({super.key, required this.mahasiswa});
 
   @override
-  _IRSDetailPageState createState() => _IRSDetailPageState();
+  IRSDetailPageState createState() => IRSDetailPageState();
 }
 
-class _IRSDetailPageState extends State<IRSDetailPage> {
+class IRSDetailPageState extends State<IRSDetailPage> {
   List<JadwalIRS> jadwalIRS = [];
   late int selectedSemester; // Default semester
   get userData => widget.mahasiswa;
@@ -29,7 +32,7 @@ class _IRSDetailPageState extends State<IRSDetailPage> {
   Future<void> fetchIRSJadwal(int semester) async {
     final nim = widget.mahasiswa["nim"];
     final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
-    print('Fetching jadwal for semester: $semester at URL: $url');
+    loggerIRSDetail.info('Fetching jadwal for semester: $semester at URL: $url');
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -39,7 +42,7 @@ class _IRSDetailPageState extends State<IRSDetailPage> {
       });
     } else {
       // Handle error
-      print('Error fetching data: ${response.statusCode}, body: ${response.body}');
+      loggerIRSDetail.severe('Error fetching data: ${response.statusCode}, body: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
       );

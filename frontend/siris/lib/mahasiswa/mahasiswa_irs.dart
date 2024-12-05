@@ -3,19 +3,22 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:siris/navbar.dart';
 import 'package:siris/class/JadwalIRS.dart';
+import 'package:logging/logging.dart';
+
+final loggerIRS = Logger('IRSPageState');
 
 class IRSPage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  IRSPage({required this.userData});
+  const IRSPage({super.key, required this.userData});
 
 
   @override
-  _IRSPageState createState() => _IRSPageState();
+  IRSPageState createState() => IRSPageState();
 }
 
 
-class _IRSPageState extends State<IRSPage> {  
+class IRSPageState extends State<IRSPage> {  
   List<JadwalIRS> jadwalIRS = [];
   int? selectedSemester;
   
@@ -35,7 +38,7 @@ class _IRSPageState extends State<IRSPage> {
   Future<void> fetchIRSJadwal(int semester) async {
     final nim = widget.userData["identifier"];
     final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
-    print('Fetching jadwal for semester: $semester at URL: $url');
+    loggerIRS.info('Fetching jadwal for semester: $semester at URL: $url');
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -45,10 +48,13 @@ class _IRSPageState extends State<IRSPage> {
       });
     } else {
       // Handle error
-      print('Error fetching data: ${response.statusCode}, body: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
-      );
+      Map<String, dynamic> e = json.decode(response.body);
+      loggerIRS.severe('Status Code: ${response.statusCode}, Error Message: ${e['message']}');
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
+        );
+      }
     }
   }
 
@@ -74,7 +80,7 @@ class _IRSPageState extends State<IRSPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      DropdownSelection(
+                      _DropdownSelection(
                         currentSemester: widget.userData["semester"],
                         onSemesterChanged: (int semester) {
                           setState(() {
@@ -90,8 +96,7 @@ class _IRSPageState extends State<IRSPage> {
                 // Horizontal Scrolling Table
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 100),
-                  child: Expanded(
-                    child: SingleChildScrollView(
+                  child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(minWidth: constraints.maxWidth),
@@ -198,7 +203,6 @@ class _IRSPageState extends State<IRSPage> {
                           }).toList(),
                         ),
                       ),
-                    ),
                   ),
                 ),
               ],
@@ -245,17 +249,17 @@ class _IRSPageState extends State<IRSPage> {
           );
   }
 
-class DropdownSelection extends StatefulWidget {
+class _DropdownSelection extends StatefulWidget {
   final int currentSemester;
   final Function(int) onSemesterChanged;
 
-  const DropdownSelection({Key? key, required this.currentSemester, required this.onSemesterChanged}) : super(key: key);
+  const _DropdownSelection({required this.currentSemester, required this.onSemesterChanged});
 
   @override
   _DropdownSelectionState createState() => _DropdownSelectionState();
 }
 
-class _DropdownSelectionState extends State<DropdownSelection> {
+class _DropdownSelectionState extends State<_DropdownSelection> {
   // Define a list of options
   late List<int> semesterItems;
   int? selectedSemester;

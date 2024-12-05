@@ -3,24 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/class/JadwalIRS.dart';
 import 'package:siris/navbar.dart';
+import 'package:logging/logging.dart';
+
+final loggerJadwal = Logger('JadwalPageState');
 
 class JadwalPage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  JadwalPage({required this.userData});
+  const JadwalPage({super.key, required this.userData});
 
   @override
-  _JadwalPageState createState() => _JadwalPageState();
+  JadwalPageState createState() => JadwalPageState();
 }
 
-class _JadwalPageState extends State<JadwalPage> {
+class JadwalPageState extends State<JadwalPage> {
   List<dynamic> mataKuliahList = []; 
   List<dynamic> jadwalList = [];
   List<dynamic> jadwalListIRS = [];
   dynamic selectedMataKuliah;
   dynamic selectedJadwal;
-  List<dynamic> SelectedMatKul = [];
-  List<dynamic> SelectedMatKulFetchJadwal = [];
+  List<dynamic> selectedMatKul = [];
+  List<dynamic> selectedMatKulFetchJadwal = [];
   Map<String, List<dynamic>> jadwalMap = {}; // Map to store kode_mk as key and list of jadwal as value
   get userData => widget.userData;
 
@@ -35,17 +38,20 @@ class _JadwalPageState extends State<JadwalPage> {
     final nim = widget.userData['identifier'];
     final url = 'http://localhost:8080/mahasiswa/$nim/mata-kuliah';
     final response = await http.get(Uri.parse(url));
-    print('Nim ID: $nim');
+    debugPrint('Nim ID: $nim');
     if (response.statusCode == 200) {
       setState(() {
         mataKuliahList = json.decode(response.body);
       });
-      print('Mata kuliah list: $mataKuliahList');
-    } else {
-      print('Error: ${response.statusCode}');
-      ScaffoldMessenger.of(context).showSnackBar(
+      debugPrint('Mata kuliah list: $mataKuliahList');
+    } 
+    else {
+      loggerJadwal.severe('Error: ${response.statusCode}');
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal mengambil data mata kuliah')),
       );
+      }
     }
   }
 
@@ -59,11 +65,11 @@ class _JadwalPageState extends State<JadwalPage> {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      print("Data yang diterima dari API: $data");  // Log untuk melihat data yang diterima
+      loggerJadwal.info("Data fetched: $data");  // Log untuk melihat data yang diterima
 
       // Iterasi data dan masukkan ke dalam map
       for (var item in data) {
-        print('Status: ${item['status']}');  // Log untuk memeriksa status tiap item
+        loggerJadwal.info('Mata Kuliah: ${item['nama_mk']}, Status: ${item['status']}');  // Log untuk memeriksa status tiap item
         final kodeMK = item['kode_mk'];
         if (jadwalMap.containsKey(kodeMK)) {
           jadwalMap[kodeMK]!.add(item);
@@ -78,13 +84,13 @@ class _JadwalPageState extends State<JadwalPage> {
       throw Exception('Gagal mengambil data jadwal.');
     }
   } catch (e) {
-    print('Error: $e');
+    loggerJadwal.severe('Error: $e');
     return [];
   }
 }
 
   Future<void> fetchJadwal(String kodeMK) async {
-    print('Kode ID: $kodeMK');
+    loggerJadwal.info('Fetching Data Jadwal: $kodeMK');
     final url = 'http://localhost:8080/mahasiswa/$kodeMK/jadwal-mata-kuliah';
     final response = await http.get(Uri.parse(url));
 
@@ -101,14 +107,15 @@ class _JadwalPageState extends State<JadwalPage> {
             'sks': mataKuliahData['sks'],
           };
         }).toList();
-        print("jadwal $jadwalList");
       });
-      print('Jadwal list: $jadwalList');
     } else {
-      print('Error: ${response.statusCode}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengambil data jadwal xx')),
-      );
+      Map<String, dynamic> e = json.decode(response.body);
+      loggerJadwal.severe('Status: ${response.statusCode}, Message: ${e['message']}');
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengambil data jadwal $kodeMK')),
+        );
+      }
     }
   }
 
@@ -123,17 +130,21 @@ class _JadwalPageState extends State<JadwalPage> {
         'jadwal_id': jadwalID.toString(),
       },
     );
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
-      );
-      fetchJadwalIRS(); // Refresh jadwal IRS list
-    } else {
-      print('Error: ${response.statusCode}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal menambahkan jadwal ke IRS')),
-      );
+    if(mounted){
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
+        );
+        loggerJadwal.info('Status Code: ${response.statusCode}, Message: Berhasil Menambahkan Jadwal');
+        fetchJadwalIRS(); // Refresh jadwal IRS list
+      } 
+      else {
+        Map<String, dynamic> e = json.decode(response.body);
+        loggerJadwal.severe('Status Code: ${response.statusCode}, Message: ${e['message']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menambahkan jadwal ke IRS')),
+        );
+      }
     }
   }
   Future<void> removeJadwalFromIRS(String kodeMK, int jadwalID) async {
@@ -142,30 +153,35 @@ class _JadwalPageState extends State<JadwalPage> {
 
   try {
     final response = await http.delete(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jadwal berhasil dihapus dari IRS')),
-      );
-      fetchJadwalIRS(); // Refresh jadwal IRS list
-    } else if (response.statusCode == 404) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data tidak ditemukan di IRS')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal menghapus jadwal dari IRS')),
-      );
-      print('Error: ${response.statusCode}, ${response.body}');
+    if(mounted){
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Jadwal berhasil dihapus dari IRS')),
+        );
+        fetchJadwalIRS(); // Refresh jadwal IRS list
+      } 
+      else if (response.statusCode == 404) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data tidak ditemukan di IRS')),
+        );
+      } 
+      else {
+        Map<String,dynamic> e = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menghapus jadwal dari IRS')),
+        );
+        loggerJadwal.severe('Status Code: ${response.statusCode}, Message: ${e['message']}');
+      }
     }
   } catch (e) {
-    print('Error: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Terjadi kesalahan, coba lagi nanti')),
-    );
+    loggerJadwal.severe('Error: $e');
+    if(mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Terjadi kesalahan, coba lagi nanti')),
+      );
+    }
   }
 }
-
 
   Future<void> fetchJadwalIRS() async {
     final nim = widget.userData['identifier'];
@@ -176,12 +192,14 @@ class _JadwalPageState extends State<JadwalPage> {
       setState(() {
         jadwalListIRS = json.decode(response.body);
       });
-      print('Jadwal IRS list: $jadwalListIRS');
     } else {
-      print('Error: ${response.statusCode}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
-      );
+      Map<String, dynamic> e = json.decode(response.body);
+      loggerJadwal.severe('Status Code: ${response.statusCode}, Message: ${e['message']}');
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
+        );
+      }
     }
   }
 
@@ -208,15 +226,17 @@ class _JadwalPageState extends State<JadwalPage> {
                     builder: (BuildContext context) {
                       return const Center(child: CircularProgressIndicator());
                     },
-                  );
-                  await removeJadwalFromIRS(kodeMK, jadwalID);
+                );
+                await removeJadwalFromIRS(kodeMK, jadwalID);
+                if(context.mounted){
                   Navigator.of(context).pop(); // Tutup loader
                   Navigator.of(context).pop(); // Tutup dialog
                   // Refresh data di halaman utama
-              setState(() {
-                // Panggil ulang fungsi yang mengambil data jadwal, misalnya:
-                fetchIRSJadwal();
-              });
+                    setState(() {
+                    // Panggil ulang fungsi yang mengambil data jadwal, misalnya:
+                    fetchIRSJadwal();
+                  });
+                }
               },
               child: const Text('Ya'),
             ),
@@ -398,7 +418,7 @@ int getTimeIndex(String time) {
                               });
                             },
                           items: mataKuliahList
-                              .where((mataKuliah) => !SelectedMatKul.contains(mataKuliah))
+                              .where((mataKuliah) => !selectedMatKul.contains(mataKuliah))
                               .map<DropdownMenuItem<dynamic>>((mataKuliah) {
                               return DropdownMenuItem<dynamic>(
                                 value: mataKuliah,
@@ -413,18 +433,18 @@ int getTimeIndex(String time) {
                                       await fetchJadwal(selectedMataKuliah['kode_mk']); // Fetch jadwal asynchronously
 
                                       setState(() {
-                                      SelectedMatKul.add(selectedMataKuliah);
+                                      selectedMatKul.add(selectedMataKuliah);
                                       jadwalMap[selectedMataKuliah['kode_mk']] = List.from(jadwalList);                             
                                       selectedMataKuliah = null; // Reset the selected value
-                                      print("Jadwalmap: ");
+                                      debugPrint("Jadwalmap: ");
                                       jadwalMap.forEach((kodeMk, jadwalList) {
-                                        print('Kode MK: $kodeMk');
-                                        print('Jadwal: $jadwalList');
+                                        debugPrint('Kode MK: $kodeMk');
+                                        debugPrint('Jadwal: $jadwalList');
                                       });
                                     });
                           
-                                    print("Selecteed matkul $SelectedMatKul");
-                                    print("SelectedMatKulJadwal $SelectedMatKulFetchJadwal");
+                                    debugPrint("Selected matkul $selectedMatKul");
+                                    debugPrint("selectedMatKulJadwal $selectedMatKulFetchJadwal");
                                   }
 
                                 : null,
@@ -586,7 +606,7 @@ int getTimeIndex(String time) {
                         ),
                         // Rows with time slots
                         ...List.generate(15, (index) {
-                          final time = (7 + index).toString().padLeft(2, '0') + ":00";
+                          final time = "${(7 + index).toString().padLeft(2, '0')}:00";
                         
                           return TableRow(
                             
@@ -619,8 +639,8 @@ int getTimeIndex(String time) {
                                       events.add(
                                         ElevatedButton(
                                           onPressed: () {
-                                            print('Status: $status');
-                                            print('Kode MK: ${jadwal['kode_mk']}, Jadwal ID: ${jadwal['jadwal_id']}');
+                                            debugPrint('Status: $status');
+                                            debugPrint('Kode MK: ${jadwal['kode_mk']}, Jadwal ID: ${jadwal['jadwal_id']}');
                                             if (status == 'diambil') {
                                               // Tampilkan dialog konfirmasi penghapusan
                                               showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['jadwal_id']);
@@ -677,7 +697,7 @@ int getTimeIndex(String time) {
             },
             child: const Row(
               mainAxisSize: MainAxisSize.min, // Keeps the button compact
-              children: const [
+              children: [
                 Icon(
                   Icons.save, // Edit icon
                   color: Colors.white,

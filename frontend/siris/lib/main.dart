@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:siris/dashboard/dosen.dart';
-import 'package:siris/dashboard/mahasiswa.dart';
-import 'package:siris/dosen/daftar_mahasiswa_perwalian_page.dart';
 import 'package:siris/login_page.dart';
-import 'package:siris/mahasiswa/indexMahasiswa.dart';
+import 'package:logging/logging.dart';
+import 'package:siris/route/routers.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  _initializeLogging();
+  runApp(MyApp());
+}
+
+void _initializeLogging() {
+  Logger.root.level = Level.ALL; // Tampilkan semua level log
+  Logger.root.onRecord.listen((record) {
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
+  });
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -14,26 +22,7 @@ class MyApp extends StatelessWidget {
       title: 'SIRIS Login',
       home: LoginScreen(),
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: (settings) {
-          final Map<String, dynamic> userData = settings.arguments as Map<String, dynamic>;
-          
-          if (settings.name == '/mahasiswa/dashboard'){
-            return MaterialPageRoute(builder: (context) => DashboardPageMahasiswa(userData: userData));
-          }
-          else if (settings.name == '/dosen/dashboard'){
-            return MaterialPageRoute(builder: (context) => DashboardPageDosen(userData: userData));
-          }
-          else if(settings.name == '/irs'){
-            return MaterialPageRoute(builder: (context) => IRSPage(userData: userData));
-          }
-          else if(settings.name == '/Jadwal'){
-            return MaterialPageRoute(builder: (context) => JadwalPage(userData: userData));
-          }
-          else if(settings.name == '/Perwalian'){
-            return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: userData));
-          }
-        return null;
-      },
+      onGenerateRoute: Routers.generateRoute
     );
   }
 }

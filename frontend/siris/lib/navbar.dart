@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class Navbar extends StatelessWidget implements PreferredSizeWidget{
   final Map<String, dynamic> userData; // Tambahkan parameter untuk userData
-  Navbar({required this.userData}); // Konstruktor untuk menerima userData
+  const Navbar({super.key, required this.userData}); // Konstruktor untuk menerima userData
   
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,7 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
-      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: const Text('Logout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
   

@@ -6,7 +6,7 @@ import 'package:siris/navbar.dart';
 class DashboardPageDosen extends StatelessWidget {
   final Map<String, dynamic> userData;
 
-  DashboardPageDosen({required this.userData});
+  const DashboardPageDosen({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +22,12 @@ class DashboardPageDosen extends StatelessWidget {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF00549C),
-                    const Color(0xFF003664),
-                    const Color(0xFF001D36),
+                     Color(0xFF00549C),
+                     Color(0xFF003664),
+                     Color(0xFF001D36),
                   ],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 children: [

@@ -7,13 +7,13 @@ import 'package:siris/navbar.dart';
 class DaftarMahasiswaPerwalianPage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  DaftarMahasiswaPerwalianPage({required this.userData});
+  const DaftarMahasiswaPerwalianPage({super.key, required this.userData});
 
   @override
-  _DaftarMahasiswaPerwalianPageState createState() => _DaftarMahasiswaPerwalianPageState();
+  DaftarMahasiswaPerwalianPageState createState() => DaftarMahasiswaPerwalianPageState();
 }
 
-class _DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPage> {
+class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPage> {
   List<dynamic> mahasiswaList = [];
 
   get userData => widget.userData;
@@ -34,9 +34,11 @@ class _DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianP
         mahasiswaList = json.decode(response.body);
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengambil data mahasiswa')),
-      );
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal mengambil data mahasiswa')),
+        );
+      }
     }
   }
 

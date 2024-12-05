@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
+
 // import 'package:siris/BA_list_ruang_page.dart';
+final loggerRuang = Logger('MyHomePage');
 
 void main() {
   runApp(MyApp());
@@ -20,7 +23,7 @@ class MyApp extends StatelessWidget {
            onCsvUploaded: () {
             // _ListRuangPageState.fetchRuangData();
           // Empty function or replace with a function to refresh your data
-          print('CSV Uploaded');
+          loggerRuang.info('CSV Uploaded');
         },
       ),
     );
