@@ -32,6 +32,14 @@ func main() {
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
 	e.POST("/mahasiswa/:nim/approve-irs", controller.ApproveIRS)
 
+	//Route BA
+	e.POST("/upload-csv", controller.UploadCSV)
+	e.POST("/upload-single", controller.AddSingleRuang)
+	e.GET("/ruang", controller.GetRuang)
+	e.PUT("/ruang/:kodeRuang", controller.UpdateRuang)
+	e.DELETE("/ruang/:kodeRuang", controller.DeleteRuang)
+	e.DELETE("/ruang/deleteMultiple", controller.DeleteMultipleRuang)
+
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:8081"}, // ganti port sesuai yang digunakan Flutter
