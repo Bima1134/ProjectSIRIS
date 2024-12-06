@@ -2,6 +2,9 @@ import 'dart:convert'; // Untuk decoding JSON
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
+
+final loggerLogin = Logger('_LoginScreenState');
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -32,15 +35,8 @@ Future<void> _login() async {
     
     // Pengecekan role
     if(mounted){
-      if (data['role'] == 'Mahasiswa') {
-        Navigator.pushNamed(context, '/mahasiswa/dashboard', arguments: data);
-      } 
-      else if (data['role']== "Bagian Akademik"){
-        Navigator.pushNamed(context, '/BA/dashboard',arguments: data);
-      }
-      else {
-        Navigator.pushNamed(context, '/dosen/dashboard', arguments: data);
-      }
+      data['currentLoginAs'] = data['role'];
+      Navigator.pushNamed(context, '/dashboard', arguments: data);
     }
   } else {
     // Jika gagal login, tampilkan pesan error

@@ -96,7 +96,7 @@ func UploadCSV(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Failed to insert data: %v", err)})
 		}
 	}
-
+	dbConn.Close()
 	return c.JSON(http.StatusOK, map[string]string{"message": "CSV data uploaded and inserted successfully"})
 }
 
@@ -104,7 +104,7 @@ func UploadCSV(c echo.Context) error {
 func GetRuang(c echo.Context) error {
 	dbConn := db.CreateCon()
 	query := "SELECT kode_ruang, nama_ruang, gedung, lantai, fungsi, kapasitas FROM ruang"
-
+	
 	// Execute the query
 	rows, err := dbConn.Query(query)
 	if err != nil {

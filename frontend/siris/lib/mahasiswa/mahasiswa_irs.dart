@@ -31,7 +31,7 @@ class IRSPageState extends State<IRSPage> {
     super.initState();
 
     // Set semester default, misalnya dari userData["semester"]
-    selectedSemester = widget.userData["semester"];
+    selectedSemester = userData["semester"];
     fetchIRSJadwal(selectedSemester!);
 
   }

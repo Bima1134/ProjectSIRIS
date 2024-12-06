@@ -5,18 +5,18 @@ import 'package:siris/class/JadwalIRS.dart';
 import 'package:siris/navbar.dart';
 import 'package:logging/logging.dart';
 
-final loggerJadwal = Logger('JadwalPageState');
+final loggerJadwal = Logger('AmbilIRSState');
 
-class JadwalPage extends StatefulWidget {
+class AmbilIRS extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const JadwalPage({super.key, required this.userData});
+  const AmbilIRS({super.key, required this.userData});
 
   @override
-  JadwalPageState createState() => JadwalPageState();
+  AmbilIRSState createState() => AmbilIRSState();
 }
 
-class JadwalPageState extends State<JadwalPage> {
+class AmbilIRSState extends State<AmbilIRS> {
   List<dynamic> mataKuliahList = []; 
   List<dynamic> jadwalList = [];
   List<dynamic> jadwalListIRS = [];

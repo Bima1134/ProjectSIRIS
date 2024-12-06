@@ -1,63 +1,66 @@
 import 'package:flutter/material.dart';
 
-class Navbar extends StatelessWidget implements PreferredSizeWidget{
+class Navbar extends StatefulWidget implements PreferredSizeWidget {
   final Map<String, dynamic> userData; // Tambahkan parameter untuk userData
   const Navbar({super.key, required this.userData}); // Konstruktor untuk menerima userData
-  
+
+  @override
+  NavbarState createState() => NavbarState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);  
+}
+
+class NavbarState extends State<Navbar> {
+  get userData => widget.userData;
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth > 1200){
+    if (screenWidth > 1200) {
       return _buildDesktopLayout(context);
-    }
-    else{
+    } else {
       return _buildMobileLayout(context);
     }
-    // TODO: implement build
   }
 
-  List<Widget> _buildButtons(BuildContext context){
+  List<Widget> _buildButtons(BuildContext context) {
     List<Widget> buttons = [];
 
-    // Role based buttons
-    if(userData['role'] == 'Mahasiswa'){
-      // Button IRS
-      buttons.add(_buildMenuItem(Icons.book, 'IRS', onTap: (){
+    if (userData['currentLoginAs'] == 'Mahasiswa') {
+      buttons.add(_buildMenuItem(Icons.book, 'IRS', onTap: () {
         Navigator.pushNamed(context, '/irs', arguments: userData);
       }));
 
-      // Button Jadwal
-      buttons.add(_buildMenuItem(Icons.schedule, 'Jadwal', onTap: (){
+      buttons.add(_buildMenuItem(Icons.schedule, 'Jadwal', onTap: () {
         Navigator.pushNamed(context, '/Jadwal', arguments: userData);
       }));
+    } else {
+      if (userData['currentLoginAs'] == 'Dosen') {
+        buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: () {
+          Navigator.pushNamed(context, '/Perwalian', arguments: userData);
+        }));
+      }
+      if (userData['role'] == 'Dekan' || userData['role'] == 'Kaprodi'){
+          buttons.add(_buildSwitchRole(userData['currentLoginAs']));
+      }
     }
-    else if(userData['role'] == 'Dosen'){
-      //Button Mhs Wali
-      buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: (){
-        Navigator.pushNamed(context, '/Perwalian', arguments: userData);
-      }));
-    }
 
-    // Universal Buttons
-    buttons.add(_buildMenuItem(Icons.settings, 'Settings', onTap: (){
-
-    }));
-
+    buttons.add(_buildMenuItem(Icons.settings, 'Settings', onTap: () {}));
     buttons.add(_buildLogoutButton());
     return buttons;
   }
 
-  Widget _buildDesktopLayout(BuildContext context){
+  Widget _buildDesktopLayout(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF162953),
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-          child: Row (
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Title Section
               const Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -80,23 +83,64 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
                   ),
                 ],
               ),
-              // Actions Section
               Row(
                 children: _buildButtons(context),
               ),
             ],
           ),
-        )
+        ),
       ),
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context){
-    var screenWidth = MediaQuery.of(context).size.width;
+  Widget _buildMobileLayout(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.deepOrange[300],
       body: Center(
-        child: Text(screenWidth.toString()),
+        child: Text('Mobile layout'),
+      ),
+    );
+  }
+
+  Widget _buildSwitchRole(String role) {
+    return GestureDetector(
+      onTap: () {},
+      child: Row(
+        children: [
+          Icon(Icons.switch_account, color: Colors.white),
+          const SizedBox(width: 4),
+          Text('Ganti Role', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(width: 16),
+          DropdownButton<String>(
+            hint: Text(
+              role,
+              style: const TextStyle(color: Colors.white, fontSize: 18)),
+            onChanged: (String? newRole) {
+              setState(() {
+                if (newRole != role){
+                  userData['currentLoginAs'] = newRole;
+                }
+                // Redirect sesuai role yang dipilih
+                if (newRole == 'Dosen') {
+                  Navigator.pushNamed(context, '/dosen/dashboard', arguments: userData);
+                } else if (newRole == 'Dekan') {
+                  Navigator.pushNamed(context, '/dekan/dashboard', arguments: userData);
+                } else if (newRole == 'Kaprodi') {
+                  Navigator.pushNamed(context, '/kaprodi/dashboard', arguments: userData);
+                }
+                else{
+                  Navigator.pushNamed(context, '/404', arguments: userData);
+                }
+              });
+            },
+            items: <String>["Mahasiswa", 'Dosen', userData['role']].map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -108,10 +152,10 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
         children: [
           Icon(icon, color: Colors.white),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
+          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(width: 16),
         ],
-      )
+      ),
     );
   }
 
@@ -127,9 +171,4 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget{
       child: const Text('Logout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
-  
-  @override
-  // TODO: implement preferredSize
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
 }
