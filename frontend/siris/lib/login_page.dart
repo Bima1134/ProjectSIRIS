@@ -35,6 +35,9 @@ Future<void> _login() async {
       if (data['role'] == 'Mahasiswa') {
         Navigator.pushNamed(context, '/mahasiswa/dashboard', arguments: data);
       } 
+      else if (data['role']== "Bagian Akademik"){
+        Navigator.pushNamed(context, '/BA/dashboard',arguments: data);
+      }
       else {
         Navigator.pushNamed(context, '/dosen/dashboard', arguments: data);
       }
