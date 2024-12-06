@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -102,34 +103,46 @@ func UploadCSV(c echo.Context) error {
 
 // Function to retrieve ruang data from the database
 func GetRuang(c echo.Context) error {
+	// Membuat koneksi ke database
 	dbConn := db.CreateCon()
+	log.Println("Koneksi ke database berhasil")
+
 	query := "SELECT kode_ruang, nama_ruang, gedung, lantai, fungsi, kapasitas FROM ruang"
-	
-	// Execute the query
+	log.Println("Menjalankan query:", query)
+
+	// Eksekusi query
 	rows, err := dbConn.Query(query)
 	if err != nil {
+		log.Printf("Error: Gagal mengeksekusi query, %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve data"})
 	}
 	defer rows.Close()
 
-	// Create a slice to hold the results
+	// Membuat slice untuk menampung hasil query
 	var ruangList []models.Ruang
+	log.Println("Memproses hasil query")
 
-	// Loop through the rows and map them to Ruang struct
+	// Loop melalui setiap row dan memetakan data ke struct Ruang
 	for rows.Next() {
 		var ruang models.Ruang
 		err := rows.Scan(&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai, &ruang.Fungsi, &ruang.Kapasitas)
+		log.Println("Kapasitas : &ruang.Kapasitas")
 		if err != nil {
+			log.Printf("Error: Gagal scanning row, %v", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning row"})
 		}
+		log.Printf("Data ruang yang diproses: %+v", ruang)
 		ruangList = append(ruangList, ruang)
 	}
 
+	// Memeriksa error setelah loop
 	if err := rows.Err(); err != nil {
+		log.Printf("Error: Gagal memproses row, %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error processing rows"})
 	}
 
-	// Return the list of ruang in JSON format
+	// Mengembalikan daftar ruang dalam format JSON
+	log.Printf("Total ruang yang ditemukan: %d", len(ruangList))
 	return c.JSON(http.StatusOK, ruangList)
 }
 

@@ -40,6 +40,13 @@ func main() {
 	e.DELETE("/ruang/:kodeRuang", controller.DeleteRuang)
 	e.DELETE("/ruang/deleteMultiple", controller.DeleteMultipleRuang)
 
+	e.GET("/semester", controller.GetIdsemPosisi)
+	e.GET("/data-alokasi/:idsem", controller.GetAlokasiRuang)
+	e.GET("/dokumen-alokasi/:idAlokasi", controller.GetDokumenAlokasi)
+	e.GET("/get-ruang-alokasi/:idAlokasi", controller.GetRuangByAlokasi)
+
+	e.POST("/add-ruang-alokasi/:idAlokasi", controller.AddRuangToAlokasi)
+
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:8081"}, // ganti port sesuai yang digunakan Flutter
