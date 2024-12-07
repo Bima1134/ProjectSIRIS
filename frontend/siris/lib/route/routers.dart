@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:siris/dashboard.dart';
-import 'package:siris/dashboard/dosen.dart';
 import 'package:siris/dosen/daftar_mahasiswa_perwalian_page.dart';
 import 'package:siris/mahasiswa/indexMahasiswa.dart';
 import 'package:siris/login_page.dart';
@@ -17,8 +16,6 @@ class Routers {
         return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/dashboard':
         return MaterialPageRoute(builder: (context) => Dashboard(userData: userData));
-      case '/dashboard/dosen':
-        return MaterialPageRoute(builder: (context) => DashboardPageDosen(userData: userData));
       case'/irs':
         return MaterialPageRoute(builder: (context) => IRSPage(userData: userData));
       case'/Jadwal':
