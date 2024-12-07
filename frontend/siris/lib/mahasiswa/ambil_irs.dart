@@ -25,6 +25,7 @@ class AmbilIRSState extends State<AmbilIRS> {
   List<dynamic> selectedMatKul = [];
   List<dynamic> selectedMatKulFetchJadwal = [];
   Map<String, List<dynamic>> jadwalMap = {}; // Map to store kode_mk as key and list of jadwal as value
+  List<dynamic> takenMataKuliahList = [];
   get userData => widget.userData;
 
   @override
@@ -32,6 +33,8 @@ class AmbilIRSState extends State<AmbilIRS> {
     super.initState();
     fetchMataKuliah();
     fetchIRSJadwal();
+    fetchDaftarMataKuliah();
+
   }
 
   Future<void> fetchMataKuliah() async {
@@ -203,6 +206,23 @@ class AmbilIRSState extends State<AmbilIRS> {
     }
   }
 
+
+   Future<void> fetchDaftarMataKuliah() async {
+    final String url = 'http://localhost:8080/mahasiswa/daftar-matkul/${widget.userData['identifier']}';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          takenMataKuliahList = json.decode(response.body);
+        });
+      } else {
+        throw Exception('Failed to load mata kuliah');
+      }
+    } catch (e) {
+      debugPrint('Error fetching mata kuliah: $e');
+    }
+  }
+
   void showDeleteConfirmationDialog(String kodeMK, int jadwalID) {
     showDialog(
       context: context,
@@ -259,6 +279,53 @@ int getTimeIndex(String time) {
   return hour - 7; // Subtract 7 since rows start from 07:00
 }
 
+
+bool isTimeOverlapping(String start1, String end1, String start2, String end2) {
+  // Ekstrak jam dan menit dari format HH:MM:SS
+  TimeOfDay parseTime(String time) {
+    final parts = time.split(':'); // Pisahkan berdasarkan ':'
+    return TimeOfDay(
+      hour: int.parse(parts[0]), // Jam
+      minute: int.parse(parts[1]), // Menit
+    );
+  }
+
+  // Konversi waktu menjadi TimeOfDay
+  final timeStart1 = parseTime(start1);
+  final timeEnd1 = parseTime(end1);
+  final timeStart2 = parseTime(start2);
+  final timeEnd2 = parseTime(end2);
+
+  // Periksa apakah interval waktu bertabrakan
+  return !(timeEnd1.hour < timeStart2.hour ||
+      (timeEnd1.hour == timeStart2.hour && timeEnd1.minute <= timeStart2.minute) ||
+      timeStart1.hour > timeEnd2.hour ||
+      (timeStart1.hour == timeEnd2.hour && timeStart1.minute >= timeEnd2.minute));
+}
+
+void showConflictDialog(String namaMK, String kodeMK) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Jadwal Bentrok"),
+        content: Text(
+          "Jadwal untuk mata kuliah $namaMK ($kodeMK) bertabrakan dengan jadwal lain yang sudah diambil. Silakan pilih jadwal lain.",
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text("OK"),
+            onPressed: () {
+              Navigator.of(context).pop(); // Tutup dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -304,10 +371,10 @@ int getTimeIndex(String time) {
                               0: FractionColumnWidth(0.4),
                               1: FractionColumnWidth(0.6),
                             },
-                            children: const  [
+                            children: [
                               TableRow(
                                 children: [
-                                  Padding(
+                                  const Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -318,80 +385,80 @@ int getTimeIndex(String time) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(userData['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
                               TableRow(
                                 children: [
-                                  Padding(
+                                  const Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Nama', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('NIM', style: TextStyle(fontWeight: FontWeight.bold)),
                                         Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(userData['identifier'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
                               TableRow(
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Semester', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                 Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("lorem", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                              const TableRow(
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Nama', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('IPK', style: TextStyle(fontWeight: FontWeight.bold)),
                                         Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: Text('3.2', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
-                              TableRow(
+                              const TableRow(
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Nama', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('IPS', style: TextStyle(fontWeight: FontWeight.bold)),
                                         Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Nama', style: TextStyle(fontWeight: FontWeight.bold)),
-                                        Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('Lorem Ipsum', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: Text('3.4', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
@@ -433,10 +500,22 @@ int getTimeIndex(String time) {
                                       await fetchJadwal(selectedMataKuliah['kode_mk']); // Fetch jadwal asynchronously
 
                                       setState(() {
+                                      // Tambahkan ke selectedMatKul (list mata kuliah yang dipilih)
                                       selectedMatKul.add(selectedMataKuliah);
-                                      jadwalMap[selectedMataKuliah['kode_mk']] = List.from(jadwalList);                             
-                                      selectedMataKuliah = null; // Reset the selected value
-                                      debugPrint("Jadwalmap: ");
+
+                                      // Perbarui jadwalMap untuk kode_mk yang dipilih
+                                      jadwalMap[selectedMataKuliah['kode_mk']] = List.from(jadwalList); 
+
+                                      // Perbarui takenMataKuliahList tanpa duplikasi
+                                      if (!takenMataKuliahList.contains(selectedMataKuliah)) {
+                                        takenMataKuliahList.add(selectedMataKuliah);
+                                      }
+
+                                      // Reset selectedMataKuliah setelah ditambahkan
+                                      selectedMataKuliah = null; 
+
+                                      // Debugging untuk memantau isi jadwalMap
+                                      debugPrint("JadwalMap:");
                                       jadwalMap.forEach((kodeMk, jadwalList) {
                                         debugPrint('Kode MK: $kodeMk');
                                         debugPrint('Jadwal: $jadwalList');
@@ -514,34 +593,37 @@ int getTimeIndex(String time) {
                     //   ),
                     // ),
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Column(
-                      children: [
-                        Container( 
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                                width: double.infinity,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border(
-                                    top: BorderSide(color: Colors.grey, width: 4),
-                                    bottom: BorderSide(color: Colors.grey, width: 4),
-                                    right: BorderSide(color: Colors.grey, width: 4),
-                                    left: BorderSide(color: Colors.grey, width: 16)
-                                  )
-                                ),
-                                child: const Text("MATEMATIKA 1 - PAIK6101"),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Column(
+          children: takenMataKuliahList.map((mk) {
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Colors.grey, width: 4),
+                        bottom: BorderSide(color: Colors.grey, width: 4),
+                        right: BorderSide(color: Colors.grey, width: 4),
+                        left: BorderSide(color: Colors.grey, width: 16),
+                      ),
                     ),
-                  )
+                    child: Text(
+                      "${mk['nama_mk']} - ${mk['kode_mk']}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
                   ],
                 ),
               ),
@@ -636,25 +718,50 @@ int getTimeIndex(String time) {
                                        String eventText = '${jadwal['nama_mk']} ($kodeMk)\n'
                                         '${jadwal['hari']} ${jadwal['jam_mulai']} - ${jadwal['jam_selesai']}\n'
                                         '${jadwal['kode_ruangan']} • ${jadwal['sks']} SKS'; // Tambahkan enter (\n) antar elemen
+
+                                        // Cek konflik dengan jadwal "diambil"
+                                        bool hasConflict = false;
+                                        if (status != 'diambil') { // Hanya cek konflik untuk jadwal yang tidak "diambil"
+                                          jadwalMap.forEach((_, otherJadwals) {
+                                            for (var otherJadwal in otherJadwals) {
+                                              if (otherJadwal['status'] == 'diambil' &&
+                                                  otherJadwal['hari'] == jadwal['hari'] &&
+                                                  isTimeOverlapping(
+                                                    jadwal['jam_mulai'], jadwal['jam_selesai'],
+                                                    otherJadwal['jam_mulai'], otherJadwal['jam_selesai'],
+                                                  )) {
+                                                hasConflict = true;
+                                                jadwal['status']='konflik';
+                                              }
+                                            }
+                                          });
+                                        }
                                       events.add(
                                         ElevatedButton(
                                           onPressed: () {
-                                            debugPrint('Status: $status');
-                                            debugPrint('Kode MK: ${jadwal['kode_mk']}, Jadwal ID: ${jadwal['jadwal_id']}');
-                                            if (status == 'diambil') {
-                                              // Tampilkan dialog konfirmasi penghapusan
-                                              showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['jadwal_id']);
-                                            } else {
-                                              // Tambahkan jadwal ke IRS
-                                              addJadwalToIRS(jadwal['kode_mk'], jadwal['jadwal_id']);
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: status == 'diambil' ? Colors.blue : Colors.grey,
-                                          ),
-                                          child: Text(eventText, textAlign: TextAlign.center),
+                                              if (hasConflict) {
+                                                // Tampilkan popup untuk konflik jadwal
+                                                showConflictDialog(jadwal['nama_mk'], jadwal['kode_mk']);
+                                              } else if (status == 'diambil') {
+                                                debugPrint('Status: $status');
+                                                debugPrint('Kode MK: ${jadwal['kode_mk']}, Jadwal ID: ${jadwal['jadwal_id']}');
+                                                // Tampilkan dialog konfirmasi penghapusan
+                                                showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['jadwal_id']);
+                                              } else {
+                                                // Tambahkan jadwal ke IRS
+                                                addJadwalToIRS(jadwal['kode_mk'], jadwal['jadwal_id']);
+                                              }
+                                            },
+                                        style: ElevatedButton.styleFrom(
+                                        backgroundColor: (hasConflict 
+                                            ? Colors.red 
+                                            : (status != 'diambil' 
+                                                ? Colors.grey 
+                                                : Colors.blue)),
                                         ),
-                                      );
+                                        child: Text(eventText, textAlign: TextAlign.center),
+                                      ),
+                                    );
                                     }
                                   }
                                 });
