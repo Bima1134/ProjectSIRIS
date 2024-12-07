@@ -122,9 +122,11 @@ class AmbilIRSState extends State<AmbilIRS> {
     }
   }
 
-  Future<void> addJadwalToIRS(String kodeMK, int jadwalID) async {
-    final nim = widget.userData['identifier'];
-    final url = 'http://localhost:8080/mahasiswa/$nim/add-irs?kode_mk=$kodeMK&jadwal_id=$jadwalID';
+  Future<bool> addJadwalToIRS(String kodeMK, int jadwalID) async {
+  final nim = widget.userData['identifier'];
+  final url = 'http://localhost:8080/mahasiswa/$nim/add-irs?kode_mk=$kodeMK&jadwal_id=$jadwalID';
+
+  try {
     final response = await http.post(
       Uri.parse(url),
       body: {
@@ -133,23 +135,33 @@ class AmbilIRSState extends State<AmbilIRS> {
         'jadwal_id': jadwalID.toString(),
       },
     );
-    if(mounted){
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
-        );
-        loggerJadwal.info('Status Code: ${response.statusCode}, Message: Berhasil Menambahkan Jadwal');
-        fetchJadwalIRS(); // Refresh jadwal IRS list
-      } 
-      else {
-        Map<String, dynamic> e = json.decode(response.body);
-        loggerJadwal.severe('Status Code: ${response.statusCode}, Message: ${e['message']}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menambahkan jadwal ke IRS')),
-        );
-      }
+
+    if (response.statusCode == 200) {
+      // Jadwal berhasil ditambahkan
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Jadwal berhasil ditambahkan ke IRS')),
+      );
+      loggerJadwal.info('Status Code: ${response.statusCode}, Message: Berhasil Menambahkan Jadwal');
+      return true; // Berhasil
+    } else {
+      // Gagal menambahkan jadwal
+      final Map<String, dynamic> error = json.decode(response.body);
+      loggerJadwal.severe('Status Code: ${response.statusCode}, Message: ${error['message']}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menambahkan jadwal ke IRS: ${error['message']}')),
+      );
+      return false; // Gagal
     }
+  } catch (e) {
+    // Tangani kesalahan
+    loggerJadwal.severe('Error: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Terjadi kesalahan: $e')),
+    );
+    return false; // Gagal
   }
+}
+
   Future<void> removeJadwalFromIRS(String kodeMK, int jadwalID) async {
   final nim = widget.userData['identifier']; // NIM dari user data
   final url = 'http://localhost:8080/mahasiswa/$nim/remove-irs?kode_mk=$kodeMK&jadwal_id=$jadwalID';
@@ -250,12 +262,16 @@ class AmbilIRSState extends State<AmbilIRS> {
                 await removeJadwalFromIRS(kodeMK, jadwalID);
                 if(context.mounted){
                   Navigator.of(context).pop(); // Tutup loader
-                  Navigator.of(context).pop(); // Tutup dialog
+                  Navigator.of(context).pop(); // Tutup loader
+
                   // Refresh data di halaman utama
-                    setState(() {
-                    // Panggil ulang fungsi yang mengambil data jadwal, misalnya:
-                    fetchIRSJadwal();
-                  });
+                    setState(() async {
+                                                  jadwalMap.clear(); // Membersihkan data lama
+                                                  // Fetch data terbaru setelah jadwal ditambahkan
+                                                  await fetchMataKuliah(); // Memuat mata kuliah terbaru
+                                                  await fetchIRSJadwal();  // Memuat jadwal IRS terbaru
+                                                  await fetchDaftarMataKuliah(); // Memuat daftar mata kuliah yang tersedia
+                                                });
                 }
               },
               child: const Text('Ya'),
@@ -324,6 +340,29 @@ void showConflictDialog(String namaMK, String kodeMK) {
     },
   );
 }
+
+Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
+  return showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Konfirmasi Tambah Jadwal'),
+        content: Text('Apakah Anda yakin ingin menambahkan mata kuliah "$namaMk" ke IRS?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Pilih "Tidak"
+            child: const Text('Tidak'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true), // Pilih "Ya"
+            child: const Text('Ya'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
 
   @override
@@ -737,30 +776,52 @@ void showConflictDialog(String namaMK, String kodeMK) {
                                           });
                                         }
                                       events.add(
-                                        ElevatedButton(
-                                          onPressed: () {
+                                        Padding(
+                                          padding: const EdgeInsets.all(4.0), // Tambahkan padding untuk jarak antar tombol
+                                          child: ElevatedButton(
+                                            onPressed: () async {
                                               if (hasConflict) {
-                                                // Tampilkan popup untuk konflik jadwal
                                                 showConflictDialog(jadwal['nama_mk'], jadwal['kode_mk']);
                                               } else if (status == 'diambil') {
-                                                debugPrint('Status: $status');
-                                                debugPrint('Kode MK: ${jadwal['kode_mk']}, Jadwal ID: ${jadwal['jadwal_id']}');
-                                                // Tampilkan dialog konfirmasi penghapusan
                                                 showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['jadwal_id']);
                                               } else {
-                                                // Tambahkan jadwal ke IRS
-                                                addJadwalToIRS(jadwal['kode_mk'], jadwal['jadwal_id']);
+                                                final confirm = await showAddConfirmationDialog(context, jadwal['nama_mk']);
+                                                if (confirm == true) {
+                                                  final success = await addJadwalToIRS(jadwal['kode_mk'], jadwal['jadwal_id']);
+                                                  if (success) {
+                                                    setState(() async {
+                                                      jadwalMap.clear();
+                                                      await fetchMataKuliah();
+                                                      await fetchIRSJadwal();
+                                                      await fetchDaftarMataKuliah();
+                                                    });
+                                                  }
+                                                }
                                               }
                                             },
-                                        style: ElevatedButton.styleFrom(
-                                        backgroundColor: (hasConflict 
-                                            ? Colors.red 
-                                            : (status != 'diambil' 
-                                                ? Colors.grey 
-                                                : Colors.blue)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: (hasConflict 
+                                                  ? Colors.red 
+                                                  : (status != 'diambil' 
+                                                      ? Colors.grey 
+                                                      : Colors.blue)),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8.0), // Bentuk kotak dengan sudut tumpul
+                                              ),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0), // Padding dalam tombol
+                                            ),
+                                            child: Text(
+                                              eventText,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                              fontWeight: FontWeight.bold, // Teks menjadi tebal
+                                              fontSize: 14.0, // Ukuran teks yang sesuai
+                                              color: Colors.white, // Warna teks agar kontras dengan tombol
+                                            ),
+                                            ),
+                                          ),
                                         ),
-                                        child: Text(eventText, textAlign: TextAlign.center),
-                                      ),
+
                                     );
                                     }
                                   }
