@@ -34,6 +34,16 @@ CREATE TABLE `bagian_akademik` (
   `jabatan` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Table structure for table `kaprodi`
+--
+
+CREATE TABLE `kaprodi` (
+  `id_kaprodi` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `nama` varchar(100) NOT NULL,
+  `jabatan` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -384,7 +394,22 @@ CREATE TABLE `ruang` (
   `kapasitas` int(3) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
 -- --------------------------------------------------------
+
+-- Table structure for table 'JadwalKaprodi'
+CREATE TABLE `JadwalKaprodi` (
+  `kode_mk` varchar(10) NOT NULL,
+  `pengampu1` varchar(50) NOT NULL,
+  `pengampu2` varchar(50),
+  `pengampu3` varchar(50),
+  `kelas` char(1) NOT NULL,
+  `ruangan` varchar(10) NOT NULL,
+  `kapasitas` int(3) DEFAULT NULL
+  `hari` varchar(10) NOT NULL,
+  `JamMulai` TIME NOT NULL,
+  `JamMulai` TIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Table structure for table `ruangan`
