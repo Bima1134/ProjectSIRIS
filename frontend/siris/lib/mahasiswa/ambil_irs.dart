@@ -30,6 +30,9 @@ class AmbilIRSState extends State<AmbilIRS> {
   List<dynamic> takenMataKuliahList = [];
   get userData => widget.userData;
 
+  Map<String, dynamic> irsInfo = {'status_irs': 'Tidak Ada Data'};
+
+
   String totalSks = '0';
   String ipk = '0.0';
   String ips ='0.0';
@@ -42,7 +45,7 @@ class AmbilIRSState extends State<AmbilIRS> {
     fetchIRSJadwal();
     fetchDaftarMataKuliah();
     fetchData();
-
+    fetchIRSInfo();
   }
 
   // Fungsi untuk mem-fetch data dari API
@@ -294,6 +297,36 @@ Future<bool> addJadwalToIRS(String kodeMK, int jadwalID) async {
     }
   }
 }
+Future<void> fetchIRSInfo() async {
+  final nim = widget.userData['identifierr'];
+  final semester = widget.userData['semester'];
+  final url = 'http://localhost:8080/mahasiswa/$nim/irs-info?semester=$semester';
+  debugPrint("semester : $semester , nim : $nim");
+  try {
+    final response = await http.get(Uri.parse(url));
+    
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      if (data.isNotEmpty) {
+        setState(() {
+          // Update status IRS berdasarkan data pertama yang ditemukan
+          irsInfo['status_irs'] = data[0]['status'];
+          
+        });
+      } else {
+        setState(() {
+          irsInfo['status_irs'] = 'Tidak Ada Data';
+        });
+      }
+      debugPrint("status_irs : $irsInfo");
+    } else {
+      print('Failed to fetch IRS info: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error fetching IRS info: $e');
+  }
+}
+
 
   Future<void> fetchJadwalIRS() async {
     final nim = widget.userData['identifier'];
@@ -845,7 +878,7 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
                                         Padding(
                                           padding: const EdgeInsets.all(4.0), // Tambahkan padding untuk jarak antar tombol
                                           child: ElevatedButton(
-                                            onPressed: () async {
+                                            onPressed: (irsInfo['status_irs'] == 'Disetujui') ? null : () async {
                                               if (hasConflict) {
                                                 showConflictDialog(jadwal['nama_mk'], jadwal['kode_mk']);
                                               } else if (status == 'diambil') {

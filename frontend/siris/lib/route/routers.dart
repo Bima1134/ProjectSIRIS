@@ -26,7 +26,7 @@ class Routers {
         return MaterialPageRoute(
             builder: (context) => AmbilIRS(userData: userData));
       case '/Perwalian':
-        return MaterialPageRoute(builder: (context) => ListJadwalKaprodiPage());
+        return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: userData));
       default:
         logger.warning('No route defined for ${settings.name}');
         return MaterialPageRoute(
