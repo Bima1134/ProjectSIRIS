@@ -55,8 +55,29 @@ func ApproveIRS(c echo.Context) error {
 
 	// Koneksi ke database
 	connection := db.CreateCon()
-
 	log.Println("Database connection established")
+
+	// Periksa semester mahasiswa dari tabel mahasiswa
+	var semesterMahasiswa int
+	querySemesterMahasiswa := "SELECT semester FROM mahasiswa WHERE nim = ?"
+	log.Printf("Executing query: %s", querySemesterMahasiswa)
+
+	err = connection.QueryRow(querySemesterMahasiswa, nim).Scan(&semesterMahasiswa)
+	if err == sql.ErrNoRows {
+		log.Println("Mahasiswa tidak ditemukan")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Mahasiswa tidak ditemukan"})
+	} else if err != nil {
+		log.Printf("Error saat mengambil semester mahasiswa: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Terjadi kesalahan server"})
+	}
+
+	log.Printf("Semester mahasiswa: %d", semesterMahasiswa)
+
+	// Cek apakah semester parameter lebih kecil dari semester mahasiswa
+	if semester < semesterMahasiswa {
+		log.Println("Semester parameter lebih kecil dari semester mahasiswa")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Tidak bisa menyetujui IRS untuk semester yang lebih kecil dari semester mahasiswa"})
+	}
 
 	// Cek apakah IRS sudah ada dan statusnya
 	var status string

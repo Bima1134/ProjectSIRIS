@@ -129,22 +129,14 @@ Widget build(BuildContext context) {
                         columns: const [
                           DataColumn(
                             label: Text(
-                              'Kode MK',
+                              'Mata Kuliah',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          DataColumn(
-                            label: Text(
-                              'Nama MK',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          
                           DataColumn(
                             label: Text(
                               'Ruangan',
@@ -201,6 +193,15 @@ Widget build(BuildContext context) {
                           ),
                           DataColumn(
                             label: Text(
+                              'Status',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
                               'Dosen Pengampu',
                               style: TextStyle(
                                 color: Colors.white,
@@ -212,13 +213,13 @@ Widget build(BuildContext context) {
                         rows: jadwalIRS.map((jadwal) {
                           return DataRow(cells: [
                             DataCell(Text('${jadwal.KodeMK ?? 'N/A'} - ${jadwal.NamaMK ?? 'N/A'}')),
-                            DataCell(Text(jadwal.NamaMK ?? 'N/A')),
                             DataCell(Text(jadwal.Ruangan ?? 'N/A')),
                             DataCell(Text(jadwal.Hari ?? 'N/A')),
                             DataCell(Text(jadwal.JamMulai ?? 'N/A')),
                             DataCell(Text(jadwal.JamSelesai ?? 'N/A')),
                             DataCell(Text(jadwal.Kelas ?? 'N/A')),
                             DataCell(Text(jadwal.SKS?.toString() ?? '0')), // Pastikan untuk menangani null pada SKS
+                            DataCell(Text(jadwal.status ?? 'N/A')),
                             DataCell(Text(jadwal.DosenPengampu?.join(", ") ?? 'N/A')),
 
                           ]);

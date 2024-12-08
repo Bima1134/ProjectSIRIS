@@ -21,6 +21,8 @@ class IRSDetailPageState extends State<IRSDetailPage> {
   Map<String, dynamic> irsInfo = {'status_irs': 'Tidak Ada Data'}; 
   late int selectedSemester; // Default semester
   get userData => widget.mahasiswa;
+    late int maxSks;
+
 
 
   String totalSks = '0';
@@ -37,6 +39,24 @@ class IRSDetailPageState extends State<IRSDetailPage> {
     fetchData();
     fetchIRSInfo(widget.mahasiswa["semester"]);
   }
+
+  void updateMaxSks() {
+  if (ips != null) {
+    if (double.tryParse(ips) != null) {
+      double parsedIps = double.parse(ips);
+      if (parsedIps >= 3) {
+        maxSks = 24;
+      } else if (parsedIps >= 2.5 && parsedIps < 3) {
+        maxSks = 22;
+      } else {
+        maxSks = 20;
+      }
+    }
+  } else {
+    maxSks = 20; // Default jika `ips` tidak valid
+  }
+  setState(() {}); // Perbarui UI jika diperlukan
+}
   // Fungsi untuk mem-fetch data dari API
    Future<void> fetchData() async {
    final nim = widget.mahasiswa['nim'];
@@ -55,6 +75,7 @@ class IRSDetailPageState extends State<IRSDetailPage> {
           ips = data['ips'].toString();
           currentSKS = data['current_sks'].toString();
         });
+        updateMaxSks();
       } else {
         setState(() {
           totalSks = 'Error';
@@ -79,7 +100,7 @@ class IRSDetailPageState extends State<IRSDetailPage> {
     final nim = widget.mahasiswa["nim"];
     final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
     loggerIRSDetail.info('Fetching jadwal for semester: $semester at URL: $url');
-
+    
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -226,11 +247,12 @@ Widget build(BuildContext context) {
                             Text("IPK: $ipk"),
                           ],
                         ),
+                         const SizedBox(width: 32),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("IPS: $ips"),
-                            Text("Maks Beban SKS: 24"),
+                            Text("Maks Beban SKS: $maxSks"),
                             Text("Status IRS: ${irsInfo['status_irs']}"),
                           ],
                         ),
@@ -249,22 +271,37 @@ Widget build(BuildContext context) {
                   "Isian Rencana Studi",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                DropdownButton<int>(
-                  value: selectedSemester,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedSemester = value;
-                        fetchIRSJadwal(value);
-                        fetchIRSInfo(value);
-                      });
-                    }
-                  },
-                  items: List.generate(
-                    widget.mahasiswa['semester'], // Maksimal semester mahasiswa
-                    (index) => DropdownMenuItem(
-                      value: index + 1,
-                      child: Text("Semester ${index + 1}"),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[900],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButton<int>(
+                    value: selectedSemester,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedSemester = value;
+                          fetchIRSJadwal(value);
+                          fetchIRSInfo(value);
+                        });
+                      }
+                    },
+                    dropdownColor: Colors.blue[800], // Warna dropdown list
+                    underline: SizedBox(), // Menghilangkan garis bawah dropdown
+                    items: List.generate(
+                      widget.mahasiswa['semester'], // Maksimal semester mahasiswa
+                      (index) => DropdownMenuItem(
+                        value: index + 1,
+                        child: Text(
+                          "Semester ${index + 1}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -274,31 +311,100 @@ Widget build(BuildContext context) {
             const SizedBox(height: 16),
 
             // Tabel Jadwal IRS
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('No')),
-                  DataColumn(label: Text('Kode')),
-                  DataColumn(label: Text('Mata Kuliah')),
-                  DataColumn(label: Text('Kelas')),
-                  DataColumn(label: Text('SKS')),
-                  DataColumn(label: Text('Dosen')),
-                  DataColumn(label: Text('Status')),
-                ],
-                rows: jadwalIRS.asMap().entries.map((entry) {
-                  final index = entry.key + 1;
-                  final jadwal = entry.value;
-                  return DataRow(cells: [
-                    DataCell(Text(index.toString())),
-                    DataCell(Text(jadwal.KodeMK)),
-                    DataCell(Text(jadwal.NamaMK)),
-                    DataCell(Text(jadwal.Kelas)),
-                    DataCell(Text(jadwal.SKS.toString())),
-                    DataCell(Text(jadwal.DosenPengampu.join(', '))),
-                    const DataCell(Text('Baru')),
-                  ]);
-                }).toList(),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columnSpacing: 16,
+                    headingRowColor: MaterialStateProperty.resolveWith(
+                      (states) => Colors.lightBlue[300], // Warna header biru muda
+                    ),
+                    columns: [
+                      DataColumn(
+                        label: Text(
+                          'No',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Kode',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Mata Kuliah',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Kelas',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'SKS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Dosen',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Status',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                    rows: jadwalIRS.asMap().entries.map((entry) {
+                      final index = entry.key + 1;
+                      final jadwal = entry.value;
+                      return DataRow(cells: [
+                        DataCell(Text(index.toString())),
+                        DataCell(Text(jadwal.KodeMK)),
+                        DataCell(Text(jadwal.NamaMK)),
+                        DataCell(Text(jadwal.Kelas)),
+                        DataCell(Text(jadwal.SKS.toString())),
+                        DataCell(Text(jadwal.DosenPengampu.join(', '))),
+                        DataCell(Text(jadwal.status)),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
 
@@ -309,34 +415,44 @@ Widget build(BuildContext context) {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () async {
-                    // Menjalankan fungsi approveIRS
-                    await approveIRS(widget.mahasiswa['nim'], selectedSemester);
-                    
-                    // Memanggil fungsi untuk mendapatkan data terbaru dan merefresh halaman
-                    setState(() {
-                      fetchData();
-                      fetchIRSInfo(widget.mahasiswa["semester"]);
-                    });
-                  },
+  onPressed: (selectedSemester < widget.mahasiswa['semester'])
+      ? null // Disable tombol jika selectedSemester < semester mahasiswa
+      : () async {
+          // Menjalankan fungsi approveIRS
+          await approveIRS(widget.mahasiswa['nim'], selectedSemester);
+
+          // Memanggil fungsi untuk mendapatkan data terbaru dan merefresh halaman
+          setState(() {
+            fetchData();
+            fetchIRSInfo(widget.mahasiswa["semester"]);
+          });
+        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: (selectedSemester < widget.mahasiswa['semester']) 
+                        ? Colors.grey // Tombol menjadi abu-abu jika disabled
+                        : null,
+                  ),
                   child: const Text('Setuju'),
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: irsInfo['status_irs'] == 'Disetujui'
-                      ? () async {
+                  onPressed: (selectedSemester < widget.mahasiswa['semester']) || irsInfo['status_irs'] != 'Disetujui'
+                      ? null // Disable tombol jika selectedSemester < semester mahasiswa atau status IRS bukan 'Disetujui'
+                      : () async {
                           await unapproveIRS(widget.mahasiswa['nim'], selectedSemester);
                           setState(() {
                             fetchData();
                             fetchIRSInfo(widget.mahasiswa["semester"]);
                           });
-                        }
-                      : null,
+                        },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: (selectedSemester < widget.mahasiswa['semester']) || irsInfo['status_irs'] != 'Disetujui'
+                        ? Colors.grey // Tombol menjadi abu-abu jika disabled
+                        : Colors.red, // Tombol merah jika aktif
                   ),
                   child: const Text('Unapprove'),
                 ),
+
               ],
             ),
           ],
@@ -345,6 +461,8 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
+
 
 
 }

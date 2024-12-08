@@ -108,9 +108,10 @@ class AmbilIRSState extends State<AmbilIRS> {
 
   Future<void> fetchMataKuliah() async {
     final nim = widget.userData['identifier'];
-    final url = 'http://localhost:8080/mahasiswa/$nim/mata-kuliah';
+    final prodi = widget.userData['jurusan'];
+    final url = 'http://localhost:8080/mahasiswa/$nim/mata-kuliah?prodi=$prodi';
     final response = await http.get(Uri.parse(url));
-    debugPrint('Nim ID: $nim');
+    debugPrint('Nim ID: $nim, jurusan : $prodi');
     if (response.statusCode == 200) {
       setState(() {
         mataKuliahList = json.decode(response.body);
@@ -830,12 +831,24 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
                       ),
                       Row(
                         children: [
-                           Text(
-                            "Jumlah SKS Diambil : $currentSKS"
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[900], // Warna biru tua
+                              borderRadius: BorderRadius.circular(8), // Membuat sudut melengkung
+                            ),
+                            child: Text(
+                              "Jumlah SKS Diambil : $currentSKS",
+                              style: const TextStyle(
+                                color: Colors.white, // Warna teks putih
+                                fontWeight: FontWeight.bold, // Teks tebal
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 20),
-                          _buildSaveButton()
-                        ],)
+                          // _buildSaveButton()
+                        ],
+                      )
                   ],
                   ),
                   const SizedBox(height: 40),
@@ -997,38 +1010,38 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
   }
 }
 
-  Widget _buildSaveButton(){
-    return ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.greenAccent, // Button background color
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24), // Rounded edges
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            onPressed: () {
-              // Add button action here
-            },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min, // Keeps the button compact
-              children: [
-                Icon(
-                  Icons.save, // Edit icon
-                  color: Colors.white,
-                ),
-                SizedBox(width: 8), // Space between icon and text
-                Text(
-                  'Simpan IRS',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
+  // Widget _buildSaveButton(){
+  //   return ElevatedButton(
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Colors.greenAccent, // Button background color
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(24), // Rounded edges
+  //             ),
+  //             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  //           ),
+  //           onPressed: () {
+  //             // Add button action here
+  //           },
+  //           child: const Row(
+  //             mainAxisSize: MainAxisSize.min, // Keeps the button compact
+  //             children: [
+  //               Icon(
+  //                 Icons.save, // Edit icon
+  //                 color: Colors.white,
+  //               ),
+  //               SizedBox(width: 8), // Space between icon and text
+  //               Text(
+  //                 'Simpan IRS',
+  //                 style: TextStyle(
+  //                   color: Colors.white,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         );
           
-  }
+  // }
 
   Widget _buildCourseCard(String event){
     return Container(

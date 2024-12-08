@@ -273,6 +273,7 @@ func GetJadwal(c echo.Context) error {
 
 func GetMataKuliahBySemester(c echo.Context) error {
 	nim := c.Param("nim") // Mendapatkan NIM dari parameter URL
+	prodi := c.QueryParam("prodi")
 	fmt.Println("GetMataKuliahBySemester called")
 	fmt.Println("NIM:", nim)
 
@@ -287,6 +288,11 @@ func GetMataKuliahBySemester(c echo.Context) error {
 	// Menentukan tipe semester (ganjil/genap)
 	isGanjil := semesterMahasiswa%2 != 0
 
+	isGanjilValue := 1
+	if !isGanjil {
+		isGanjilValue = 0
+	}
+
 	// Query untuk mendapatkan daftar mata kuliah berdasarkan tipe semester
 	// dan mengecualikan mata kuliah yang sudah diambil
 	query := `
@@ -300,8 +306,9 @@ func GetMataKuliahBySemester(c echo.Context) error {
 			INNER JOIN irs i ON d.irs_id = i.irs_id
 			WHERE i.nim = ?
 		)
+		AND mk.prodi = ?
 	`
-	rows, err := db.CreateCon().Query(query, isGanjil, semesterMahasiswa, nim)
+	rows, err := db.CreateCon().Query(query, isGanjilValue, semesterMahasiswa, nim, prodi)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan daftar mata kuliah"})
 	}
@@ -442,41 +449,54 @@ func GetIRSJadwal(c echo.Context) error {
 	// Query untuk mendapatkan jadwal IRS mahasiswa
 	query := `
 		SELECT 
-			j.jadwal_id,
-			j.kode_mk, 
-			mk.nama_mk, 
-			r.kode_ruangan AS ruangan, 
-			j.hari, 
-			j.jam_mulai, 
-			j.jam_selesai, 
-			j.kelas, 
-			mk.sks, 
-			GROUP_CONCAT(d.nama SEPARATOR ', ') AS dosen_pengampu
-		FROM 
-			irs_detail id
-		JOIN 
-			jadwal j ON id.jadwal_id = j.jadwal_id
-		JOIN 
-			mata_kuliah mk ON j.kode_mk = mk.kode_mk
-		JOIN 
-			ruangan r ON j.kode_ruangan = r.kode_ruangan
-		JOIN 
-			dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
-		JOIN 
-			dosen d ON dp.nip = d.nip
-		WHERE 
-			id.irs_id IN (
-				SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?
-			)
-		GROUP BY 
-			j.jadwal_id , j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
-			j.kelas, mk.sks`
+    j.jadwal_id,
+    j.kode_mk, 
+    mk.nama_mk, 
+    r.kode_ruangan AS ruangan, 
+    j.hari, 
+    j.jam_mulai, 
+    j.jam_selesai, 
+    j.kelas, 
+    mk.sks, 
+    GROUP_CONCAT(d.nama SEPARATOR ', ') AS dosen_pengampu,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM irs_detail id_prev
+            JOIN irs irs_prev ON id_prev.irs_id = irs_prev.irs_id
+            WHERE irs_prev.nim = ? 
+              AND irs_prev.idsem < ? 
+              AND id_prev.kode_mk = j.kode_mk
+        ) THEN 'Perbaikan'
+        ELSE 'Baru'
+    END AS status
+FROM 
+    irs_detail id
+JOIN 
+    jadwal j ON id.jadwal_id = j.jadwal_id
+JOIN 
+    mata_kuliah mk ON j.kode_mk = mk.kode_mk
+JOIN 
+    ruangan r ON j.kode_ruangan = r.kode_ruangan
+JOIN 
+    dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
+JOIN 
+    dosen d ON dp.nip = d.nip
+WHERE 
+    id.irs_id IN (
+        SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?
+    )
+GROUP BY 
+    j.jadwal_id, j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+    j.kelas, mk.sks
+`
 
-	rows, err := connection.Query(query, nim, idsem)
+	rows, err := connection.Query(query, nim, idsem, nim, idsem)
 	if err != nil {
 		fmt.Println("Query error:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data jadwal"})
 	}
+
 	defer rows.Close()
 
 	// Inisialisasi slice untuk menyimpan data jadwal
@@ -487,7 +507,7 @@ func GetIRSJadwal(c echo.Context) error {
 		var jadwal JadwalIRS
 		var dosenPengampuString string
 		if err := rows.Scan(&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan, &jadwal.Hari,
-			&jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas, &jadwal.SKS, &dosenPengampuString); err != nil {
+			&jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas, &jadwal.SKS, &dosenPengampuString, &jadwal.Status); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
 		}
