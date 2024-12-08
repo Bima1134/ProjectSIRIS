@@ -802,7 +802,6 @@ func GetMahasiswaInfo(c echo.Context) error {
 		"current_semester": semester,
 	})
 }
-<<<<<<< HEAD
 func GetIRSInfo(c echo.Context) error {
 	nim := c.Param("nim")
 	semester := c.QueryParam("semester")
@@ -831,7 +830,6 @@ func GetIRSInfo(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, irsInfo)
 }
-=======
 
 type ResponseData struct {
 	TotalSKS int     `json:"total_sks"`
@@ -1003,4 +1001,3 @@ func GetDetailJadwal(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, groupedJadwals)
 }
->>>>>>> 552fff1b68bf7e3804744f872204e640bd17d47b

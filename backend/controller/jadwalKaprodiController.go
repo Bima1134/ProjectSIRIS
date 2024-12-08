@@ -3,6 +3,7 @@ package controller
 import (
 	"SIRIS/db"
 	"SIRIS/models"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -216,15 +217,38 @@ func GetMataKuliahByProdi(c echo.Context) error {
 }
 
 type JadwalKaprodi struct {
-	KodeMK     string `json:"kodeMK"`
-	Kelas      string `json:"kelas"`
-	KodeRuang  string `json:"kodeRuang"`
-	Hari       string `json:"hari"`
-	JamMulai   string `json:"jamMulai"`
-	JamSelesai string `json:"jamSelesai"`
+	IdJadwalProdi string `json:"id_jadwal_prodi"`
+	KodeMK        string `json:"kodeMK"`
+	Kelas         string `json:"kelas"`
+	KodeRuang     string `json:"kodeRuang"`
+	Hari          string `json:"hari"`
+	JamMulai      string `json:"jamMulai"`
+	JamSelesai    string `json:"jamSelesai"`
 }
 
 func AddJadwal(c echo.Context) error {
+	idsem := c.Param("idsem")
+	prodi := c.Param("prodi")
+
+	switch prodi {
+	case "Informatika":
+		prodi = "IF"
+	case "Biologi":
+		prodi = "Bio"
+	case "Matematika":
+		prodi = "Mat"
+	case "Bioteknologi":
+		prodi = "Biotek"
+	case "Statistika":
+		prodi = "Stat"
+	case "Fisika":
+		prodi = "Fis"
+	case "Kimia":
+		prodi = "Kim"
+	}
+
+	// idJadwal := "J-"+idsem+"-"+prodi
+
 	// Mengambil data dari request body
 	log.Printf("addjadwal dipanggil")
 	jadwal := new(JadwalKaprodi)
@@ -248,16 +272,30 @@ func AddJadwal(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
+	// Mengambil IRS ID yang sesuai dari tabel irs berdasarkan NIM
+	var kapasitas int
+	err = tx.QueryRow("SELECT r.kapasitas FROM ruang r WHERE r.kode_ruang = ?", jadwal.KodeRuang).Scan(&kapasitas)
+	if err == sql.ErrNoRows {
+		log.Println("Error: kode ruang tidak ditemukan untuk mahasiswa ini")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "IRS tidak ditemukan untuk mahasiswa ini"})
+	} else if err != nil {
+		log.Println("Error: Gagal mengambil IRS ID:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil IRS ID"})
+	}
+	log.Printf("Kapasitas %s ditemukan: %d\n", jadwal.KodeRuang, kapasitas)
+
 	// Memasukkan data ke tabel jadwal_kaprodi
 	_, err = tx.Exec(`
-		INSERT INTO jadwal_kaprodi (kode_mk, kelas, kode_ruang, hari, jam_mulai, jam_selesai)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		jadwal.KodeMK, jadwal.Kelas, jadwal.KodeRuang, jadwal.Hari, jadwal.JamMulai, jadwal.JamSelesai)
+		INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kapasitas, kelas, idsem, nama_prodi)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		jadwal.KodeMK, jadwal.KodeRuang, jadwal.Hari, jadwal.JamMulai, jadwal.JamSelesai, kapasitas, jadwal.Kelas, idsem, prodi)
 	if err != nil {
 		log.Println("Error: Gagal memasukkan data ke jadwal_kaprodi:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to insert into jadwal_kaprodi"})
 	}
 	log.Println("Jadwal successfully added to jadwal_kaprodi")
+
+	updateStatusJadwal(c, idsem, prodi)
 
 	// Commit transaksi
 	if err := tx.Commit(); err != nil {
@@ -267,4 +305,63 @@ func AddJadwal(c echo.Context) error {
 
 	log.Println("Transaction successfully committed")
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal successfully added"})
+}
+
+func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
+	query :=
+		`
+		UPDATE jadwal_prodi
+		SET status = 'belum disetujui'
+		WHERE idsem = ? and prodi = ?
+	`
+	connection := db.CreateCon()
+
+	// Memulai transaksi database
+	tx, err := connection.Begin()
+	if err != nil {
+		log.Println("Error: Gagal memulai transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memulai transaksi",
+		})
+	}
+	defer tx.Rollback()
+
+	log.Printf("Update statu jadwal dengan idsem: %s, prodi: %s\n", idsem, prodi)
+
+	// Eksekusi query
+	result, err := tx.Exec(query, idsem, prodi)
+	if err != nil {
+		log.Println("Error: Gagal memperbarui status jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memperbarui status jadwal",
+		})
+	}
+
+	// Memastikan baris diupdate
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error: Gagal mendapatkan jumlah baris yang diperbarui:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memeriksa status update",
+		})
+	}
+	if rowsAffected == 0 {
+		log.Println("Warning: Tidak ada jadwal yang ditemukan dengan idsem:%s, prodi:%s", idsem, prodi)
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "Jadwal tidak ditemukan",
+		})
+	}
+
+	// Commit transaksi
+	if err := tx.Commit(); err != nil {
+		log.Println("Error: Gagal melakukan commit transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal menyetujui jadwal",
+		})
+	}
+
+	log.Printf("Jadwal dengan idsem %s, prodi %s berhasil disetujui\n", idsem)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Jadwal berhasil disetujui",
+	})
 }

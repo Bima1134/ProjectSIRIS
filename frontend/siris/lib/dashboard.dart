@@ -269,7 +269,16 @@ class DashboardState extends State<Dashboard> {
   }
 
   Widget _dashboardKaprodi(BuildContext context){
-    return Container();
+    return Row(
+      children: [
+        _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+          Navigator.pushNamed(context, '/kaprodi/jadwal/', arguments: userData);
+        }),
+        _buildMenuItem(Icons.room, "Ruang", onTap: () {
+          Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
+        }),
+      ]
+    );
   }
 
   Widget _dashboardBaka(BuildContext context){

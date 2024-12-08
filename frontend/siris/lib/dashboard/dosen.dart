@@ -327,7 +327,7 @@ class DashboardPageDosen extends StatelessWidget {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ListJadwalKaprodiPage(),
+                                builder: (context) => ListJadwalKaprodiPage(userData: userData),
                               ));
                         },
                         child: _buildMenuItem(Icons.book, 'IRS'),

@@ -308,38 +308,57 @@ class JadwalDataSource extends DataTableSource {
 
     final jadwal = jadwalProdi[index];
     final isDisetujui = jadwal.status.toLowerCase() == "sudah disetujui";
+    final isDiisi = jadwal.status.toLowerCase() == "belum diisi";
     return DataRow(cells: [
       DataCell(Text(jadwal.idJadwal)),
       DataCell(Text(jadwal.namaProdi)),
-      DataCell(Text(jadwal.status)),
+      DataCell(isDisetujui ? Container( 
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(color: Colors.green, borderRadius:BorderRadius.circular(8),),  // Corrected here
+          child: Text(jadwal.status, style: TextStyle(fontSize: 16, color: Colors.white),
+          )
+        ): Text(jadwal.status)),
       DataCell(
         Row(
           children: [
-            !isDisetujui ?
-            Row(
-              children: [
-                ElevatedButton(
-                  child: const Text('Setujui'),
-                  onPressed: () {
-                    onApproveJadwal(jadwal.idJadwal, jadwal.idSem); // Memanggil callback saat tombol ditekan
-                  },
-                ),
+            isDiisi?
+            Container(
+              child: 
                 ElevatedButton(
                   child: const Text('Detail'),
                   onPressed: () {
                     detailJadwal(jadwal.idJadwal);
                   },
-                ),
-              ],
-            ) 
-            : ElevatedButton(
-                child: const Text('Detail'),
-                onPressed: () {
-                  detailJadwal(jadwal.idJadwal);
-                },
-              ),
-          ],
-        ),
+                )
+            )
+            :Container(
+              child:
+                !isDisetujui ?
+                Row(
+                  children: [
+                    ElevatedButton(
+                      child: const Text('Setujui'),
+                      onPressed: () {
+                        onApproveJadwal(jadwal.idJadwal, jadwal.idSem); // Memanggil callback saat tombol ditekan
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text('Detail'),
+                      onPressed: () {
+                        detailJadwal(jadwal.idJadwal);
+                      },
+                    ),
+                  ],
+                ) 
+                : ElevatedButton(
+                    child: const Text('Detail'),
+                    onPressed: () {
+                      detailJadwal(jadwal.idJadwal);
+                    },
+                  ),
+              )
+            ],  
+            ),
       ),
     ]);
   }

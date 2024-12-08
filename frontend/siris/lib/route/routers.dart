@@ -3,11 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:siris/Kaprodi/Kaprodi_ListJadwal.dart';
 import 'package:siris/dashboard.dart';
 import 'package:siris/dashboard/dosen.dart';
-// import 'package:siris/dekan/detail_ruang_page.dart';
-// import 'package:siris/dekan/ruang_page.dart';
-// import 'package:siris/dekan/detail_ruang_page.dart';
-// import 'package:siris/dekan/ruang_page.dart';
-import 'package:siris/dosen/daftar_mahasiswa_perwalian_page.dart';
 import 'package:siris/mahasiswa/indexMahasiswa.dart';
 import 'package:siris/login_page.dart';
 import 'package:siris/dekan/indexDekan.dart';
@@ -24,19 +19,16 @@ class Routers {
       case '/login':
         return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/dashboard':
-<<<<<<< HEAD
         return MaterialPageRoute(
-            builder: (context) => Dashboard(userData: userData));
+            builder: (context) => Dashboard(userData: data));
       case '/irs':
         return MaterialPageRoute(
-            builder: (context) => IRSPage(userData: userData));
+            builder: (context) => IRSPage(userData: data));
       case '/Jadwal':
         return MaterialPageRoute(
-            builder: (context) => AmbilIRS(userData: userData));
-      case '/Perwalian':
-        return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: userData));
-=======
-        return MaterialPageRoute(builder: (context) => Dashboard(userData: data));
+            builder: (context) => AmbilIRS(userData: data));
+      // case '/Perwalian':
+      //   return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: data));
       case '/test':
         return MaterialPageRoute(builder: (context) => DashboardPageDosen(userData: data));
       case '/test':
@@ -46,16 +38,15 @@ class Routers {
       case'/Jadwal':
         return MaterialPageRoute(builder: (context) => AmbilIRS(userData: data));
       case'/Perwalian':
-        return MaterialPageRoute(builder: (context) => ListJadwalKaprodiPage());
+        return MaterialPageRoute(builder: (context) => ListJadwalKaprodiPage(userData: data));
       case '/dekan/jadwal/':
         return MaterialPageRoute(builder: (context) => JadwalPage(userData: data));
       case '/dekan/jadwal/detail/':
         return MaterialPageRoute(builder: (context) => DetailJadwalPage(userData: data, idJadwalProdi: data['idJadwal']));
-      // case '/dekan/ruang/':
-      //   return MaterialPageRoute(builder: (context) => RuangPage(userData: data));
-      // case '/dekan/ruang/detail/':
-      //   return MaterialPageRoute(builder: (context) => DetailRuangPage(userData: data, idAlokasiRuang: data['idAlokasi']));
->>>>>>> 552fff1b68bf7e3804744f872204e640bd17d47b
+      case '/dekan/ruang/':
+        return MaterialPageRoute(builder: (context) => RuangPage(userData: data));
+      case '/dekan/ruang/detail/':
+        return MaterialPageRoute(builder: (context) => DetailRuangPage(userData: data, idAlokasiRuang: data['idAlokasi']));
       default:
         logger.warning('No route defined for ${settings.name}');
         return MaterialPageRoute(

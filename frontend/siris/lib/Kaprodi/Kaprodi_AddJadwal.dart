@@ -3,14 +3,21 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:siris/class/MataKuliah.dart';
 import 'package:siris/class/Ruang.dart';
+import 'package:siris/navbar.dart';
 
 class AddJadwalPage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  
+  const AddJadwalPage({super.key, required this.userData});
+
+
   @override
   _AddJadwalPageState createState() => _AddJadwalPageState();
 }
 
 class _AddJadwalPageState extends State<AddJadwalPage> {
   final _formKey = GlobalKey<FormState>();
+  get userData => widget.userData;
   String? selectedKodeMK;
   String? selectedRuangan;
   String? selectedHari;
@@ -145,7 +152,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   Future<void> addJadwal() async {
-    final url = 'http://localhost:8080/kaprodi/add-jadwal';
+    final url = 'http://localhost:8080/kaprodi/add-jadwal/${userData['idsem']}/${userData['departemen']}';
 
     // Data yang akan dikirimkan
     final data = {
@@ -182,23 +189,9 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   @override
-  // free memory
-  // void dispose() {
-  //   kodeRuangController.dispose();
-  //   namaRuangController.dispose();
-  //   gedungController.dispose();
-  //   lantaiController.dispose();
-  //   fungsiController.dispose();
-  //   kapasitasController.dispose();
-  //   super.dispose();
-  // }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tambah Jadwal Kuliah'),
-      ),
+      appBar: Navbar(userData: userData),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
