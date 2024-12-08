@@ -29,9 +29,9 @@ class AmbilIRSState extends State<AmbilIRS> {
   Map<String, List<dynamic>> jadwalMap = {}; // Map to store kode_mk as key and list of jadwal as value
   List<dynamic> takenMataKuliahList = [];
   get userData => widget.userData;
-
+  late int maxSks;
   Map<String, dynamic> irsInfo = {'status_irs': 'Tidak Ada Data'};
-
+  
 
   String totalSks = '0';
   String ipk = '0.0';
@@ -46,8 +46,27 @@ class AmbilIRSState extends State<AmbilIRS> {
     fetchDaftarMataKuliah();
     fetchData();
     fetchIRSInfo();
+    maxSks=20;
   }
 
+
+  void updateMaxSks() {
+  if (ips != null) {
+    if (double.tryParse(ips) != null) {
+      double parsedIps = double.parse(ips);
+      if (parsedIps >= 3) {
+        maxSks = 24;
+      } else if (parsedIps >= 2.5 && parsedIps < 3) {
+        maxSks = 22;
+      } else {
+        maxSks = 20;
+      }
+    }
+  } else {
+    maxSks = 20; // Default jika `ips` tidak valid
+  }
+  setState(() {}); // Perbarui UI jika diperlukan
+}
   // Fungsi untuk mem-fetch data dari API
    Future<void> fetchData() async {
    final nim = widget.userData['identifier'];
@@ -65,6 +84,7 @@ class AmbilIRSState extends State<AmbilIRS> {
           ipk = data['ipk'].toString();
           ips = data['ips'].toString();
           currentSKS = data['current_sks'].toString();
+          updateMaxSks();
         });
       } else {
         setState(() {
@@ -130,6 +150,14 @@ class AmbilIRSState extends State<AmbilIRS> {
         }
       }
 
+      // Debug print jadwalMap
+      debugPrint("[DEBUG] Contents of jadwalMap:");
+      jadwalMap.forEach((kodeMK, list) {
+        debugPrint("KodeMK: $kodeMK");
+        for (var jadwal in list) {
+          debugPrint(" - Jadwal: $jadwal");
+        }
+      });
       setState(() {});
       return data.map((item) => JadwalIRS.fromJson(item)).toList();
     } else {
@@ -159,6 +187,7 @@ class AmbilIRSState extends State<AmbilIRS> {
             'sks': mataKuliahData['sks'],
           };
         }).toList();
+        debugPrint("JadwalList : $jadwalList");
       });
     } else {
       Map<String, dynamic> e = json.decode(response.body);
@@ -198,7 +227,6 @@ Future<bool> addJadwalToIRS(String kodeMK, int jadwalID) async {
     final totalSksAfterAdding = currentSks + sksMataKuliah;
 
     // Tentukan batasan SKS berdasarkan IPS
-    int maxSks;
     if (ips != null) {
       if (ips >= 3) {
         maxSks = 24; // Jika IPS >= 3, maksimal 24 SKS
@@ -298,7 +326,7 @@ Future<bool> addJadwalToIRS(String kodeMK, int jadwalID) async {
   }
 }
 Future<void> fetchIRSInfo() async {
-  final nim = widget.userData['identifierr'];
+  final nim = widget.userData['identifier'];
   final semester = widget.userData['semester'];
   final url = 'http://localhost:8080/mahasiswa/$nim/irs-info?semester=$semester';
   debugPrint("semester : $semester , nim : $nim");
@@ -645,6 +673,24 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
                                   ),
                                 ],
                               ),
+                              TableRow(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('SKS yang bisa diambil', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(':', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(maxSks.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ],
@@ -855,7 +901,7 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
                                     if (dayIndex == dayIndexMap && index == timeIndexMap) {
                                        String eventText = '${jadwal['nama_mk']} ($kodeMk)\n'
                                         '${jadwal['hari']} ${jadwal['jam_mulai']} - ${jadwal['jam_selesai']}\n'
-                                        '${jadwal['kode_ruangan']} • ${jadwal['sks']} SKS'; // Tambahkan enter (\n) antar elemen
+                                        '${jadwal['kode_ruangan']} ${jadwal['kelas']} • ${jadwal['sks']} SKS'; // Tambahkan enter (\n) antar elemen
 
                                         // Cek konflik dengan jadwal "diambil"
                                         bool hasConflict = false;
@@ -882,7 +928,7 @@ Future<bool?> showAddConfirmationDialog(BuildContext context, String namaMk) {
                                               if (hasConflict) {
                                                 showConflictDialog(jadwal['nama_mk'], jadwal['kode_mk']);
                                               } else if (status == 'diambil') {
-                                                showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['jadwal_id']);
+                                                showDeleteConfirmationDialog(jadwal['kode_mk'], jadwal['id_jadwal']);
                                               } else {
                                                 final confirm = await showAddConfirmationDialog(context, jadwal['nama_mk']);
                                                 if (confirm == true) {

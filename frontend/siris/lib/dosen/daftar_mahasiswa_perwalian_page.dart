@@ -10,14 +10,18 @@ class DaftarMahasiswaPerwalianPage extends StatefulWidget {
   const DaftarMahasiswaPerwalianPage({super.key, required this.userData});
 
   @override
-  DaftarMahasiswaPerwalianPageState createState() => DaftarMahasiswaPerwalianPageState();
+  DaftarMahasiswaPerwalianPageState createState() =>
+      DaftarMahasiswaPerwalianPageState();
 }
 
-class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPage> {
+class DaftarMahasiswaPerwalianPageState
+    extends State<DaftarMahasiswaPerwalianPage> {
   List<dynamic> mahasiswaList = [];
-   List<int> angkatanList = [];
+  List<int> angkatanList = [];
   int? selectedAngkatan;
   bool isLoading = false;
+  Map<String, dynamic> irsInfo = {'status_irs': 'Tidak Ada Data'};
+
   get userData => widget.userData;
 
   @override
@@ -26,6 +30,28 @@ class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPa
     fetchMahasiswaPerwalian();
     fetchAngkatan();
   }
+  Future<String> fetchIRSInfo(String nim, int semester) async {
+  final url = 'http://localhost:8080/mahasiswa/$nim/irs-info?semester=$semester';
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      if (data.isNotEmpty) {
+        return data[0]['status'];
+      } else {
+        return 'Tidak Ada Data';
+      }
+    } else {
+      print('Failed to fetch IRS info: ${response.statusCode}');
+      return 'Tidak Ada Data';
+    }
+  } catch (e) {
+    print('Error fetching IRS info: $e');
+    return 'Tidak Ada Data';
+  }
+}
+
 
   Future<void> fetchAngkatan() async {
     final nip = widget.userData['identifier'];
@@ -46,35 +72,43 @@ class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPa
   }
 
   Future<void> fetchMahasiswaPerwalian() async {
-    if (selectedAngkatan == null) return;
+  if (selectedAngkatan == null) return;
 
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
 
-    final nip = widget.userData['identifier'];
-    final url =
-        'http://localhost:8080/dosen/$nip/mahasiswa?angkatan=$selectedAngkatan';
-    final response = await http.get(Uri.parse(url));
+  final nip = widget.userData['identifier'];
+  final url =
+      'http://localhost:8080/dosen/$nip/mahasiswa?angkatan=$selectedAngkatan';
+  final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      setState(() {
-        mahasiswaList = json.decode(response.body);
-      });
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal mengambil data mahasiswa')),
-        );
-      }
+  if (response.statusCode == 200) {
+    final List<dynamic> fetchedList = json.decode(response.body);
+
+    // Update mahasiswaList with IRS info
+    for (var mahasiswa in fetchedList) {
+      final statusIrs = await fetchIRSInfo(mahasiswa['nim'], mahasiswa['semester']);
+      mahasiswa['status_irs'] = statusIrs; // Tambahkan status IRS ke setiap mahasiswa
     }
 
     setState(() {
-      isLoading = false;
+      mahasiswaList = fetchedList;
     });
+  } else {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal mengambil data mahasiswa')),
+      );
+    }
   }
 
-   @override
+  setState(() {
+    isLoading = false;
+  });
+}
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: Navbar(userData: userData),
@@ -104,7 +138,8 @@ class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPa
                         });
                         fetchMahasiswaPerwalian(); // Mem-fetch data mahasiswa sesuai angkatan
                       },
-                      items: angkatanList.map<DropdownMenuItem<int>>((int value) {
+                      items: angkatanList
+                          .map<DropdownMenuItem<int>>((int value) {
                         return DropdownMenuItem<int>(
                           value: value,
                           child: Text('Angkatan $value'),
@@ -112,45 +147,23 @@ class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPa
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    // Menampilkan data mahasiswa jika ada
+                    // Tabel Mahasiswa
                     isLoading
                         ? const CircularProgressIndicator()
-                        : SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('No')),
-                                DataColumn(label: Text('Nama')),
-                                DataColumn(label: Text('NIM')),
-                                DataColumn(label: Text('Angkatan')),
-                                DataColumn(label: Text('Aksi')),
-                              ],
-                              rows: mahasiswaList.asMap().entries.map((entry) {
-                                final index = entry.key + 1;
-                                final mahasiswa = entry.value;
-                                return DataRow(cells: [
-                                  DataCell(Text(index.toString())),
-                                  DataCell(Text(mahasiswa['nama'])),
-                                  DataCell(Text(mahasiswa['nim'])),
-                                  DataCell(Text(mahasiswa['angkatan'].toString())),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => IRSDetailPage(
-                                              mahasiswa: mahasiswa,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text('IRS Detail'),
-                                    ),
+                        : MahasiswaTable(
+                            mahasiswaList: mahasiswaList,
+                            selectedAngkatan: selectedAngkatan,
+                            irsInfo: irsInfo,
+                            onDetailPressed: (mahasiswa) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => IRSDetailPage(
+                                    mahasiswa: mahasiswa,
                                   ),
-                                ]);
-                              }).toList(),
-                            ),
+                                ),
+                              );
+                            },
                           ),
                   ],
                 ),
@@ -162,3 +175,114 @@ class DaftarMahasiswaPerwalianPageState extends State<DaftarMahasiswaPerwalianPa
     );
   }
 }
+
+class MahasiswaTable extends StatelessWidget {
+  final List<dynamic> mahasiswaList;
+  final int? selectedAngkatan;
+  final Map<String, dynamic> irsInfo; // Add this parameter
+  final Function(dynamic mahasiswa) onDetailPressed;
+
+  const MahasiswaTable({
+    super.key,
+    required this.mahasiswaList,
+    this.selectedAngkatan,
+    required this.irsInfo, // Add this
+    required this.onDetailPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 4,
+        margin: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: Column(
+            children: [
+              // Header tabel
+              Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0066CC), // Biru tua
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  child: Row(
+                    children: const [
+                      Expanded(child: Text('NIM', style: _headerTextStyle)),
+                      Expanded(child: Text('Nama', style: _headerTextStyle)),
+                      Expanded(child: Text('Status', style: _headerTextStyle)),
+                      SizedBox(width: 80, child: Text('Aksi', style: _headerTextStyle)),
+                    ],
+                  ),
+                ),
+              ),
+              // Isi tabel
+              ...mahasiswaList.map((mahasiswa) {
+  return Container(
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(mahasiswa['nim'] ?? '', style: _contentTextStyle),
+          ),
+          Expanded(
+            child: Text(mahasiswa['nama'] ?? '', style: _contentTextStyle),
+          ),
+          Expanded(
+            child: Text(mahasiswa['status_irs'] ?? 'Tidak Ada Data',
+                style: _contentTextStyle),
+          ),
+          SizedBox(
+            width: 80,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0066CC), // Biru tua
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              onPressed: () => onDetailPressed(mahasiswa),
+              child: const Text(
+                'Detail',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // Warna putih
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}).toList(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+const TextStyle _headerTextStyle = TextStyle(
+  color: Colors.white,
+  fontWeight: FontWeight.bold,
+  fontSize: 14,
+);
+
+const TextStyle _contentTextStyle = TextStyle(
+  color: Colors.black,
+  fontSize: 14,
+);

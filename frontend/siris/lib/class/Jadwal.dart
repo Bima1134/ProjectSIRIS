@@ -1,5 +1,5 @@
 class Jadwal {
-  final String idJadwal;
+  final int idJadwal;
   final String KodeMK;
   final String NamaMK;
   final String Ruangan;
