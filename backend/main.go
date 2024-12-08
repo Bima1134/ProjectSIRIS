@@ -42,30 +42,33 @@ func main() {
 	e.PUT("/ruang/:kodeRuang", controller.UpdateRuang)
 	e.DELETE("/ruang/:kodeRuang", controller.DeleteRuang)
 	e.DELETE("/ruang/deleteMultiple", controller.DeleteMultipleRuang)
-
 	e.GET("/semester", controller.GetIdsemPosisi)
 	e.GET("/data-alokasi/:idsem", controller.GetAlokasiRuang)
 	e.GET("/dokumen-alokasi/:idAlokasi", controller.GetDokumenAlokasi)
 	e.GET("/get-ruang-alokasi/:idAlokasi", controller.GetRuangByAlokasi)
-
+	e.GET("/get-available-ruang/:idAlokasi", controller.GetAvailableRuang)
 	e.POST("/add-ruang-alokasi/:idAlokasi", controller.AddRuangToAlokasi)
+	e.DELETE("/delete-ruang-alokasi/:idAlokasi", controller.DeleteRuangAlokasi)
+
+	e.GET("/kaprodi/get-matkul-prodi/:prodi", controller.GetMataKuliahByProdiKP)
+	//Kaprodi
+	e.GET("/kaprodi/get-matkul", controller.GetMatkul)
 
 	// Route Kaprodi
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
 	e.POST("/kaprodi/add-jadwal/:idsem/:prodi", controller.AddJadwal)
-	
+
 	// Route Dekan
-		// Jadwal Related
+	// Jadwal Related
 	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
 	e.PUT("/dekan/jadwal/approve/:idjadwal", controller.ApproveJadwal)
 	e.GET("/dekan/jadwal/detail/:idjadwal", controller.GetDetailJadwal)
 
-		// Ruang Related
+	// Ruang Related
 	e.GET("/dekan/ruang/:idsem", controller.GetAllRuangProdi)
 	e.PUT("/dekan/ruang/approve/:idalokasi", controller.ApproveRuang)
 	e.GET("/dekan/ruang/detail/:idalokasi", controller.GetDetailRuang)
-	
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

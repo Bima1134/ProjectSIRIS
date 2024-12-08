@@ -121,54 +121,110 @@ Future<void> fetchRuangData() async {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add New Room'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: kodeRuangController,
-                decoration: InputDecoration(labelText: 'Kode Ruang'),
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+return Scaffold(
+      appBar: AppBar(),
+      body: Container(
+        color: Colors.grey[200], // Background color for the body
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 400),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // Card background color
+                borderRadius: BorderRadius.circular(16.0), // Rounded corners
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26, // Shadow color
+                    blurRadius: 8.0, // Softness of the shadow
+                    offset: Offset(0, 4), // Position of the shadow
+                  ),
+                ],
               ),
-              TextFormField(
-                controller: namaRuangController,
-                decoration: InputDecoration(labelText: 'Nama Ruang'),
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  shrinkWrap: true, // Ensures the form is only as tall as its content
+                  children: [
+                    Center(
+                      child: Text(
+                        "Form Tambah Ruang",
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.w800, // Semi-bold
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    TextFormField(
+                      controller: kodeRuangController,
+                      decoration: InputDecoration(labelText: 'Kode Ruang'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: namaRuangController,
+                      decoration: InputDecoration(labelText: 'Nama Ruang'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: gedungController,
+                      decoration: InputDecoration(labelText: 'Gedung'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: lantaiController,
+                      decoration: InputDecoration(labelText: 'Lantai'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: fungsiController,
+                      decoration: InputDecoration(labelText: 'Fungsi'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: kapasitasController,
+                      decoration: InputDecoration(labelText: 'Kapasitas'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
+                    ),
+                    SizedBox(height: 20),
+                    // ElevatedButton(
+                    //   onPressed: saveRoom,
+                    //   child: Text('Save Changes'),
+                    // ),
+                    ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          onPressed: saveRoom,
+                          child: const Text(
+                            'Simpan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                  ],
+                ),
               ),
-              TextFormField(
-                controller: gedungController,
-                decoration: InputDecoration(labelText: 'Gedung'),
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
-              ),
-              TextFormField(
-                controller: lantaiController,
-                decoration: InputDecoration(labelText: 'Lantai'),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
-              ),
-              TextFormField(
-                controller: fungsiController,
-                decoration: InputDecoration(labelText: 'Fungsi'),
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
-              ),
-              TextFormField(
-                controller: kapasitasController,
-                decoration: InputDecoration(labelText: 'Kapasitas'),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: saveRoom,
-                child: Text('Save Changes'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

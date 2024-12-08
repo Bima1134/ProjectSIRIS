@@ -32,7 +32,7 @@ class _AlokasiPageState extends State<AlokasiPage> {
     // Set default value if you want to have one pre-selected
     _selectedItem = null; 
     fetchDocumentAlokasi();
-    fetchRuangData(); 
+    fetchRuangData(widget.alokasi.idAlokasi); 
     fetchRuangDataById(widget.alokasi.idAlokasi);
   }
 
@@ -60,9 +60,9 @@ Future<void> fetchDocumentAlokasi() async {
   }
 }
 
-Future<void> fetchRuangData() async {
+Future<void> fetchRuangData(String idAlokasi) async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/ruang'));
+      final response = await http.get(Uri.parse('http://localhost:8080/get-available-ruang/$idAlokasi'));
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
@@ -178,6 +178,25 @@ Future<void> fetchRuangDataById(String idAlokasi) async {
       setState(() {
         ruangListAlokasi = []; // Default to empty list on exception
       });
+    }
+  }
+
+    // Method to handle deleting a single room
+  Future<void> deleteAlokasiRuang(String idAlokasi, String kodeRuang) async {
+    final response = await http.delete(
+      Uri.parse('http://localhost:8080/delete-ruang-alokasi/$idAlokasi?kodeRuang=$kodeRuang'),
+    );
+
+    if (response.statusCode == 200) {
+      fetchRuangDataById(widget.alokasi.idAlokasi);
+      // updatePaginatedData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ruang berhasil dihapus')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal menghapus ruang')),
+      );
     }
   }
 
@@ -334,67 +353,81 @@ Future<void> fetchRuangDataById(String idAlokasi) async {
                       ),
 
                       Divider(),
-                          Center(
-                            child: ruangList.isEmpty
-    ? const Text("Tidak ada data ruang")
-    : DropdownButton<Ruang>(
-      hint: Text('Pilih Ruang'),
-        value: _selectedItem,
-        onChanged: (Ruang? newValue) {
-          setState(() {
-            _selectedItem = newValue;
-          });
-        },
-        items: ruangList.map<DropdownMenuItem<Ruang>>((Ruang ruang) {
+                      DropdownButton<Ruang>(
+  hint: const Text('Pilih Ruang'),
+  value: ruangList.contains(_selectedItem) ? _selectedItem : null, // Check if selected item is still valid
+  onChanged: (Ruang? newValue) {
+    setState(() {
+      _selectedItem = newValue; // Update selection
+    });
+  },
+  items: ruangList.isNotEmpty
+      ? ruangList.map<DropdownMenuItem<Ruang>>((Ruang ruang) {
           return DropdownMenuItem<Ruang>(
             value: ruang,
             child: Text('${ruang.namaRuang} - ${ruang.fungsi}'),
           );
-        }).toList(),
-      ),
+        }).toList()
+      : [], // Return an empty list if there are no items
+),
 
-                          ),
+    //                       Center(
+    //                         child: ruangList.isEmpty
+    // ? const Text("Tidak ada data ruang")
+    // : DropdownButton<Ruang>(
+    //   hint: Text('Pilih Ruang'),
+    //     value: ruangList.isEmpty ? null : _selectedItem,
+    //     onChanged: (Ruang? newValue) {
+    //       setState(() {
+    //         _selectedItem = newValue;
+    //       });
+    //     },
+    //     items: ruangList.map<DropdownMenuItem<Ruang>>((Ruang ruang) {
+    //       return DropdownMenuItem<Ruang>(
+    //         value: ruang,
+    //         child: Text('${ruang.namaRuang} - ${ruang.fungsi}'),
+    //       );
+    //     }).toList(),
+    //   ),
 
-                      ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      ),
-                                      onPressed: () async {
-    // Ensure that a valid room is selected before calling the function
+    //                       ),
+
+                     ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.blue,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  ),
+  onPressed: () async {
     if (_selectedItem != null) {
-      // Calling the function to add the selected room to the allocation
       await addRuangToAlokasi(widget.alokasi.idAlokasi, _selectedItem!.kodeRuang);
-      
-      // Fetch the updated list of allocated rooms after adding the new room
       await fetchRuangDataById(widget.alokasi.idAlokasi);
 
-      // Trigger a rebuild to update the UI with the new list of rooms
       setState(() {
-        // You can also update other state variables here if needed
+        fetchDocumentAlokasi();
+        fetchRuangData(widget.alokasi.idAlokasi);
       });
     } else {
-      // Show a message if no room is selected
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please select a room first')),
       );
     }
   },
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          Icon(Icons.add, color: Colors.white),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Add Ruang',
-                                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: const [
+      Icon(Icons.add, color: Colors.white),
+      SizedBox(width: 8),
+      Text(
+        'Add Ruang',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    ],
+  ),
+),
+
                   Container(
                     margin: EdgeInsets.only(top: 32),
                 child:
@@ -440,7 +473,13 @@ Future<void> fetchRuangDataById(String idAlokasi) async {
                               ),
                               DataColumn(
                                 label: Text(
-                                  'Kelas',
+                                  'Kapasitas',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Action',
                                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -453,6 +492,36 @@ Future<void> fetchRuangDataById(String idAlokasi) async {
                             DataCell(Text(ruang.lantai.toString())),
                             DataCell(Text(ruang.fungsi)),
                             DataCell(Text(ruang.kapasitas.toString())),
+                            DataCell(
+                                                                      ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          ),
+onPressed: () async {
+  await deleteAlokasiRuang(widget.alokasi.idAlokasi, ruang.kodeRuang);
+  setState(() {
+    fetchDocumentAlokasi();
+    fetchRuangData(widget.alokasi.idAlokasi);
+  });
+},
+
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.delete, color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                            ),
                           ]);
                         }).toList(),
                           ),

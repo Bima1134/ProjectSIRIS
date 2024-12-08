@@ -1,42 +1,70 @@
 import 'dart:convert';
+// import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:siris/BA/BA_add_ruang.dart';
-import 'package:siris/BA/BA_add_ruang_single.dart';
-import 'package:siris/BA/BA_edit_ruang_page.dart';
-import 'package:siris/class/Ruang.dart';
-import 'package:siris/navbar.dart';
+import 'package:siris/Kaprodi/Kaprodi_add_matkul.dart';
+// import 'package:siris/BA/BA_add_ruang.dart';
+import 'package:siris/Kaprodi/Kaprodi_add_matkul_single.dart';
+import 'package:siris/Kaprodi/Kaprodi_edit_matkul.dart';
+// import 'package:siris/BA/BA_edit_ruang_page.dart';
+// import 'package:siris/class/Ruang.dart';
 
-class ListRuangPage extends StatefulWidget {
-  final Map<String, dynamic> userData;
+class MataKuliah {
+  final String KodeMK;
+  final String NamaMK;
+  final int SKS;
+  final String Status;
+  final int Semester;
+  final String NamaProdi;
 
-   const ListRuangPage({super.key, required this.userData});
+
+
+  MataKuliah({
+    required this.KodeMK,
+    required this.NamaMK,
+    required this.SKS,
+    required this.Status,
+    required this.Semester,
+    required this.NamaProdi,
+  });
+
+  factory MataKuliah.fromJson(Map<String, dynamic> json) {
+    return MataKuliah(
+      KodeMK: json['kode_mk'],
+      NamaMK: json['nama_mk'],
+      SKS: json['sks'],
+      Status: json['status'],
+      Semester: json['semester'],
+      NamaProdi: json['prodi'],
+    );
+  }
+}
+
+class ListMatkulPage extends StatefulWidget {
   @override
-  _ListRuangPageState createState() => _ListRuangPageState();
-   
+  _ListMatkulPageState createState() => _ListMatkulPageState();
   
 }
 
-class _ListRuangPageState extends State<ListRuangPage> {
-  Map<String, dynamic> get userData => widget.userData;
+class _ListMatkulPageState extends State<ListMatkulPage> {
   bool selectAll = false;
-  List<Ruang> ruangList = [];
-  Set<String> selectedRuang = {}; // Store selected room names
+  List<MataKuliah> matkulList = [];
+  Set<String> selectedMatkul = {}; // Store selected room names
 
   int currentPage = 1;  // Track the current page
   int rowsPerPage = 10; // Number of rows per page
-  List<Ruang> paginatedList = []; // To hold the current page data
+  List<MataKuliah> paginatedList = []; // To hold the current page data
 
   @override
   void initState() {
     super.initState();
-    fetchRuangData();
+    fetchMatkulData();
   }
 
   // Fetch ruang data from the backend
-  Future<void> fetchRuangData() async {
+  Future<void> fetchMatkulData() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/ruang'));
+      final response = await http.get(Uri.parse('http://localhost:8080/kaprodi/get-matkul'));
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
@@ -44,84 +72,89 @@ class _ListRuangPageState extends State<ListRuangPage> {
             final data = json.decode(response.body);
             if (data is List) {
               setState(() {
-                ruangList = data.map((item) => Ruang.fromJson(item)).toList();
+                matkulList = data.map((item) => MataKuliah.fromJson(item)).toList();
                 updatePaginatedData(); // Update paginated data after fetching
               });
             } else {
               setState(() {
-                ruangList = []; // Default to empty list if data is not a list
+                matkulList = []; // Default to empty list if data is not a list
               });
               print('Unexpected data format');
             }
           } catch (e) {
-            print('Error decoding JSON: $e');
+            debugPrint('Error decoding JSON: $e');
             setState(() {
-              ruangList = []; // Default to empty list if decoding fails
+              matkulList = []; // Default to empty list if decoding fails
             });
           }
         } else {
           setState(() {
-            ruangList = []; // Default to empty list if body is empty
+            matkulList = []; // Default to empty list if body is empty
           });
-          print('Response body is empty');
+          debugPrint('Response body is empty');
         }
       } else {
-        print('Failed to fetch data. Status code: ${response.statusCode}');
+        debugPrint('Failed to fetch data. Status code: ${response.statusCode}');
         setState(() {
-          ruangList = []; // Default to empty list on error
+          matkulList = []; // Default to empty list on error
         });
       }
     } catch (e) {
       print('Error during HTTP request: $e');
       setState(() {
-        ruangList = []; // Default to empty list on exception
+        matkulList = []; // Default to empty list on exception
       });
     }
   }
 
+  // void _showDeleteConfirmationDialog({required List<MataKuliah> courses}) {
+  //   String message = courses.length == 1
+  //       ? 'Apakah Anda yakin ingin menghapus mata kuliah ini?'
+  //       : 'Apakah Anda yakin ingin menghapus ${courses.length} mata kuliah yang dipilih?';
 
-  // Unified method to handle the confirmation dialog for both single and multiple rooms
-  void _showDeleteConfirmationDialog({required List<Ruang> rooms}) {
-    String message = rooms.length == 1
-        ? 'Apakah Anda yakin ingin menghapus ruang ini?'
-        : 'Apakah Anda yakin ingin menghapus ${rooms.length} ruang yang dipilih?';
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Konfirmasi Hapus'),
+  //       content: Text(message),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop(); // Close the dialog
+  //           },
+  //           child: const Text('Batal'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             if (courses.length == 1) {
+  //               _deleteMatkul(courses.first); // Delete a single room
+  //             } else {
+  //               _deleteSelectedMatkul(courses); // Delete multiple rooms
+  //             }
+  //             Navigator.of(context).pop(); // Close the dialog
+  //           },
+  //           child: const Text('Hapus'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Hapus'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (rooms.length < 1) {
-                _deleteRuang(rooms.first); // Delete a single room
-              } else {
-                _deleteSelectedRuang(rooms); // Delete multiple rooms
-              }
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-  }
+Future<void> _deleteMatkul(MataKuliah course) async {
+  // Log the KodeMK value
+  debugPrint('Attempting to delete Ruang with KodeMK: ${course.KodeMK}');
 
-  // Method to handle deleting a single room
-  Future<void> _deleteRuang(Ruang ruang) async {
+  try {
     final response = await http.delete(
-      Uri.parse('http://localhost:8080/ruang/${ruang.kodeRuang}'),
+      Uri.parse('http://localhost:8080/kaprodi/delete-matkul/${course.KodeMK}'),
     );
+
+    // Log the response status code and body for debugging
+    debugPrint('Response status code: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
-      fetchRuangData();
+      fetchMatkulData();
       updatePaginatedData();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ruang berhasil dihapus')),
@@ -131,107 +164,248 @@ class _ListRuangPageState extends State<ListRuangPage> {
         const SnackBar(content: Text('Gagal menghapus ruang')),
       );
     }
-  }
-
-  // Method to handle deleting all selected rooms
-  Future<void> _deleteSelectedRuang(List<Ruang> rooms) async {
-    final selectedCodes = rooms.map((ruang) => ruang.kodeRuang).toList();
-
-    final response = await http.delete(
-      Uri.parse('http://localhost:8080/ruang/deleteMultiple'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({"kodeRuang": selectedCodes}),
+  } catch (error) {
+    // Log any exception caught
+    debugPrint('Error during HTTP request: $error');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Terjadi kesalahan')),
     );
+  }
+}
+
+
+void _showDeleteConfirmationDialog({required List<MataKuliah> courses}) {
+  String message = courses.length == 1
+      ? 'Apakah Anda yakin ingin menghapus mata kuliah ini?'
+      : 'Apakah Anda yakin ingin menghapus ${courses.length} mata kuliah yang dipilih?';
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Konfirmasi Hapus'),
+      content: Text(message),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(); // Close the dialog
+          },
+          child: const Text('Batal'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (courses.length == 1) {
+              _deleteMatkul(courses.first);
+            } else {
+              _deleteSelectedMatkul(courses);
+            }
+            Navigator.of(context).pop(); // Close the dialog
+          },
+          child: const Text('Hapus'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _deleteSelectedMatkul(List<MataKuliah> courses) async {
+  final selectedCodes = courses.map((course) => course.KodeMK).toList();
+
+  debugPrint('Selected codes to delete: $selectedCodes'); // Debugging: Cetak data sebelum dikirim ke server
+
+  try {
+    final response = await http.delete(
+      Uri.parse('http://localhost:8080/kaprodi/delete-matkul-multiple'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({"kode_mk": selectedCodes}),
+    );
+
+    debugPrint('Response status code: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       setState(() {
-        ruangList.removeWhere((ruang) => selectedCodes.contains(ruang.kodeRuang));
-        selectedRuang.clear();
-        
+        matkulList.removeWhere((course) => selectedCodes.contains(course.KodeMK));
+        selectedMatkul.clear();
       });
-      await fetchRuangData();
+      await fetchMatkulData();
       updatePaginatedData();
 
-      if (currentPage > 1 && ruangList.length <= (currentPage - 1) * rowsPerPage) {
-      setState(() {
-        currentPage = 1; // Reset to first page if current page is out of range
-      });
-      updatePaginatedData();
-    }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected Ruang deleted successfully')));
+      if (currentPage > 1 && matkulList.length <= (currentPage - 1) * rowsPerPage) {
+        setState(() {
+          currentPage = 1; // Reset to first page if current page is out of range
+        });
+        updatePaginatedData();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selected courses deleted successfully'))
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete selected rooms')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete selected courses: ${response.body}'))
+      );
     }
+  } catch (e) {
+    print('Error while deleting courses: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('An error occurred: $e'))
+    );
   }
+}
+
+
+
+//   // Unified method to handle the confirmation dialog for both single and multiple rooms
+//   void _showDeleteConfirmationDialog({required List<Ruang> rooms}) {
+//     String message = rooms.length == 1
+//         ? 'Apakah Anda yakin ingin menghapus ruang ini?'
+//         : 'Apakah Anda yakin ingin menghapus ${rooms.length} ruang yang dipilih?';
+
+//     showDialog(
+//       context: context,
+//       builder: (context) => AlertDialog(
+//         title: const Text('Konfirmasi Hapus'),
+//         content: Text(message),
+//         actions: <Widget>[
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(); // Close the dialog
+//             },
+//             child: const Text('Batal'),
+//           ),
+//           TextButton(
+//             onPressed: () {
+//               if (rooms.length < 1) {
+//                 _deleteRuang(rooms.first); // Delete a single room
+//               } else {
+//                 _deleteSelectedRuang(rooms); // Delete multiple rooms
+//               }
+//               Navigator.of(context).pop(); // Close the dialog
+//             },
+//             child: const Text('Hapus'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // Method to handle deleting a single room
+//   Future<void> _deleteRuang(Ruang ruang) async {
+//     final response = await http.delete(
+//       Uri.parse('http://localhost:8080/ruang/${ruang.kodeRuang}'),
+//     );
+
+//     if (response.statusCode == 200) {
+//       fetchRuangData();
+//       updatePaginatedData();
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Ruang berhasil dihapus')),
+//       );
+//     } else {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Gagal menghapus ruang')),
+//       );
+//     }
+//   }
+
+//   // Method to handle deleting all selected rooms
+//   Future<void> _deleteSelectedRuang(List<Ruang> rooms) async {
+//     final selectedCodes = rooms.map((ruang) => ruang.kodeRuang).toList();
+
+//     final response = await http.delete(
+//       Uri.parse('http://localhost:8080/ruang/deleteMultiple'),
+//       headers: {'Content-Type': 'application/json'},
+//       body: json.encode({"kodeRuang": selectedCodes}),
+//     );
+
+//     if (response.statusCode == 200) {
+//       setState(() {
+//         ruangList.removeWhere((ruang) => selectedCodes.contains(ruang.kodeRuang));
+//         selectedRuang.clear();
+        
+//       });
+//       await fetchRuangData();
+//       updatePaginatedData();
+
+//       if (currentPage > 1 && ruangList.length <= (currentPage - 1) * rowsPerPage) {
+//       setState(() {
+//         currentPage = 1; // Reset to first page if current page is out of range
+//       });
+//       updatePaginatedData();
+//     }
+//       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected Ruang deleted successfully')));
+//     } else {
+//       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete selected rooms')));
+//     }
+//   }
   
   void updatePaginatedData() {
   final startIndex = (currentPage - 1) * rowsPerPage;
   final endIndex = startIndex + rowsPerPage;
   setState(() {
-    paginatedList = ruangList.sublist(startIndex, endIndex < ruangList.length ? endIndex : ruangList.length);
+    paginatedList = matkulList.sublist(startIndex, endIndex < matkulList.length ? endIndex : matkulList.length);
   });
 }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Navbar(userData: userData),
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false, 
-      //   backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-      //   title: Container(
-      //     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-      //     child: Row (
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: [
-      //         // Title Section
-      //         Row(
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: [
-      //             const Text(
-      //               'SIRIS',
-      //               style: TextStyle(
-      //                 fontSize: 36,
-      //                 fontWeight: FontWeight.bold,
-      //                 color: Colors.white,
-      //               ),
-      //             ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false, 
+        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+          child: Row (
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Title Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'SIRIS',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
 
-      //             const SizedBox(width: 8),
+                  const SizedBox(width: 8),
 
-      //             const Text(
-      //               'Sistem Informasi Isian Rencana Studi',
-      //               style: TextStyle(
-      //                 fontSize: 20,
-      //                 fontWeight: FontWeight.bold,
-      //                 color: Colors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
+                  const Text(
+                    'Sistem Informasi Isian Rencana Studi',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
               
-      //         // Actions Section
-      //         Row(
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: [
-      //             GestureDetector(
-      //                     child: _buildMenuItem(Icons.book, 'IRS'),
-      //                   ),
+              // Actions Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                          child: _buildMenuItem(Icons.book, 'IRS'),
+                        ),
                   
-      //             const SizedBox(width: 16),
-      //               GestureDetector(
-      //                     child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-      //                   ),
-      //             const SizedBox(width: 16),
-      //             _buildMenuItem(Icons.settings, 'Setting'),
-      //             const SizedBox(width: 16),
-      //             _buildLogoutButton(),
-      //           ],
-      //         ),
-      //       ],
-      //     ),
-      //   )
-      // ),
+                  const SizedBox(width: 16),
+                    GestureDetector(
+                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
+                        ),
+                  const SizedBox(width: 16),
+                  _buildMenuItem(Icons.settings, 'Setting'),
+                  const SizedBox(width: 16),
+                  _buildLogoutButton(),
+                ],
+              ),
+            ],
+          ),
+        )
+      ),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 40),
         color: Colors.grey[200],
@@ -244,7 +418,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
                       Container(
                         margin: EdgeInsets.only(top: 32, bottom: 40),
                         child: Text(
-                                'Daftar Ruang',
+                                'Daftar Mata Kuliah',
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold
@@ -269,7 +443,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                   Navigator.push(
                                     context, // context should be available if used within StatefulWidget
                                     MaterialPageRoute(
-                                      builder: (context) => MyHomePage( onCsvUploaded: fetchRuangData), // Navigate to ListRuangPage
+                                      builder: (context) => MyAddMatkulBatchPage( onCsvUploaded: fetchMatkulData), // Navigate to ListRuangPage
                                     ),
                                   );
                                 },
@@ -303,11 +477,17 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 onPressed: () {
-                                  // Add the navigation logic here
+                                  // // Add the navigation logic here
+                                  // Navigator.push(
+                                  //   context, // context should be available if used within StatefulWidget
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => AddRuangPage(onRoomAdded: fetchRuangData), // Navigate to ListRuangPage
+                                  //   ),
+                                  // );
                                   Navigator.push(
                                     context, // context should be available if used within StatefulWidget
                                     MaterialPageRoute(
-                                      builder: (context) => AddRuangPage(onRoomAdded: fetchRuangData), // Navigate to ListRuangPage
+                                      builder: (context) => AddMatkulPage(onMatkulAdded: fetchMatkulData), // Navigate to ListRuangPage
                                     ),
                                   );
                                 },
@@ -320,7 +500,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                     ),
                                     SizedBox(width: 8), // Space between icon and text
                                     Text(
-                                      'Tambah Ruang',
+                                      'Tambah Mata Kuliah',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -343,12 +523,14 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                 onPressed: () {
                                     setState(() {
                                       if (selectAll) {
-                                        selectedRuang.clear();  // Deselect all rooms
+                                        selectedMatkul.clear();  // Deselect all rooms
                                       } else {
-                                        selectedRuang.addAll(ruangList.map((ruang) => ruang.kodeRuang));  // Select all rooms
+                                        selectedMatkul.addAll(matkulList.map((matkul) => matkul.KodeMK));  // Select all rooms
                                       }
                                       selectAll = !selectAll;
                                     });
+                                          print('selectedMatkul after Select All action: $selectedMatkul');
+                                          print('matkulList: $matkulList');
                                   },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min, // Keeps the button compact
@@ -379,10 +561,10 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 onPressed: () {
-                                if (selectedRuang.isNotEmpty) {
+                                if (selectedMatkul.isNotEmpty) {
                                   // Inside onPressed for the "Delete Selected" button
-                                  _showDeleteConfirmationDialog(rooms: selectedRuang.map((kode) => ruangList.firstWhere((ruang) => ruang.kodeRuang == kode)).toList());
-
+                                  _showDeleteConfirmationDialog(courses: selectedMatkul.map((kode) => matkulList.firstWhere((course) => course.KodeMK == kode)).toList());
+                                  
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Pilih ruang terlebih dahulu!')),
@@ -430,40 +612,40 @@ class _ListRuangPageState extends State<ListRuangPage> {
                             ),
                             DataColumn(
                               label: Text(
-                                'Kode Ruang',
+                                'Kode MK',
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
                             DataColumn(
                               label: Text(
-                                'Nama Ruang',
+                                'Mata Kuliah',
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
                             DataColumn(
                               label: Text(
-                                'Gedung',
+                                'SKS',
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
                             DataColumn(
                               label: Text(
-                                'Lantai',
+                                'Status',
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
                             DataColumn(
                               label: Text(
-                                'Fungsi',
+                                'Semester',
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            DataColumn(
-                              label: Text(
-                                'Kapasitas',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
+                            // DataColumn(
+                            //   label: Text(
+                            //     'Pengampu',
+                            //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            //   ),
+                            // ),
                             DataColumn(
                               label: Text(
                                 'Action',
@@ -471,31 +653,33 @@ class _ListRuangPageState extends State<ListRuangPage> {
                               ),
                             ),
                           ],
-                          rows: paginatedList
+                          rows: 
+                          // []
+                          paginatedList
                             .map(
-                              (ruang) => DataRow(
-                                // selected: selectedRuang.contains(ruang.namaRuang),
+                              (matkul) => DataRow(
+                                // selected: selectedMatkul.contains(matkul.KodeMK),
                                 cells: [
-                                  DataCell(
+                                  DataCell( 
                                     Checkbox(
-                                      value: selectedRuang.contains(ruang.kodeRuang),
+                                      value: selectedMatkul.contains(matkul.KodeMK),
                                       onChanged: (bool? selected) {
                                         setState(() {
                                           if (selected == true) {
-                                            selectedRuang.add(ruang.kodeRuang); // Add to selection
+                                            selectedMatkul.add(matkul.KodeMK); // Add to selection
                                           } else {
-                                            selectedRuang.remove(ruang.kodeRuang); // Remove from selection
+                                            selectedMatkul.remove(matkul.KodeMK); // Remove from selection
                                           }
                                         });
                                       },
                                     ),
                                   ),
-                                  DataCell(Text(ruang.kodeRuang)),
-                                  DataCell(Text(ruang.namaRuang)),
-                                  DataCell(Text(ruang.gedung)),
-                                  DataCell(Text(ruang.lantai.toString())),
-                                  DataCell(Text(ruang.fungsi)),
-                                  DataCell(Text(ruang.kapasitas.toString())),
+                                  DataCell(Text(matkul.KodeMK)),
+                                  DataCell(Text(matkul.NamaMK)),
+                                  DataCell(Text(matkul.SKS.toString())),
+                                  DataCell(Text(matkul.Status)),
+                                  DataCell(Text(matkul.Semester.toString())),
+                                  // DataCell(Text(matkul.NamaProdi)),
                                   DataCell(
                                     Row(
                                       children: [
@@ -508,23 +692,41 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            Navigator.push(
+                                                                                        Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => EditRuangPage(
-                                                  kodeRuang: ruang.kodeRuang,
-                                                  namaRuang: ruang.namaRuang,
-                                                  gedung: ruang.gedung,
-                                                  lantai: ruang.lantai,
-                                                  fungsi: ruang.fungsi,
-                                                  kapasitas: ruang.kapasitas,
+                                                builder: (context) => EditMatkulPage(
+                                                  KodeMK: matkul.KodeMK,
+                                                  NamaMK: matkul.NamaMK,
+                                                  SKS: matkul.SKS,
+                                                  Status: matkul.Status,
+                                                  Semester: matkul.Semester,
+                                                  NamaProdi: matkul.NamaProdi,
                                                 ),
                                               ),
                                             ).then((value) {
                                               if (value == true) {
-                                                fetchRuangData(); // Refresh the data after returning
+                                                fetchMatkulData(); // Refresh the data after returning
                                               }
                                             });
+
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) => EditRuangPage(
+                                            //       kodeRuang: ruang.kodeRuang,
+                                            //       namaRuang: ruang.namaRuang,
+                                            //       gedung: ruang.gedung,
+                                            //       lantai: ruang.lantai,
+                                            //       fungsi: ruang.fungsi,
+                                            //       kapasitas: ruang.kapasitas,
+                                            //     ),
+                                            //   ),
+                                            // ).then((value) {
+                                            //   if (value == true) {
+                                            //     fetchRuangData(); // Refresh the data after returning
+                                            //   }
+                                            // });
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -548,7 +750,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            _showDeleteConfirmationDialog(rooms: [ruang]);
+                                            _showDeleteConfirmationDialog(courses: [matkul]);
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -578,7 +780,8 @@ class _ListRuangPageState extends State<ListRuangPage> {
                     children: [
                       IconButton(
                         icon: Icon(Icons.arrow_back),
-                        onPressed: currentPage > 1
+                        onPressed: 
+                        currentPage > 1
                             ? () {
                                 setState(() {
                                   currentPage--;
@@ -590,7 +793,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
                         Text('Page $currentPage'),
                         IconButton(
                           icon: Icon(Icons.arrow_forward),
-                          onPressed: currentPage * rowsPerPage < ruangList.length
+                          onPressed: currentPage * rowsPerPage < matkulList.length
                               ? () {
                                   setState(() {
                                     currentPage++;
@@ -609,27 +812,27 @@ class _ListRuangPageState extends State<ListRuangPage> {
   }
 }
 
-// Widget _buildMenuItem(IconData icon, String label) {
-//     return Row(
-//       children: [
-//         Icon(icon, color: Colors.white),
-//         const SizedBox(width: 4),
-//         Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
-//       ],
-//     );
-//   }
+Widget _buildMenuItem(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
+      ],
+    );
+  }
 
-//   Widget _buildLogoutButton() {
-//     return ElevatedButton(
-//       onPressed: () {
-//         // Handle logout
-//       },
-//       style: ElevatedButton.styleFrom(
-//         backgroundColor: Colors.red,
-//         foregroundColor: Colors.white,
-//       ),
-//       child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-//     );
-//   }
+  Widget _buildLogoutButton() {
+    return ElevatedButton(
+      onPressed: () {
+        // Handle logout
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+      ),
+      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+    );
+  }
 
 

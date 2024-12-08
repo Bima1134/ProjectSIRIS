@@ -97,7 +97,7 @@ func UploadCSV(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Failed to insert data: %v", err)})
 		}
 	}
-	dbConn.Close()
+	// dbConn.Close()
 	return c.JSON(http.StatusOK, map[string]string{"message": "CSV data uploaded and inserted successfully"})
 }
 
@@ -317,8 +317,7 @@ func GetAllRuangProdi(c echo.Context) error {
 	for rows.Next() {
 		var ruang models.AlokasiRuang
 		if err := rows.Scan(
-			&ruang.IdAlokasi, &ruang.NamaProdi, &ruang.IdSem, &ruang.Status); 
-		err != nil {
+			&ruang.IdAlokasi, &ruang.NamaProdi, &ruang.IdSem, &ruang.Status); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data ruang"})
 		}
@@ -419,7 +418,7 @@ func GetDetailRuang(c echo.Context) error {
 	connection := db.CreateCon()
 	rows, err := connection.Query(query, idAlokasi)
 	if err != nil {
-        fmt.Printf("Query error (ID Alokasi: %s): %v\n", idAlokasi, err)
+		fmt.Printf("Query error (ID Alokasi: %s): %v\n", idAlokasi, err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data ruang"})
 	}
 	defer rows.Close()
@@ -428,20 +427,18 @@ func GetDetailRuang(c echo.Context) error {
 
 	for rows.Next() {
 		var ruang models.Ruang
-	
+
 		if err := rows.Scan(
-			&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai, 
+			&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai,
 			&ruang.Fungsi, &ruang.Kapasitas,
 		); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data ruang"})
 		}
-	
+
 		// Tambahkan ke slice
 		fmt.Println("Grouped Ruangs: ", groupedRuangs)
 		groupedRuangs[ruang.KodeRuang] = append(groupedRuangs[ruang.KodeRuang], ruang)
 	}
 	return c.JSON(http.StatusOK, groupedRuangs)
 }
-
-
