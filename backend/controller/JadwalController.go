@@ -610,7 +610,7 @@ GROUP BY
 	return c.JSON(http.StatusOK, jadwalList)
 }
 
-type MataKuliah struct {
+type MataKuliahNama struct {
 	KodeMK string `json:"kode_mk"`
 	NamaMK string `json:"nama_mk"`
 }
@@ -665,10 +665,10 @@ func GetDaftarMataKuliah(c echo.Context) error {
 	}
 	defer rows.Close()
 
-	var mataKuliahList []MataKuliah
+	var mataKuliahList []MataKuliahNama
 
 	for rows.Next() {
-		var mk MataKuliah
+		var mk MataKuliahNama
 		if err := rows.Scan(&mk.KodeMK, &mk.NamaMK); err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning mata kuliah data"})
 		}

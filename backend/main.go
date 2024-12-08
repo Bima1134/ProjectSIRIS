@@ -48,6 +48,11 @@ func main() {
 
 	e.POST("/add-ruang-alokasi/:idAlokasi", controller.AddRuangToAlokasi)
 
+	// Route Kaprodi
+	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
+	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
+	e.POST("/kaprodi/add-jadwal", controller.AddJadwal)
+
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:8081"}, // ganti port sesuai yang digunakan Flutter
