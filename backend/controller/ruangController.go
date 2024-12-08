@@ -97,7 +97,7 @@ func UploadCSV(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Failed to insert data: %v", err)})
 		}
 	}
-	dbConn.Close()
+	// dbConn.Close()
 	return c.JSON(http.StatusOK, map[string]string{"message": "CSV data uploaded and inserted successfully"})
 }
 
@@ -291,4 +291,154 @@ func DeleteMultipleRuang(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Selected rooms deleted successfully",
 	})
+}
+
+// Dekan Related
+func GetAllRuangProdi(c echo.Context) error {
+	idSem := c.Param("idsem")
+	query := `
+	SELECT 
+		ar.id_alokasi, ar.nama_prodi, ar.idsem, ar.status
+	FROM 
+		alokasi_ruang ar
+	WHERE
+		ar.idsem = ?;
+	`
+	connection := db.CreateCon()
+	rows, err := connection.Query(query, idSem)
+	if err != nil {
+		fmt.Println("Query error:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data ruang"})
+	}
+	defer rows.Close()
+
+	groupedRuangs := make(map[string][]models.AlokasiRuang)
+
+	for rows.Next() {
+		var ruang models.AlokasiRuang
+		if err := rows.Scan(
+			&ruang.IdAlokasi, &ruang.NamaProdi, &ruang.IdSem, &ruang.Status); err != nil {
+			fmt.Println("Scan error:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data ruang"})
+		}
+
+		// Tambahkan ke map berdasarkan nama_prodi
+		groupedRuangs[ruang.NamaProdi] = append(groupedRuangs[ruang.NamaProdi], ruang)
+	}
+	return c.JSON(http.StatusOK, groupedRuangs)
+}
+
+func ApproveRuang(c echo.Context) error {
+	idAlokasi := c.Param("idalokasi") // Ambil parameter idjadwal dari URL
+
+	if idAlokasi == "" {
+		log.Println("Error: Parameter idAlokasi tidak ditemukan")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "Parameter idAlokasi tidak valid",
+		})
+	}
+
+	query := `
+		UPDATE alokasi_ruang
+		SET status = 'sudah disetujui'
+		WHERE id_alokasi = ?
+	`
+
+	connection := db.CreateCon()
+
+	// Memulai transaksi database
+	tx, err := connection.Begin()
+	if err != nil {
+		log.Println("Error: Gagal memulai transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memulai transaksi",
+		})
+	}
+	defer tx.Rollback()
+
+	log.Printf("Menyetujui ruang dengan ID: %s\n", idAlokasi)
+
+	// Eksekusi query
+	result, err := tx.Exec(query, idAlokasi)
+	if err != nil {
+		log.Println("Error: Gagal memperbarui status ruang:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memperbarui status ruang",
+		})
+	}
+
+	// Memastikan baris diupdate
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error: Gagal mendapatkan jumlah baris yang diperbarui:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memeriksa status update",
+		})
+	}
+	if rowsAffected == 0 {
+		log.Println("Warning: Tidak ada ruang yang ditemukan dengan ID:", idAlokasi)
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "Ruang tidak ditemukan",
+		})
+	}
+
+	// Commit transaksi
+	if err := tx.Commit(); err != nil {
+		log.Println("Error: Gagal melakukan commit transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal menyetujui ruang",
+		})
+	}
+
+	log.Printf("Ruang dengan ID %s berhasil disetujui\n", idAlokasi)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Ruang berhasil disetujui",
+	})
+}
+
+func GetDetailRuang(c echo.Context) error {
+	idAlokasi := c.Param("idalokasi")
+
+	query := `
+		SELECT
+			r.kode_ruang,
+			r.nama_ruang,
+			r.gedung,
+			r.lantai,
+			r.fungsi,
+			r.kapasitas
+		FROM 
+			alokasi_ruang_detail ard
+		INNER JOIN ruang r
+			ON r.kode_ruang = ard.kode_ruang	
+		WHERE 
+			ard.id_alokasi = ?
+	
+	`
+	connection := db.CreateCon()
+	rows, err := connection.Query(query, idAlokasi)
+	if err != nil {
+		fmt.Printf("Query error (ID Alokasi: %s): %v\n", idAlokasi, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data ruang"})
+	}
+	defer rows.Close()
+
+	groupedRuangs := make(map[string][]models.Ruang)
+
+	for rows.Next() {
+		var ruang models.Ruang
+
+		if err := rows.Scan(
+			&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai,
+			&ruang.Fungsi, &ruang.Kapasitas,
+		); err != nil {
+			fmt.Println("Scan error:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data ruang"})
+		}
+
+		// Tambahkan ke slice
+		fmt.Println("Grouped Ruangs: ", groupedRuangs)
+		groupedRuangs[ruang.KodeRuang] = append(groupedRuangs[ruang.KodeRuang], ruang)
+	}
+	return c.JSON(http.StatusOK, groupedRuangs)
 }

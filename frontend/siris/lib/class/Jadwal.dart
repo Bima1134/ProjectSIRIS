@@ -1,4 +1,5 @@
 class Jadwal {
+  final int idJadwal;
   final String KodeMK;
   final String NamaMK;
   final String Ruangan;
@@ -10,6 +11,7 @@ class Jadwal {
   final List<String> DosenPengampu;
 
   Jadwal({
+    required this.idJadwal,
     required this.KodeMK,
     required this.NamaMK,
     required this.Ruangan,
@@ -20,4 +22,20 @@ class Jadwal {
     required this.SKS,
     required this.DosenPengampu
   });
+
+  factory Jadwal.fromJson(Map<String, dynamic> json) {
+    return Jadwal(
+      idJadwal: json['id_jadwal'],
+      KodeMK: json['kode_mk'],
+      NamaMK: json['nama_mk'],
+      Ruangan: json['kode_ruangan'],
+      Hari: json['hari'],
+      JamMulai: json['jam_mulai'],
+      JamSelesai: json['jam_selesai'],
+      Kelas: json['kelas'],
+      SKS: json['sks'],
+      DosenPengampu: List<String>.from(json['dosen_pengampu']),
+    );
+  }
 }
+

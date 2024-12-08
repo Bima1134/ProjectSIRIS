@@ -3,40 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/BA/BA_alokasi_page.dart';
-
-class AlokasiRuang {
-  final String idAlokasi;
-  final String idSem;
-  final String namaProdi;
-  final String status;
-
-
-  AlokasiRuang({
-    required this.idAlokasi,
-    required this.idSem,
-    required this.namaProdi,
-    required this.status,
-  });
-
-  factory AlokasiRuang.fromJson(Map<String, dynamic> json) {
-    return AlokasiRuang(
-      idAlokasi: json['id_alokasi'],
-      idSem: json['idsem'],
-      namaProdi: json['nama_prodi'],
-      status: json['status'],
-    );
-  }
-}
-
+import 'package:siris/class/indexClass.dart';
+import 'package:siris/navbar.dart';
 
 class ListAlokasiPage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+  ListAlokasiPage({super.key, required this.userData});
   @override
-  _ListAlokasiPageState createState() => _ListAlokasiPageState();
-  
-  
+  ListAlokasiPageState createState() => ListAlokasiPageState();
 }
 
-class _ListAlokasiPageState extends State<ListAlokasiPage> {
+class ListAlokasiPageState extends State<ListAlokasiPage> {
+  get userData => widget.userData;
   String? selectedValue;
   List<String> idsemPosisiList = []; // List to store the dropdown options
   List<AlokasiRuang> DataAlokasi = [];  // Holds the data to be displayed in the table
@@ -98,62 +77,63 @@ Future<void> fetchAlokasiData(String idsem) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-          child: Row (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Title Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'SIRIS',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+      appBar: Navbar(userData: userData),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: false, 
+      //   backgroundColor: const Color(0xFF162953), // Set the AppBar background color
+      //   title: Container(
+      //     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+      //     child: Row (
+      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //       children: [
+      //         // Title Section
+      //         Row(
+      //           crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: [
+      //             const Text(
+      //               'SIRIS',
+      //               style: TextStyle(
+      //                 fontSize: 36,
+      //                 fontWeight: FontWeight.bold,
+      //                 color: Colors.white,
+      //               ),
+      //             ),
 
-                  const SizedBox(width: 8),
+      //             const SizedBox(width: 8),
 
-                  const Text(
-                    'Sistem Informasi Isian Rencana Studi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+      //             const Text(
+      //               'Sistem Informasi Isian Rencana Studi',
+      //               style: TextStyle(
+      //                 fontSize: 20,
+      //                 fontWeight: FontWeight.bold,
+      //                 color: Colors.white,
+      //               ),
+      //             ),
+      //           ],
+      //         ),
               
-              // Actions Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                          child: _buildMenuItem(Icons.book, 'IRS'),
-                        ),
+      //         // Actions Section
+      //         Row(
+      //           crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: [
+      //             GestureDetector(
+      //                     child: _buildMenuItem(Icons.book, 'IRS'),
+      //                   ),
                   
-                  const SizedBox(width: 16),
-                    GestureDetector(
-                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-                        ),
-                  const SizedBox(width: 16),
-                  _buildMenuItem(Icons.settings, 'Setting'),
-                  const SizedBox(width: 16),
-                  _buildLogoutButton(),
-                ],
-              ),
-            ],
-          ),
-        )
-      ),
+      //             const SizedBox(width: 16),
+      //               GestureDetector(
+      //                     child: _buildMenuItem(Icons.schedule, 'Jadwal'),
+      //                   ),
+      //             const SizedBox(width: 16),
+      //             _buildMenuItem(Icons.settings, 'Setting'),
+      //             const SizedBox(width: 16),
+      //             _buildLogoutButton(),
+      //           ],
+      //         ),
+      //       ],
+      //     ),
+      //   )
+      // ),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 40),
         color: Colors.grey[200],
@@ -198,7 +178,7 @@ Future<void> fetchAlokasiData(String idsem) async {
                                         .map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(value.split(" - ")[1]),
                                       );
                                     }).toList(),
                                   ),

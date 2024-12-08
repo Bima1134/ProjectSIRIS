@@ -253,6 +253,18 @@ func Login(c echo.Context) error {
 		}
 		userResponse.Role = "Dosen"
 		log.Println("Dosen data fetched successfully")
+
+	case "Dekan":
+		log.Println("Fetching data for Dekan role...")
+		err = connection.QueryRow("SELECT d.nip, d.nama FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
+			Scan(&userResponse.Identifier, &userResponse.Name)
+		if err != nil {
+			log.Println("Error fetching Dekan data:", err) // Debugging error saat query dosen
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
+		}
+		userResponse.Role = "Dekan"
+		log.Println("Dekan data fetched successfully")
+
 	case "Bagian Akademik":
 		log.Println(("Fetching data for Bagian Akademik Role"))
 		err = connection.QueryRow("SELECT b.nip, b.nama from bagian_akademik b JOIN user u on b.user_id = u.user_id WHERE u.email = ?", req.Email).
@@ -263,6 +275,7 @@ func Login(c echo.Context) error {
 		}
 		userResponse.Role = "Bagian Akademik"
 		log.Println("Bagian Akademik data fetched successfully")
+		
 	default:
 		log.Println("Invalid role for user:", req.Email) // Debugging jika role tidak ditemukan
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "User role not found"})

@@ -2,8 +2,10 @@ import 'dart:convert';
 // import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:siris/Kaprodi/Kaprodi_add_matkul.dart';
 // import 'package:siris/BA/BA_add_ruang.dart';
-// import 'package:siris/BA/BA_add_ruang_single.dart';
+import 'package:siris/Kaprodi/Kaprodi_add_matkul_single.dart';
+import 'package:siris/Kaprodi/Kaprodi_edit_matkul.dart';
 // import 'package:siris/BA/BA_edit_ruang_page.dart';
 // import 'package:siris/class/Ruang.dart';
 
@@ -33,7 +35,7 @@ class MataKuliah {
       SKS: json['sks'],
       Status: json['status'],
       Semester: json['semester'],
-      NamaProdi: json['nama_prodi'],
+      NamaProdi: json['prodi'],
     );
   }
 }
@@ -80,7 +82,7 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
               print('Unexpected data format');
             }
           } catch (e) {
-            print('Error decoding JSON: $e');
+            debugPrint('Error decoding JSON: $e');
             setState(() {
               matkulList = []; // Default to empty list if decoding fails
             });
@@ -89,10 +91,10 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
           setState(() {
             matkulList = []; // Default to empty list if body is empty
           });
-          print('Response body is empty');
+          debugPrint('Response body is empty');
         }
       } else {
-        print('Failed to fetch data. Status code: ${response.statusCode}');
+        debugPrint('Failed to fetch data. Status code: ${response.statusCode}');
         setState(() {
           matkulList = []; // Default to empty list on error
         });
@@ -104,6 +106,153 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
       });
     }
   }
+
+  // void _showDeleteConfirmationDialog({required List<MataKuliah> courses}) {
+  //   String message = courses.length == 1
+  //       ? 'Apakah Anda yakin ingin menghapus mata kuliah ini?'
+  //       : 'Apakah Anda yakin ingin menghapus ${courses.length} mata kuliah yang dipilih?';
+
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Konfirmasi Hapus'),
+  //       content: Text(message),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop(); // Close the dialog
+  //           },
+  //           child: const Text('Batal'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             if (courses.length == 1) {
+  //               _deleteMatkul(courses.first); // Delete a single room
+  //             } else {
+  //               _deleteSelectedMatkul(courses); // Delete multiple rooms
+  //             }
+  //             Navigator.of(context).pop(); // Close the dialog
+  //           },
+  //           child: const Text('Hapus'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+Future<void> _deleteMatkul(MataKuliah course) async {
+  // Log the KodeMK value
+  debugPrint('Attempting to delete Ruang with KodeMK: ${course.KodeMK}');
+
+  try {
+    final response = await http.delete(
+      Uri.parse('http://localhost:8080/kaprodi/delete-matkul/${course.KodeMK}'),
+    );
+
+    // Log the response status code and body for debugging
+    debugPrint('Response status code: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      fetchMatkulData();
+      updatePaginatedData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ruang berhasil dihapus')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal menghapus ruang')),
+      );
+    }
+  } catch (error) {
+    // Log any exception caught
+    debugPrint('Error during HTTP request: $error');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Terjadi kesalahan')),
+    );
+  }
+}
+
+
+void _showDeleteConfirmationDialog({required List<MataKuliah> courses}) {
+  String message = courses.length == 1
+      ? 'Apakah Anda yakin ingin menghapus mata kuliah ini?'
+      : 'Apakah Anda yakin ingin menghapus ${courses.length} mata kuliah yang dipilih?';
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Konfirmasi Hapus'),
+      content: Text(message),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(); // Close the dialog
+          },
+          child: const Text('Batal'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (courses.length == 1) {
+              _deleteMatkul(courses.first);
+            } else {
+              _deleteSelectedMatkul(courses);
+            }
+            Navigator.of(context).pop(); // Close the dialog
+          },
+          child: const Text('Hapus'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _deleteSelectedMatkul(List<MataKuliah> courses) async {
+  final selectedCodes = courses.map((course) => course.KodeMK).toList();
+
+  debugPrint('Selected codes to delete: $selectedCodes'); // Debugging: Cetak data sebelum dikirim ke server
+
+  try {
+    final response = await http.delete(
+      Uri.parse('http://localhost:8080/kaprodi/delete-matkul-multiple'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({"kode_mk": selectedCodes}),
+    );
+
+    debugPrint('Response status code: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      setState(() {
+        matkulList.removeWhere((course) => selectedCodes.contains(course.KodeMK));
+        selectedMatkul.clear();
+      });
+      await fetchMatkulData();
+      updatePaginatedData();
+
+      if (currentPage > 1 && matkulList.length <= (currentPage - 1) * rowsPerPage) {
+        setState(() {
+          currentPage = 1; // Reset to first page if current page is out of range
+        });
+        updatePaginatedData();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selected courses deleted successfully'))
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete selected courses: ${response.body}'))
+      );
+    }
+  } catch (e) {
+    print('Error while deleting courses: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('An error occurred: $e'))
+    );
+  }
+}
+
 
 
 //   // Unified method to handle the confirmation dialog for both single and multiple rooms
@@ -290,13 +439,13 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 onPressed: () {
-                                  // // Add the navigation logic here
-                                  // Navigator.push(
-                                  //   context, // context should be available if used within StatefulWidget
-                                  //   MaterialPageRoute(
-                                  //     builder: (context) => MyHomePage( onCsvUploaded: fetchRuangData), // Navigate to ListRuangPage
-                                  //   ),
-                                  // );
+                                  // Add the navigation logic here
+                                  Navigator.push(
+                                    context, // context should be available if used within StatefulWidget
+                                    MaterialPageRoute(
+                                      builder: (context) => MyAddMatkulBatchPage( onCsvUploaded: fetchMatkulData), // Navigate to ListRuangPage
+                                    ),
+                                  );
                                 },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min, // Keeps the button compact
@@ -335,6 +484,12 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                   //     builder: (context) => AddRuangPage(onRoomAdded: fetchRuangData), // Navigate to ListRuangPage
                                   //   ),
                                   // );
+                                  Navigator.push(
+                                    context, // context should be available if used within StatefulWidget
+                                    MaterialPageRoute(
+                                      builder: (context) => AddMatkulPage(onMatkulAdded: fetchMatkulData), // Navigate to ListRuangPage
+                                    ),
+                                  );
                                 },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min, // Keeps the button compact
@@ -345,7 +500,7 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                     ),
                                     SizedBox(width: 8), // Space between icon and text
                                     Text(
-                                      'Tambah Ruang',
+                                      'Tambah Mata Kuliah',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -374,6 +529,8 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                       }
                                       selectAll = !selectAll;
                                     });
+                                          print('selectedMatkul after Select All action: $selectedMatkul');
+                                          print('matkulList: $matkulList');
                                   },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min, // Keeps the button compact
@@ -404,15 +561,15 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 onPressed: () {
-                                // if (selectedRuang.isNotEmpty) {
-                                //   // Inside onPressed for the "Delete Selected" button
-                                //   _showDeleteConfirmationDialog(rooms: selectedRuang.map((kode) => ruangList.firstWhere((ruang) => ruang.kodeRuang == kode)).toList());
-
-                                // } else {
-                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                //     SnackBar(content: Text('Pilih ruang terlebih dahulu!')),
-                                //   );
-                                // }
+                                if (selectedMatkul.isNotEmpty) {
+                                  // Inside onPressed for the "Delete Selected" button
+                                  _showDeleteConfirmationDialog(courses: selectedMatkul.map((kode) => matkulList.firstWhere((course) => course.KodeMK == kode)).toList());
+                                  
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Pilih ruang terlebih dahulu!')),
+                                  );
+                                }
                                 },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min, // Keeps the button compact
@@ -535,6 +692,24 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
+                                                                                        Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => EditMatkulPage(
+                                                  KodeMK: matkul.KodeMK,
+                                                  NamaMK: matkul.NamaMK,
+                                                  SKS: matkul.SKS,
+                                                  Status: matkul.Status,
+                                                  Semester: matkul.Semester,
+                                                  NamaProdi: matkul.NamaProdi,
+                                                ),
+                                              ),
+                                            ).then((value) {
+                                              if (value == true) {
+                                                fetchMatkulData(); // Refresh the data after returning
+                                              }
+                                            });
+
                                             // Navigator.push(
                                             //   context,
                                             //   MaterialPageRoute(
@@ -575,7 +750,7 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            // _showDeleteConfirmationDialog(rooms: [ruang]);
+                                            _showDeleteConfirmationDialog(courses: [matkul]);
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,

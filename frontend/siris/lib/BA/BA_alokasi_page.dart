@@ -2,40 +2,9 @@ import 'dart:convert';
 // import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:siris/BA/BA_list_alokasi_page.dart';
-
-class Ruang {
-  final String kodeRuang;
-  final String namaRuang;
-  final String gedung;
-  final int lantai;
-  final String fungsi;
-  final int kapasitas;
-
-  Ruang({
-    required this.kodeRuang,
-    required this.namaRuang,
-    required this.gedung,
-    required this.lantai,
-    required this.fungsi,
-    required this.kapasitas,
-  });
-
-  factory Ruang.fromJson(Map<String, dynamic> json) {
-    return Ruang(
-      kodeRuang: json['kode_ruang'],
-      namaRuang: json['nama_ruang'],
-      gedung: json['gedung'],
-      lantai: json['lantai'],
-      fungsi: json['fungsi'],
-      kapasitas: json['kapasitas'],
-    );
-  }
-}
+import 'package:siris/class/indexClass.dart';
 
 class AlokasiPage extends StatefulWidget {
-
-
     final AlokasiRuang alokasi;
 
   AlokasiPage({required this.alokasi});

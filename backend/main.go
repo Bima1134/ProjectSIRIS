@@ -28,10 +28,13 @@ func main() {
 	e.GET("/mahasiswa/:nim/jadwal-irs", controller.GetIRSJadwal) //Mendapatkan jadwal IRS by semester
 	e.GET("/mahasiswa/all-jadwal/:nim", controller.GetAllJadwalByMataKuliah)
 	e.GET("/mahasiswa/daftar-matkul/:nim", controller.GetDaftarMataKuliah)
+	e.GET("/mahasiswa/info-mahasiswa/:nim", controller.GetMahasiswaInfo)
+	e.GET("/mahasiswa/:nim/irs-info", controller.GetIRSInfo)
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
 	e.POST("/mahasiswa/:nim/approve-irs", controller.ApproveIRS)
-
+	e.GET("/dosen/:nip/angkatan", controller.GetAngkatanMahasiswaPerwalian)
+	e.POST("/mahasiswa/:nim/unapprove-irs", controller.UnApproveIRS)
 	//Route BA
 	e.POST("/upload-csv", controller.UploadCSV)
 	e.POST("/upload-single", controller.AddSingleRuang)
@@ -47,6 +50,7 @@ func main() {
 	e.POST("/add-ruang-alokasi/:idAlokasi", controller.AddRuangToAlokasi)
 	e.DELETE("/delete-ruang-alokasi/:idAlokasi", controller.DeleteRuangAlokasi)
 
+	e.GET("/kaprodi/get-matkul-prodi/:prodi", controller.GetMataKuliahByProdiKP)
 	//Kaprodi
 	e.GET("/kaprodi/get-matkul", controller.GetMatkul)
 
@@ -54,6 +58,17 @@ func main() {
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
 	e.POST("/kaprodi/add-jadwal", controller.AddJadwal)
+
+	// Route Dekan
+	// Jadwal Related
+	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
+	e.PUT("/dekan/jadwal/approve/:idjadwal", controller.ApproveJadwal)
+	e.GET("/dekan/jadwal/detail/:idjadwal", controller.GetDetailJadwal)
+
+	// Ruang Related
+	e.GET("/dekan/ruang/:idsem", controller.GetAllRuangProdi)
+	e.PUT("/dekan/ruang/approve/:idalokasi", controller.ApproveRuang)
+	e.GET("/dekan/ruang/detail/:idalokasi", controller.GetDetailRuang)
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

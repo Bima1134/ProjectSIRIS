@@ -5,14 +5,20 @@ import 'package:siris/BA/BA_add_ruang.dart';
 import 'package:siris/BA/BA_add_ruang_single.dart';
 import 'package:siris/BA/BA_edit_ruang_page.dart';
 import 'package:siris/class/Ruang.dart';
+import 'package:siris/navbar.dart';
 
 class ListRuangPage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+   const ListRuangPage({super.key, required this.userData});
   @override
   _ListRuangPageState createState() => _ListRuangPageState();
+   
   
 }
 
 class _ListRuangPageState extends State<ListRuangPage> {
+  Map<String, dynamic> get userData => widget.userData;
   bool selectAll = false;
   List<Ruang> ruangList = [];
   Set<String> selectedRuang = {}; // Store selected room names
@@ -169,62 +175,63 @@ class _ListRuangPageState extends State<ListRuangPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-          child: Row (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Title Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'SIRIS',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+      appBar: Navbar(userData: userData),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: false, 
+      //   backgroundColor: const Color(0xFF162953), // Set the AppBar background color
+      //   title: Container(
+      //     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+      //     child: Row (
+      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //       children: [
+      //         // Title Section
+      //         Row(
+      //           crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: [
+      //             const Text(
+      //               'SIRIS',
+      //               style: TextStyle(
+      //                 fontSize: 36,
+      //                 fontWeight: FontWeight.bold,
+      //                 color: Colors.white,
+      //               ),
+      //             ),
 
-                  const SizedBox(width: 8),
+      //             const SizedBox(width: 8),
 
-                  const Text(
-                    'Sistem Informasi Isian Rencana Studi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+      //             const Text(
+      //               'Sistem Informasi Isian Rencana Studi',
+      //               style: TextStyle(
+      //                 fontSize: 20,
+      //                 fontWeight: FontWeight.bold,
+      //                 color: Colors.white,
+      //               ),
+      //             ),
+      //           ],
+      //         ),
               
-              // Actions Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                          child: _buildMenuItem(Icons.book, 'IRS'),
-                        ),
+      //         // Actions Section
+      //         Row(
+      //           crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: [
+      //             GestureDetector(
+      //                     child: _buildMenuItem(Icons.book, 'IRS'),
+      //                   ),
                   
-                  const SizedBox(width: 16),
-                    GestureDetector(
-                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-                        ),
-                  const SizedBox(width: 16),
-                  _buildMenuItem(Icons.settings, 'Setting'),
-                  const SizedBox(width: 16),
-                  _buildLogoutButton(),
-                ],
-              ),
-            ],
-          ),
-        )
-      ),
+      //             const SizedBox(width: 16),
+      //               GestureDetector(
+      //                     child: _buildMenuItem(Icons.schedule, 'Jadwal'),
+      //                   ),
+      //             const SizedBox(width: 16),
+      //             _buildMenuItem(Icons.settings, 'Setting'),
+      //             const SizedBox(width: 16),
+      //             _buildLogoutButton(),
+      //           ],
+      //         ),
+      //       ],
+      //     ),
+      //   )
+      // ),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 40),
         color: Colors.grey[200],
@@ -602,27 +609,27 @@ class _ListRuangPageState extends State<ListRuangPage> {
   }
 }
 
-Widget _buildMenuItem(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
-      ],
-    );
-  }
+// Widget _buildMenuItem(IconData icon, String label) {
+//     return Row(
+//       children: [
+//         Icon(icon, color: Colors.white),
+//         const SizedBox(width: 4),
+//         Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize:18)),
+//       ],
+//     );
+//   }
 
-  Widget _buildLogoutButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle logout
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-    );
-  }
+//   Widget _buildLogoutButton() {
+//     return ElevatedButton(
+//       onPressed: () {
+//         // Handle logout
+//       },
+//       style: ElevatedButton.styleFrom(
+//         backgroundColor: Colors.red,
+//         foregroundColor: Colors.white,
+//       ),
+//       child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+//     );
+//   }
 
 

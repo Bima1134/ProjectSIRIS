@@ -7,5 +7,5 @@ type MataKuliah struct {
 	SKS       int    `json:"sks" db:"sks"`
 	Status    string `json:"status" db:"status"`
 	Semester  int    `json:"semester" db:"semester"`
-	NamaProdi string `json:"nama_prodi" db:"nama_prodi"`
+	NamaProdi string `json:"prodi" db:"prodi"`
 }

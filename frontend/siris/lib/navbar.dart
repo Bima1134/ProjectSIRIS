@@ -35,7 +35,26 @@ class NavbarState extends State<Navbar> {
       buttons.add(_buildMenuItem(Icons.schedule, 'Jadwal', onTap: () {
         Navigator.pushNamed(context, '/Jadwal', arguments: userData);
       }));
-    } else {
+    } 
+    else if(userData['currentLoginAs'] == 'Bagian Akademik'){
+     buttons.addAll([
+    _buildMenuItem(
+      Icons.room,
+      'Ruang',
+      onTap: () {
+        Navigator.pushNamed(context, '/ruang', arguments: userData);
+      },
+    ),
+    _buildMenuItem(
+      Icons.edit,
+      'Alokasi Ruang',
+      onTap: () {
+        Navigator.pushNamed(context, '/alokasi-ruang', arguments: userData);
+      },
+    ),
+  ]);
+      }
+    else  {
       if (userData['currentLoginAs'] == 'Dosen') {
         buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: () {
           Navigator.pushNamed(context, '/Perwalian', arguments: userData);
@@ -43,6 +62,15 @@ class NavbarState extends State<Navbar> {
       }
       if (userData['role'] == 'Dekan' || userData['role'] == 'Kaprodi'){
           buttons.add(_buildSwitchRole(userData['currentLoginAs']));
+          if(userData['currentLoginAs'] == 'Kaprodi'){
+                _buildMenuItem(
+      Icons.room,
+      'Ruang',
+      onTap: () {
+        Navigator.pushNamed(context, '/ruang', arguments: userData);
+      },
+    );
+          }
       }
     }
 
