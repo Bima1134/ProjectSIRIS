@@ -71,6 +71,39 @@ type MataKuliah struct {
 // 	return c.JSON(http.StatusOK, mataKuliahList)
 // }
 
+func DeleteJadwal(c echo.Context) error {
+	// Get Nama Ruang from URL parameter
+	kode_mk := c.Param("kode_mk")
+
+	// Create a connection to the database
+	dbConn := db.CreateCon()
+
+	// Execute the delete query
+	query := `
+        DELETE FROM jadwal_kaprodi
+        WHERE kode_ruang = ?
+    `
+	result, err := dbConn.Exec(query, kode_mk)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to delete data"})
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve affected rows"})
+	}
+	if rowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Ruang not found"})
+	}
+
+	// Return success response
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Data deleted successfully",
+		"kode_mk": kode_mk,
+	})
+}
+
 func GetViewJadwalKaprodi(c echo.Context) error {
 	// Create database connection
 	dbConn := db.CreateCon()
@@ -133,7 +166,6 @@ func GetViewJadwalKaprodi(c echo.Context) error {
 			fmt.Println("Error scanning row: ", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning row"})
 		}
-		
 
 		jadwalViewList = append(jadwalViewList, jadwalViewkaprodi)
 	}
@@ -270,6 +302,33 @@ func AddJadwal(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to begin transaction"})
 	}
 	defer tx.Rollback()
+
+	// Validasi apakah jadwal sudah ada atau beririsan
+	var count int
+	query := `
+		SELECT COUNT(*) 
+		FROM jadwal_kaprodi 
+		WHERE kode_ruang = ? AND hari = ? AND 
+			(
+				(jam_mulai BETWEEN ? AND ?) OR 
+				(jam_selesai BETWEEN ? AND ?) OR 
+				(? BETWEEN jam_mulai AND jam_selesai) OR 
+				(? BETWEEN jam_mulai AND jam_selesai)
+			)
+	`
+	err = tx.QueryRow(query, jadwal.KodeRuang, jadwal.Hari,
+		jadwal.JamMulai, jadwal.JamSelesai, // Kondisi jam mulai atau selesai ada dalam rentang
+		jadwal.JamMulai, jadwal.JamSelesai, // Kondisi rentang jadwal mencakup jadwal lain
+		jadwal.JamMulai, jadwal.JamSelesai).Scan(&count)
+	if err != nil {
+		log.Println("Error: Gagal melakukan validasi jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to validate schedule"})
+	}
+
+	if count > 0 {
+		log.Println("Error: Jadwal beririsan dengan jadwal yang sudah ada")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Jadwal conflicts with an existing schedule"})
+	}
 
 	// Mengambil IRS ID yang sesuai dari tabel irs berdasarkan NIM
 	var kapasitas int

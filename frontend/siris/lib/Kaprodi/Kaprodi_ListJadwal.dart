@@ -500,16 +500,22 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                   DataCell(Text(jadwal.sks.toString() ?? '0')),
                                   DataCell(Text(jadwal.sifat ?? 'N/A')),
                                   DataCell(
-                                    Container(
-                                      width: 250, // Lebar kolom pengampu
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 3.0), // Lebarkan kolom
-                                      child: Text(
-                                        jadwal.dosenPengampu.join('\n') ??
-                                            'N/A',
-                                        softWrap: true,
-                                        overflow: TextOverflow
-                                            .visible, // Pastikan tidak terpotong
+                                    SizedBox(
+                                      height:
+                                          50.0, // Menentukan tinggi yang diinginkan
+                                      child: Container(
+                                        width:
+                                            250, // Lebar tetap untuk membatasi
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 3.0),
+                                        child: Wrap(
+                                          children: jadwal.dosenPengampu
+                                              .map((dosen) => Text(
+                                                    dosen,
+                                                    softWrap: true,
+                                                  ))
+                                              .toList(),
+                                        ),
                                       ),
                                     ),
                                   ),

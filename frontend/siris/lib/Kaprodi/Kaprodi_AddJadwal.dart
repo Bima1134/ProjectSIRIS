@@ -174,8 +174,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Jadwal berhasil ditambahkan!')),
-        );
-        Navigator.pop(context); // Kembali ke halaman sebelumnya
+        ); // Kembali ke halaman sebelumnya
       } else {
         debugPrint(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
