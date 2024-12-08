@@ -59,22 +59,24 @@ class IRSPageState extends State<IRSPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: Navbar(userData: userData),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
+Widget build(BuildContext context) {
+  return MaterialApp(
+    home: Scaffold(
+      appBar: Navbar(userData: userData),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Column(
               children: [
-                // Row Above the Table
+                // Header
                 Container(
-                  margin: EdgeInsets.only(top: 32),
+                  margin: const EdgeInsets.only(top: 32),
                   child: const Text(
                     'Isian Rencana Studi',
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                 ),
+                // Dropdown and Button Row
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 32),
                   child: Row(
@@ -93,125 +95,127 @@ class IRSPageState extends State<IRSPage> {
                     ],
                   ),
                 ),
-                // Horizontal Scrolling Table
+                // Table with horizontal scrolling
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 100),
+                  padding: const EdgeInsets.symmetric(horizontal: 100),
                   child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                        child: DataTable(
-                          columnSpacing: 16.0, // Adjust spacing between columns
-                          headingRowColor: WidgetStateProperty.resolveWith(
-                            (states) => const Color(0xFF162953),
-                          ),
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                'Kode MK',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Nama MK',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Ruangan',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Hari',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Jam Mulai',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Jam Selesai',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                             DataColumn(
-                              label: Text(
-                                'Kelas',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'SKS',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Dosen Pengampu',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: jadwalIRS.map((jadwal) {
-                            return DataRow(cells: [
-                              DataCell(Text('${jadwal.KodeMK} - ${jadwal.NamaMK}')),
-                              DataCell(Text(jadwal.NamaMK)),
-                              DataCell(Text(jadwal.Ruangan)),
-                              DataCell(Text(jadwal.Hari)),
-                              DataCell(Text(jadwal.JamMulai)),
-                              DataCell(Text(jadwal.JamSelesai)),
-                              DataCell(Text(jadwal.Kelas)),
-                              DataCell(Text(jadwal.SKS.toString())), // Konversi SKS ke string
-                              DataCell(Text(jadwal.DosenPengampu.join(", "))), // Gabungkan nama dosen
-                            ]);
-                          }).toList(),
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                      child: DataTable(
+                        columnSpacing: 16.0,
+                        headingRowColor: MaterialStateProperty.resolveWith(
+                          (states) => const Color(0xFF162953),
                         ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'Kode MK',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Nama MK',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Ruangan',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Hari',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Jam Mulai',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Jam Selesai',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Kelas',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'SKS',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Dosen Pengampu',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: jadwalIRS.map((jadwal) {
+                          return DataRow(cells: [
+                            DataCell(Text('${jadwal.KodeMK} - ${jadwal.NamaMK}')),
+                            DataCell(Text(jadwal.NamaMK)),
+                            DataCell(Text(jadwal.Ruangan)),
+                            DataCell(Text(jadwal.Hari)),
+                            DataCell(Text(jadwal.JamMulai)),
+                            DataCell(Text(jadwal.JamSelesai)),
+                            DataCell(Text(jadwal.Kelas)),
+                            DataCell(Text(jadwal.SKS.toString())),
+                            DataCell(Text(jadwal.DosenPengampu.join(", "))),
+                          ]);
+                        }).toList(),
                       ),
+                    ),
                   ),
                 ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
 
 
