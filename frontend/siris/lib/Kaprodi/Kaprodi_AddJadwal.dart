@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:siris/class/MataKuliah.dart';
 import 'package:siris/class/Ruang.dart';
+import 'package:siris/navbar.dart';
+
+final loggerAddJadwal = Logger('AddJadwalPage');
 
 class AddJadwalPage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  
+  const AddJadwalPage({super.key, required this.userData});
+
+
   @override
   _AddJadwalPageState createState() => _AddJadwalPageState();
 }
 
 class _AddJadwalPageState extends State<AddJadwalPage> {
   final _formKey = GlobalKey<FormState>();
+  get userData => widget.userData;
   String? selectedKodeMK;
   String? selectedRuangan;
   String? selectedHari;
@@ -49,10 +59,10 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   Future<void> fetchMatakuliah() async {
-    final prodi = "Informatika";
+    final url = 'http://localhost:8080/kaprodi/mata-kuliah/${userData['nama_prodi']}';
     final response = await http
-        .get(Uri.parse('http://localhost:8080/kaprodi/mata-kuliah/$prodi'));
-
+        .get(Uri.parse(url));
+    loggerAddJadwal.info("Fetching Mata Kuliah URL: $url");
     if (response.statusCode == 200) {
       try {
         // Mengambil data JSON dari response
@@ -63,9 +73,6 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
           mataKuliahList =
               data.map((item) => MataKuliah.fromJson(item)).toList();
         });
-        debugPrint("DATA: ${mataKuliahList.toString()}");
-        debugPrint(
-            "DATA: ${mataKuliahList.map((mk) => mk.toString()).join(", ")}");
       } catch (e) {
         throw Exception('Error fetching mata kuliah: $e');
       }
@@ -116,10 +123,10 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
               setState(() {
                 ruangList = []; // Default to empty list if data is not a list
               });
-              print('Unexpected data format');
+              debugPrint('Unexpected data format');
             }
           } catch (e) {
-            print('Error decoding JSON: $e');
+            debugPrint('Error decoding JSON: $e');
             setState(() {
               ruangList = []; // Default to empty list if decoding fails
             });
@@ -128,16 +135,16 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
           setState(() {
             ruangList = []; // Default to empty list if body is empty
           });
-          print('Response body is empty');
+          debugPrint('Response body is empty');
         }
       } else {
-        print('Failed to fetch data. Status code: ${response.statusCode}');
+        debugPrint('Failed to fetch data. Status code: ${response.statusCode}');
         setState(() {
           ruangList = []; // Default to empty list on error
         });
       }
     } catch (e) {
-      print('Error during HTTP request: $e');
+      debugPrint('Error during HTTP request: $e');
       setState(() {
         ruangList = []; // Default to empty list on exception
       });
@@ -145,8 +152,8 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   Future<void> addJadwal() async {
-    final url = 'http://localhost:8080/kaprodi/add-jadwal';
-
+    final url = 'http://localhost:8080/kaprodi/add-jadwal/20241/${userData['nama_prodi']}';
+    loggerAddJadwal.info("Adding Jadwal URL: $url");
     // Data yang akan dikirimkan
     final data = {
       'kodeMK': selectedKodeMK,
@@ -170,6 +177,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
         );
         Navigator.pop(context); // Kembali ke halaman sebelumnya
       } else {
+        debugPrint(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menambahkan jadwal.')),
         );
@@ -182,23 +190,9 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   @override
-  // free memory
-  // void dispose() {
-  //   kodeRuangController.dispose();
-  //   namaRuangController.dispose();
-  //   gedungController.dispose();
-  //   lantaiController.dispose();
-  //   fungsiController.dispose();
-  //   kapasitasController.dispose();
-  //   super.dispose();
-  // }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tambah Jadwal Kuliah'),
-      ),
+      appBar: Navbar(userData: userData),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

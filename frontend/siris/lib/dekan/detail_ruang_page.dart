@@ -10,28 +10,28 @@ final loggerDetailRuang = Logger('DetailRuangPage');
 
 class DetailRuangPage extends StatefulWidget {
   final Map<String, dynamic> userData;
-  final String idRuangProdi;
+  final String idAlokasiRuang;
 
   @override
   DetailRuangPageState createState() => DetailRuangPageState();
 
-  const DetailRuangPage({super.key, required this.userData, required this.idRuangProdi});
+  const DetailRuangPage({super.key, required this.userData, required this.idAlokasiRuang});
 }
 
 class DetailRuangPageState extends State<DetailRuangPage>{
   get userData => widget.userData;
-  get idRuangProdi => widget.idRuangProdi;
+  get idAlokasiRuang => widget.idAlokasiRuang;
   List<dynamic> ListJadwalProdi = [];
 
   @override
   void initState(){
     super.initState();
-    fetchListRuangProdi(idRuangProdi);
+    fetchListRuangProdi(idAlokasiRuang);
   }
 
-  Future<void> fetchListRuangProdi(String idRuangProdi) async {
-    final url = "http://localhost:8080/dekan/jadwal/detail/$idRuangProdi";
-    loggerDetailRuang.info("Fetching List Jadwal $idRuangProdi URL: $url");
+  Future<void> fetchListRuangProdi(String idAlokasiRuang) async {
+    final url = "http://localhost:8080/dekan/ruang/detail/$idAlokasiRuang";
+    loggerDetailRuang.info("Fetching List Jadwal $idAlokasiRuang URL: $url");
 
 
     try {
@@ -48,7 +48,7 @@ class DetailRuangPageState extends State<DetailRuangPage>{
             if (jadwalList is List) {
               // Assuming the list contains the jadwal data, map it
               ListJadwalProdi.addAll(
-                jadwalList.map((item) => Jadwal.fromJson(item)).toList(),
+                jadwalList.map((item) => Ruang.fromJson(item)).toList(),
               );
             }
           });
@@ -85,7 +85,7 @@ class DetailRuangPageState extends State<DetailRuangPage>{
               Container(
                 margin: EdgeInsets.only(top: 32, bottom: 40),
                 child: Text(
-                          'Daftar Jadwal',
+                          'Daftar Ruang',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold
@@ -103,55 +103,42 @@ class DetailRuangPageState extends State<DetailRuangPage>{
                     columns: const [
                       DataColumn(
                         label: Text(
-                          'Id Jadwal',
+                          'Kode Ruang',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
                         label: Text(
-                          'Kode Mata Kuliah',
+                          'Nama Ruang',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
                         label: Text(
-                          'Nama Mata Kuliah',
+                          'Gedung',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
                         label: Text(
-                          'Ruang',
+                          'Lantai',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
                         label: Text(
-                          'Waktu',
+                          'Fungsi',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
                         label: Text(
-                          'Kelas',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'SKS',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Pengampu',
+                          'Kapasitas',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
-                    source: DetailJadwalDataSource(ListJadwalProdi)
+                    source: DetailRuangPageDataSource(ListJadwalProdi)
                   ),
                 ),
               ),
@@ -163,26 +150,22 @@ class DetailRuangPageState extends State<DetailRuangPage>{
   }
 }
 
-class DetailJadwalDataSource extends DataTableSource {
-  final List<dynamic> jadwalProdi;
+class DetailRuangPageDataSource extends DataTableSource {
+  final List<dynamic> ruangProdi;
 
-  DetailJadwalDataSource(this.jadwalProdi);
+  DetailRuangPageDataSource(this.ruangProdi);
 
   @override
   DataRow? getRow(int index) {
-    if (index >= jadwalProdi.length) return null;
-    final jadwal = jadwalProdi[index];
-    String dosenPengampu = jadwal.DosenPengampu.join(', '); // Gabungkan elemen List menjadi String
-    String Waktu = "${jadwal.Hari}, ${jadwal.JamMulai} - ${jadwal.JamSelesai}";
+    if (index >= ruangProdi.length) return null;
+    final ruang = ruangProdi[index];
     return DataRow(cells: [
-      DataCell(Text(jadwal.idJadwal)),
-      DataCell(Text(jadwal.KodeMK)),
-      DataCell(Text(jadwal.NamaMK)),
-      DataCell(Text(jadwal.Ruangan)),
-      DataCell(Text(Waktu)),
-      DataCell(Text(jadwal.Kelas)),
-      DataCell(Text(jadwal.SKS.toString())),
-      DataCell(Text(dosenPengampu))
+      DataCell(Text(ruang.kodeRuang)),
+      DataCell(Text(ruang.namaRuang)),
+      DataCell(Text(ruang.gedung)),
+      DataCell(Text(ruang.lantai.toString())),
+      DataCell(Text(ruang.fungsi)),
+      DataCell(Text(ruang.kapasitas.toString())),
     ]);
   }
 
@@ -190,7 +173,7 @@ class DetailJadwalDataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => jadwalProdi.length;
+  int get rowCount => ruangProdi.length;
 
   @override
   int get selectedRowCount => 0;

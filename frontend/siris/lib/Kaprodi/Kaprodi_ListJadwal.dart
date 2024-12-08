@@ -87,6 +87,10 @@ class JadwalKaprodiView {
 // import 'package:siris/class/Ruang.dart';
 
 class ListJadwalKaprodiPage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  
+  const ListJadwalKaprodiPage({super.key, required this.userData});
+
   @override
   _ListJadwalKaprodiPageState createState() => _ListJadwalKaprodiPageState();
 }
@@ -96,7 +100,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
 //   List<Ruang> ruangList = [];
 //   Set<String> selectedRuang = {}; // Store selected room names
   List<JadwalKaprodiView> jadwalKaprodi = [];
-
+  get userData => widget.userData;
 //   int currentPage = 1;  // Track the current page
 //   int rowsPerPage = 10; // Number of rows per page
 //   List<Ruang> paginatedList = []; // To hold the current page data
@@ -117,14 +121,12 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
         if (response.body.isNotEmpty) {
           try {
             final data = json.decode(response.body);
-            debugPrint("data : $data");
             if (data is List) {
               setState(() {
                 jadwalKaprodi = data
                     .map((item) => JadwalKaprodiView.fromJson(item))
                     .toList();
                 // updatePaginatedData(); // Update paginated data after fetching
-                debugPrint("jadwalKaprodi : $jadwalKaprodi");
               });
             } else {
               setState(() {
@@ -294,7 +296,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                             context, // context should be available if used within StatefulWidget
                             MaterialPageRoute(
                               builder: (context) =>
-                                  AddJadwalPage(), // Navigate to ListRuangPage
+                                  AddJadwalPage(userData: userData), // Navigate to ListRuangPage
                             ),
                           );
                         },
