@@ -53,7 +53,7 @@ func main() {
 	// Route Kaprodi
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
-	e.POST("/kaprodi/add-jadwal", controller.AddJadwal)
+	e.POST("/kaprodi/add-jadwal/:idsem/:prodi", controller.AddJadwal)
 	
 	// Route Dekan
 		// Jadwal Related

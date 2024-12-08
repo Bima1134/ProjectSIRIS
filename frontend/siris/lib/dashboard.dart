@@ -59,6 +59,7 @@ class DashboardState extends State<Dashboard> {
   }
 
   Widget _getDashboard(BuildContext context, String role){
+    loggerDashboard.info(userData['nama_prodi']);
     switch (role){
       case "Mahasiswa":
         return _dashboardMahasiswa(context);
@@ -367,7 +368,7 @@ class DashboardState extends State<Dashboard> {
                                 ),
                               ),
                               Text(
-                                '${userData['jurusan'] ?? userData['departemen']}',
+                                '${userData['jurusan'] ?? userData['nama_prodi']}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,

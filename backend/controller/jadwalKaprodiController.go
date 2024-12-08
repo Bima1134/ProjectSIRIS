@@ -90,7 +90,7 @@ func GetViewJadwalKaprodi(c echo.Context) error {
         jam_mulai,
         jam_selesai
     FROM 
-        jadwal_kaprodi_view
+        jadwal_view
     `
 
 	// Print the query for debugging
@@ -133,8 +133,7 @@ func GetViewJadwalKaprodi(c echo.Context) error {
 			fmt.Println("Error scanning row: ", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning row"})
 		}
-		// Print each row data for debugging
-		fmt.Printf("Fetched row: %+v\n", jadwalViewkaprodi)
+		
 
 		jadwalViewList = append(jadwalViewList, jadwalViewkaprodi)
 	}
@@ -211,7 +210,6 @@ func GetMataKuliahByProdi(c echo.Context) error {
 		log.Printf("Retrieved row: %+v", mk) // Log the retrieved row
 		mataKuliahList = append(mataKuliahList, mk)
 	}
-	log.Printf("mATAKULIAHlist :", mataKuliahList)
 	log.Printf("Total mata kuliah fetched: %d", len(mataKuliahList)) // Log total count of fetched rows
 	return c.JSON(http.StatusOK, mataKuliahList)
 }
@@ -228,23 +226,24 @@ type JadwalKaprodi struct {
 
 func AddJadwal(c echo.Context) error {
 	idsem := c.Param("idsem")
+	namaProdi := c.Param("prodi")
 	prodi := c.Param("prodi")
 
-	switch prodi {
+	switch namaProdi {
 	case "Informatika":
-		prodi = "IF"
+		namaProdi = "IF"
 	case "Biologi":
-		prodi = "Bio"
+		namaProdi = "Bio"
 	case "Matematika":
-		prodi = "Mat"
+		namaProdi = "Mat"
 	case "Bioteknologi":
-		prodi = "Biotek"
+		namaProdi = "Biotek"
 	case "Statistika":
-		prodi = "Stat"
+		namaProdi = "Stat"
 	case "Fisika":
-		prodi = "Fis"
+		namaProdi = "Fis"
 	case "Kimia":
-		prodi = "Kim"
+		namaProdi = "Kim"
 	}
 
 	// idJadwal := "J-"+idsem+"-"+prodi
@@ -312,7 +311,7 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 		`
 		UPDATE jadwal_prodi
 		SET status = 'belum disetujui'
-		WHERE idsem = ? and prodi = ?
+		WHERE idsem = ? and nama_prodi = ?
 	`
 	connection := db.CreateCon()
 
@@ -346,7 +345,7 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 		})
 	}
 	if rowsAffected == 0 {
-		log.Println("Warning: Tidak ada jadwal yang ditemukan dengan idsem:%s, prodi:%s", idsem, prodi)
+		log.Printf("Warning: Tidak ada jadwal yang ditemukan dengan idsem:%s, prodi:%s", idsem, prodi)
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"message": "Jadwal tidak ditemukan",
 		})
@@ -360,7 +359,7 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 		})
 	}
 
-	log.Printf("Jadwal dengan idsem %s, prodi %s berhasil disetujui\n", idsem)
+	log.Printf("Jadwal dengan idsem %s, prodi %s berhasil disetujui\n", idsem, prodi)
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Jadwal berhasil disetujui",
 	})

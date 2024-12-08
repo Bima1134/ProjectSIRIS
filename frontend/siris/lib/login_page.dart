@@ -36,6 +36,7 @@ Future<void> _login() async {
     // Pengecekan role
     if(mounted){
       data['currentLoginAs'] = data['role'];
+      loggerLogin.info(data);
       if(data['currentLoginAs'] == "Bagian Akademik"){
         Navigator.pushNamed(context, '/test', arguments: data);
       }

@@ -66,7 +66,7 @@ class RuangPageState extends State<RuangPage> {
           ruangProdi.clear();  // Clear previous data
           data.forEach((prodi, ruangList) {
             if (ruangList is List) {
-              // Assuming the list contains the jadwal data, map it
+              // Assuming the list contains the ruang data, map it
               ruangProdi.addAll(
                 ruangList.map((item) => AlokasiRuang.fromJson(item)).toList(),
               );
@@ -197,7 +197,7 @@ class RuangPageState extends State<RuangPage> {
   }
 
   Future<void> approveRuang(BuildContext context, String idAlokasi, String idsem) async {
-    final url = "http://localhost:8080/dekan/jadwal/approve/$idAlokasi";
+    final url = "http://localhost:8080/dekan/ruang/approve/$idAlokasi";
     loggerRuang.info("Sending request to URL: $url");
 
     try {

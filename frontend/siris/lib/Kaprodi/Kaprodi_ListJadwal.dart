@@ -121,14 +121,12 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
         if (response.body.isNotEmpty) {
           try {
             final data = json.decode(response.body);
-            debugPrint("data : $data");
             if (data is List) {
               setState(() {
                 jadwalKaprodi = data
                     .map((item) => JadwalKaprodiView.fromJson(item))
                     .toList();
                 // updatePaginatedData(); // Update paginated data after fetching
-                debugPrint("jadwalKaprodi : $jadwalKaprodi");
               });
             } else {
               setState(() {

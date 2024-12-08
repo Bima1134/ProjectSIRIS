@@ -127,6 +127,7 @@ type UserResponse struct {
 	ProfileImageBase64 string `json:"profile_image_base64"`      // Base64 string
 	DosenWaliName      string `json:"dosen_wali_name,omitempty"` // Nama dosen wali
 	DosenWaliNIP       string `json:"dosen_wali_nip,omitempty"`  // NIP dosen wali
+	NamaProdi			string`json:"nama_prodi"`	
 }
 
 type RegisterRequest struct {
@@ -245,8 +246,8 @@ func Login(c echo.Context) error {
 
 	case "Dosen":
 		log.Println("Fetching data for Dosen role...")
-		err = connection.QueryRow("SELECT d.nip, d.nama FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
-			Scan(&userResponse.Identifier, &userResponse.Name)
+		err = connection.QueryRow("SELECT d.nip, d.nama, d.nama_prodi FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
+			Scan(&userResponse.Identifier, &userResponse.Name, &userResponse.NamaProdi)
 		if err != nil {
 			log.Println("Error fetching Dosen data:", err) // Debugging error saat query dosen
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
@@ -278,8 +279,8 @@ func Login(c echo.Context) error {
 		
 	case "Kaprodi":
 		log.Println(("Fetching data for Kaprodi Role"))
-		err = connection.QueryRow("SELECT d.nip, d.nama FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
-			Scan(&userResponse.Identifier, &userResponse.Name)
+		err = connection.QueryRow("SELECT d.nip, d.nama, d.nama_prodi FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
+			Scan(&userResponse.Identifier, &userResponse.Name, &userResponse.NamaProdi)
 		if err != nil {
 			log.Println("Error fetching Kaprodi data:", err) // Debugging error saat query dosen
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal server error"})
