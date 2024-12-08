@@ -196,20 +196,24 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: Navbar(userData: userData),
     body: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Detail Mahasiswa
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Kartu Detail Mahasiswa
+            Card(
+              elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Detail Mahasiswa", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
+                    Text(
+                      "Detail Mahasiswa",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -236,15 +240,15 @@ Widget build(BuildContext context) {
                 ),
               ),
             ),
-          ),
 
-          // Isian Rencana Studi
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
+            // Header Tabel dan Dropdown
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Isian Rencana Studi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  "Isian Rencana Studi",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 DropdownButton<int>(
                   value: selectedSemester,
                   onChanged: (value) {
@@ -257,7 +261,7 @@ Widget build(BuildContext context) {
                     }
                   },
                   items: List.generate(
-                    widget.mahasiswa['semester'], // Hanya sampai semester mahasiswa saat ini
+                    widget.mahasiswa['semester'], // Maksimal semester mahasiswa
                     (index) => DropdownMenuItem(
                       value: index + 1,
                       child: Text("Semester ${index + 1}"),
@@ -266,12 +270,11 @@ Widget build(BuildContext context) {
                 ),
               ],
             ),
-          ),
 
-          // Tabel
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
+            const SizedBox(height: 16),
+
+            // Tabel Jadwal IRS
+            SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columns: const [
@@ -298,56 +301,51 @@ Widget build(BuildContext context) {
                 }).toList(),
               ),
             ),
-          ),
 
-          // Tombol Setuju
-          // Tombol Setuju dan Unapprove
-         Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  // Menjalankan fungsi approveIRS
-                  await approveIRS(widget.mahasiswa['nim'], selectedSemester);
-                  
-                  // Memanggil fungsi untuk mendapatkan data terbaru dan merefresh halaman
-                  setState(() {
-                    fetchData();
-                    fetchIRSInfo(widget.mahasiswa["semester"]);
-                  });
-                },
-                child: const Text('Setuju'),
-              ),
-              const SizedBox(width: 16), // Jarak antar tombol
-              ElevatedButton(
-                onPressed: irsInfo['status_irs'] == 'Disetujui' // Hanya aktif jika IRS disetujui
-                    ? () async {
-                        // Menjalankan fungsi unapproveIRS
-                        await unapproveIRS(widget.mahasiswa['nim'], selectedSemester);
-                        
-                        // Memanggil fungsi untuk mendapatkan data terbaru dan merefresh halaman
-                        setState(() {
-                          fetchData();
-                          fetchIRSInfo(widget.mahasiswa["semester"]);
-                        });
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, // Warna tombol Unapprove
+            const SizedBox(height: 16),
+
+            // Tombol Setuju dan Unapprove
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    // Menjalankan fungsi approveIRS
+                    await approveIRS(widget.mahasiswa['nim'], selectedSemester);
+                    
+                    // Memanggil fungsi untuk mendapatkan data terbaru dan merefresh halaman
+                    setState(() {
+                      fetchData();
+                      fetchIRSInfo(widget.mahasiswa["semester"]);
+                    });
+                  },
+                  child: const Text('Setuju'),
                 ),
-                child: const Text('Unapprove'),
-              ),
-            ],
-          ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: irsInfo['status_irs'] == 'Disetujui'
+                      ? () async {
+                          await unapproveIRS(widget.mahasiswa['nim'], selectedSemester);
+                          setState(() {
+                            fetchData();
+                            fetchIRSInfo(widget.mahasiswa["semester"]);
+                          });
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  child: const Text('Unapprove'),
+                ),
+              ],
+            ),
+          ],
         ),
-
-        ],
       ),
     ),
   );
 }
+
 
 }
 
