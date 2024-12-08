@@ -6,6 +6,7 @@ import 'package:siris/Kaprodi/Kaprodi_ListJadwal.dart';
 import 'package:siris/Kaprodi/Kaprodi_list_matkul_page.dart';
 import 'package:siris/dashboard.dart';
 import 'package:siris/dashboard/dosen.dart';
+import 'package:siris/dosen/daftar_mahasiswa_perwalian_page.dart';
 import 'package:siris/mahasiswa/indexMahasiswa.dart';
 import 'package:siris/login_page.dart';
 import 'package:siris/dekan/indexDekan.dart';
@@ -28,20 +29,12 @@ class Routers {
       case '/Jadwal':
         return MaterialPageRoute(
             builder: (context) => AmbilIRS(userData: data));
-      // case '/Perwalian':
-      //   return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: data));
-      case '/test':
-        return MaterialPageRoute(
-            builder: (context) => DashboardPageDosen(userData: data));
-      case '/test':
-        return MaterialPageRoute(
-            builder: (context) => DashboardPageDosen(userData: data));
-      case '/irs':
-        return MaterialPageRoute(builder: (context) => IRSPage(userData: data));
-      case '/Jadwal':
-        return MaterialPageRoute(
-            builder: (context) => AmbilIRS(userData: data));
       case '/Perwalian':
+        return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: data));
+      case '/test':
+        return MaterialPageRoute(
+            builder: (context) => DashboardPageDosen(userData: data));
+      case '/kaprodi/jadwal/':
         return MaterialPageRoute(
             builder: (context) => ListJadwalKaprodiPage(userData: data));
       case '/dekan/jadwal/':

@@ -55,7 +55,7 @@ func AddJadwalToIRS(c echo.Context) error {
 	err = tx.QueryRow(`
 		SELECT j.kapasitas, r.kapasitas 
 		FROM jadwal j 
-		JOIN ruangan r ON j.kode_ruangan = r.kode_ruangan 
+		JOIN ruang r ON j.kode_ruangan = r.kode_ruang 
 		WHERE j.jadwal_id = ?`, jadwalID).Scan(&jadwalKapasitas, &ruanganKapasitas)
 	if err == sql.ErrNoRows {
 		log.Println("Error: Jadwal tidak ditemukan")
@@ -216,12 +216,12 @@ func GetJadwalIRS(c echo.Context) error {
 
 	// Query untuk mendapatkan daftar jadwal IRS mahasiswa berdasarkan NIM
 	query := `
-    SELECT mk.kode_mk, mk.nama_mk, mk.sks, j.hari, j.jam_mulai, j.jam_selesai, r.kode_ruangan
+    SELECT mk.kode_mk, mk.nama_mk, mk.sks, j.hari, j.jam_mulai, j.jam_selesai, r.kode_ruang
     FROM irs_detail AS id
     INNER JOIN irs AS i ON id.irs_id = i.irs_id
     INNER JOIN mata_kuliah AS mk ON id.kode_mk = mk.kode_mk
     INNER JOIN jadwal AS j ON id.jadwal_id = j.jadwal_id
-    INNER JOIN ruangan AS r ON j.kode_ruangan = r.kode_ruangan
+    INNER JOIN ruang AS r ON j.kode_ruangan = r.kode_ruang
     WHERE i.nim = ?`
 
 	rows, err := connection.Query(query, nim)
@@ -452,7 +452,7 @@ func GetIRSJadwal(c echo.Context) error {
     j.jadwal_id,
     j.kode_mk, 
     mk.nama_mk, 
-    r.kode_ruangan AS ruangan, 
+    r.kode_ruang AS ruangan, 
     j.hari, 
     j.jam_mulai, 
     j.jam_selesai, 
@@ -477,7 +477,7 @@ JOIN
 JOIN 
     mata_kuliah mk ON j.kode_mk = mk.kode_mk
 JOIN 
-    ruangan r ON j.kode_ruangan = r.kode_ruangan
+    ruang r ON j.kode_ruangan = r.kode_ruang
 JOIN 
     dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
 JOIN 
@@ -487,7 +487,7 @@ WHERE
         SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?
     )
 GROUP BY 
-    j.jadwal_id, j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+    j.jadwal_id, j.kode_mk, mk.nama_mk, r.kode_ruang, j.hari, j.jam_mulai, j.jam_selesai, 
     j.kelas, mk.sks
 `
 
@@ -562,7 +562,7 @@ func GetAllJadwalByMataKuliah(c echo.Context) error {
     j.jadwal_id, -- Tambahkan ini
     j.kode_mk, 
     mk.nama_mk, 
-    r.kode_ruangan AS ruangan, 
+    r.kode_ruang AS ruangan, 
     j.hari, 
     j.jam_mulai, 
     j.jam_selesai, 
@@ -578,7 +578,7 @@ FROM
 JOIN 
     mata_kuliah mk ON j.kode_mk = mk.kode_mk
 JOIN 
-    ruangan r ON j.kode_ruangan = r.kode_ruangan
+    ruang r ON j.kode_ruangan = r.kode_ruang
 LEFT JOIN 
     irs_detail id ON id.jadwal_id = j.jadwal_id 
     AND id.irs_id IN (SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?)
@@ -595,7 +595,7 @@ WHERE
     )
 GROUP BY 
     j.jadwal_id, -- Tambahkan ini
-    j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+    j.kode_mk, mk.nama_mk, r.kode_ruang, j.hari, j.jam_mulai, j.jam_selesai, 
     j.kelas, mk.sks, id.jadwal_id
 
 	`

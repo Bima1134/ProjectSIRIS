@@ -253,16 +253,18 @@ class DashboardState extends State<Dashboard> {
     //   ],
     // );
     
-    return Row(
-      children: [
-        _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
-          Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData);
-        }),
-        _buildMenuItem(Icons.room, "Ruang", onTap: () {
-          Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
-        }),
-      ]
-    );
+    // return Row(
+    //   children: [
+    //     _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+    //       Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData);
+    //     }),
+    //     _buildMenuItem(Icons.meeting_room, "Ruang", onTap: () {
+    //       Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
+    //     }),
+    //   ]
+    // );
+
+    return Container();
   }
 
   Widget _dashboardDosen(BuildContext context){
@@ -270,16 +272,17 @@ class DashboardState extends State<Dashboard> {
   }
 
   Widget _dashboardKaprodi(BuildContext context){
-    return Row(
-      children: [
-        _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
-          Navigator.pushNamed(context, '/kaprodi/jadwal/', arguments: userData);
-        }),
-        _buildMenuItem(Icons.room, "Ruang", onTap: () {
-          Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
-        }),
-      ]
-    );
+    // return Row(
+    //   children: [
+    //     _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+    //       Navigator.pushNamed(context, '/kaprodi/jadwal/', arguments: userData);
+    //     }),
+    //     _buildMenuItem(Icons.meeting_room, "Ruang", onTap: () {
+    //       Navigator.pushNamed(context, '/kaprodi/ruang/', arguments: userData);
+    //     }),
+    //   ]
+    // );
+    return Container();
   }
 
   Widget _dashboardBaka(BuildContext context){

@@ -72,9 +72,24 @@ class NavbarState extends State<Navbar> {
     ));
           }
       }
+      if(userData['role'] == 'Dekan'){
+          buttons.add(_buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+          Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData);
+        }));
+        buttons.add(_buildMenuItem(Icons.meeting_room, "Ruang", onTap: () {
+          Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
+        }));
+      }
+      else if(userData['role'] == 'Kaprodi'){
+        buttons.add(_buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+          Navigator.pushNamed(context, '/kaprodi/jadwal/', arguments: userData);
+        }));
+        buttons.add(_buildMenuItem(Icons.book, "Mata Kuliah", onTap: () {
+          Navigator.pushNamed(context, '/kaprodi/matkul', arguments: userData);
+        }));
+      }
     }
 
-    buttons.add(_buildMenuItem(Icons.settings, 'Settings', onTap: () {}));
     buttons.add(_buildLogoutButton());
     return buttons;
   }
