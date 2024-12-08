@@ -743,6 +743,15 @@ INSERT INTO `user_role` (`user_id`, `role_id`, `assigned_at`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Structure for view `jadwal_kaprodi_view`
+--
+DROP TABLE IF EXISTS `jadwal_kaprodi_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `jadwal_kaprodi_view`  AS SELECT `j`.`kode_mk` AS `kode_mk`, `m`.`nama_mk` AS `namaMatkul`, `m`.`semester` AS `semester`, `m`.`sks` AS `sks`, `m`.`status` AS `sifat`, group_concat(`d`.`nama` separator '| ') AS `dosen_pengampu`, `j`.`kelas` AS `kelas`, `j`.`kode_ruang` AS `kode_ruang`, `r`.`kapasitas` AS `kapasitas`, `j`.`hari` AS `hari`, `j`.`jam_mulai` AS `jam_mulai`, `j`.`jam_selesai` AS `jam_selesai` FROM ((((`mata_kuliah` `m` left join `dosenpengampu` `dp` on(`m`.`kode_mk` = `dp`.`kode_mk`)) left join `dosen` `d` on(`dp`.`nip` = `d`.`nip`)) left join `jadwal_kaprodi` `j` on(`m`.`kode_mk` = `j`.`kode_mk`)) left join `ruang` `r` on(`j`.`kode_ruang` = `r`.`kode_ruang`)) WHERE `j`.`kode_mk` is not null GROUP BY `j`.`kode_mk`, `m`.`nama_mk`, `m`.`sks`, `m`.`status`, `m`.`semester`, `m`.`prodi`, `j`.`kelas`, `j`.`kode_ruang`, `r`.`kapasitas`, `j`.`hari`, `j`.`jam_mulai`, `j`.`jam_selesai` ;
+
+-- --------------------------------------------------------
+
+--
 -- Structure for view `jadwal_view`
 --
 DROP TABLE IF EXISTS `jadwal_view`;
