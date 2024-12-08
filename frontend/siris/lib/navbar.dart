@@ -63,13 +63,13 @@ class NavbarState extends State<Navbar> {
       if (userData['role'] == 'Dekan' || userData['role'] == 'Kaprodi'){
           buttons.add(_buildSwitchRole(userData['currentLoginAs']));
           if(userData['currentLoginAs'] == 'Kaprodi'){
-                _buildMenuItem(
-      Icons.room,
-      'Ruang',
-      onTap: () {
-        Navigator.pushNamed(context, '/ruang', arguments: userData);
-      },
-    );
+                buttons.add(_buildMenuItem(
+            Icons.room,
+            'Mata Kuliah',
+            onTap: () {
+              Navigator.pushNamed(context, '/matkul', arguments: userData);
+            },
+    ));
           }
       }
     }

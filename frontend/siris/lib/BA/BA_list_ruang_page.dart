@@ -137,12 +137,13 @@ class _ListRuangPageState extends State<ListRuangPage> {
   Future<void> _deleteSelectedRuang(List<Ruang> rooms) async {
     final selectedCodes = rooms.map((ruang) => ruang.kodeRuang).toList();
 
-    final response = await http.delete(
+    try {
+      final response = await http.delete(
       Uri.parse('http://localhost:8080/ruang/deleteMultiple'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({"kodeRuang": selectedCodes}),
-    );
-
+      );
+    loggerRuang.info(response.body);
     if (response.statusCode == 200) {
       setState(() {
         ruangList.removeWhere((ruang) => selectedCodes.contains(ruang.kodeRuang));
@@ -162,6 +163,10 @@ class _ListRuangPageState extends State<ListRuangPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete selected rooms')));
     }
+    } catch (e) {
+      loggerRuang.info("error:", e);
+    }
+    
   }
   
   void updatePaginatedData() {

@@ -41,6 +41,10 @@ class MataKuliah {
 }
 
 class ListMatkulPage extends StatefulWidget {
+
+  final Map<String, dynamic> userData;
+
+  const ListMatkulPage({super.key, required this.userData});
   @override
   _ListMatkulPageState createState() => _ListMatkulPageState();
   
@@ -63,8 +67,9 @@ class _ListMatkulPageState extends State<ListMatkulPage> {
 
   // Fetch ruang data from the backend
   Future<void> fetchMatkulData() async {
+    final prodi = widget.userData['nama_prodi'];
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/kaprodi/get-matkul'));
+      final response = await http.get(Uri.parse('http://localhost:8080/kaprodi/get-matkul-prodi/$prodi'));
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {

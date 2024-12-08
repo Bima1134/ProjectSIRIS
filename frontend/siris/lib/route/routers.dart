@@ -3,6 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:siris/BA/BA_list_ruang_page.dart';
 import 'package:siris/BA/BA_list_alokasi_page.dart';
 import 'package:siris/Kaprodi/Kaprodi_ListJadwal.dart';
+import 'package:siris/Kaprodi/Kaprodi_list_matkul_page.dart';
 import 'package:siris/dashboard.dart';
 import 'package:siris/dashboard/dosen.dart';
 import 'package:siris/mahasiswa/indexMahasiswa.dart';
@@ -53,6 +54,8 @@ class Routers {
         return MaterialPageRoute(builder: (context) => ListRuangPage(userData : data));
       case'/alokasi-ruang':
         return MaterialPageRoute(builder: (context) => ListAlokasiPage(userData : data));
+      case'/matkul':
+        return MaterialPageRoute(builder: (context) => ListMatkulPage(userData : data));
       default:
         logger.warning('No route defined for ${settings.name}');
         return MaterialPageRoute(

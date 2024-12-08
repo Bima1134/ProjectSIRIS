@@ -150,7 +150,7 @@ class DashboardPageDosen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ListMatkulPage(),
+                                builder: (context) => ListMatkulPage(userData: userData),
                               )
                             );
                           },

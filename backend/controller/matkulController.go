@@ -17,7 +17,7 @@ import (
 )
 
 func GetMataKuliahByProdiKP(c echo.Context) error {
-	prodi := c.QueryParam("prodi") // Mendapatkan prodi dari query parameter
+	prodi := c.Param("prodi") // Mendapatkan prodi dari query parameter
 
 	fmt.Println("GetMataKuliahByProdi called")
 	fmt.Println("Prodi:", prodi)

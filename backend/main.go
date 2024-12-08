@@ -53,11 +53,15 @@ func main() {
 	e.GET("/kaprodi/get-matkul-prodi/:prodi", controller.GetMataKuliahByProdiKP)
 	//Kaprodi
 	e.GET("/kaprodi/get-matkul", controller.GetMatkul)
-
+	e.POST("kaprodi/upload-matkul-single", controller.AddSingleMatkul)
 	// Route Kaprodi
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
 	e.POST("/kaprodi/add-jadwal/:idsem/:prodi", controller.AddJadwal)
+	e.DELETE("/kaprodi/delete-matkul/:KodeMK", controller.DeleteMatkul)
+	e.DELETE("/kaprodi/delete-matkul-multiple", controller.DeleteMultipleMatkul)
+	e.PUT("/kaprodi/update-matkul/:KodeMK", controller.UpdateMatkul)
+	e.POST("/kaprodi/upload-csv", controller.UploadCSVMK)
 
 	// Route Dekan
 	// Jadwal Related
