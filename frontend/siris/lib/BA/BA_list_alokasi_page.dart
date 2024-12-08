@@ -269,8 +269,8 @@ Future<void> fetchAlokasiData(String idsem) async {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: const [
-                                          Icon(Icons.details, color: Colors.white),
-                                          SizedBox(width: 8),
+                                          // Icon(Icons.details, color: Colors.white),
+                                          // SizedBox(width: 8),
                                           Text(
                                             'Detail',
                                             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

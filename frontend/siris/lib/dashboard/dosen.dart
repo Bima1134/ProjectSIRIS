@@ -98,6 +98,7 @@ import 'package:siris/BA/BA_list_ruang_page.dart';
 import 'package:siris/BA/BA_list_alokasi_page.dart';
 // import 'package:siris/daftar_mahasiswa_perwalian_page.dart';
 // import 'package:siris/BA_add_ruang.dart';
+import 'package:siris/Kaprodi/Kaprodi_list_matkul_page.dart';
 
 class DashboardPageDosen extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -143,6 +144,18 @@ class DashboardPageDosen extends StatelessWidget {
                   ),
                   Row(
                     children: [
+                       GestureDetector(
+                          onTap: () {
+                            // Navigate to Jadwal page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ListMatkulPage(),
+                              )
+                            );
+                          },
+                          child: _buildMenuItem(Icons.book, 'IRS'),
+                        ),
                       GestureDetector(
                           onTap: () {
                             // Navigate to Jadwal page

@@ -39,13 +39,16 @@ func main() {
 	e.PUT("/ruang/:kodeRuang", controller.UpdateRuang)
 	e.DELETE("/ruang/:kodeRuang", controller.DeleteRuang)
 	e.DELETE("/ruang/deleteMultiple", controller.DeleteMultipleRuang)
-
 	e.GET("/semester", controller.GetIdsemPosisi)
 	e.GET("/data-alokasi/:idsem", controller.GetAlokasiRuang)
 	e.GET("/dokumen-alokasi/:idAlokasi", controller.GetDokumenAlokasi)
 	e.GET("/get-ruang-alokasi/:idAlokasi", controller.GetRuangByAlokasi)
-
+	e.GET("/get-available-ruang/:idAlokasi", controller.GetAvailableRuang)
 	e.POST("/add-ruang-alokasi/:idAlokasi", controller.AddRuangToAlokasi)
+	e.DELETE("/delete-ruang-alokasi/:idAlokasi", controller.DeleteRuangAlokasi)
+
+	//Kaprodi
+	e.GET("/kaprodi/get-matkul", controller.GetMatkul)
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

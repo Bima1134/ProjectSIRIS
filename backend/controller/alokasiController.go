@@ -171,3 +171,100 @@ func GetRuangByAlokasi(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, ruangList)
 }
+
+func DeleteRuangAlokasi(c echo.Context) error {
+	// Get parameters from URL and query
+	idAlokasi := c.Param("idAlokasi")
+	kodeRuang := c.QueryParam("kodeRuang")
+
+	// Validate input parameters
+	if idAlokasi == "" || kodeRuang == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "idAlokasi and kodeRuang are required",
+		})
+	}
+
+	// Create a connection to the database
+	dbConn := db.CreateCon()
+
+	// Execute the delete query
+	query := `
+        DELETE FROM alokasi_ruang_detail
+        WHERE id_alokasi = ? AND kode_ruang = ?
+    `
+	result, err := dbConn.Exec(query, idAlokasi, kodeRuang)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Failed to delete data",
+			"error":   err.Error(),
+		})
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Failed to retrieve affected rows",
+			"error":   err.Error(),
+		})
+	}
+	if rowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "Ruang not found",
+		})
+	}
+
+	// Return success response
+	return c.JSON(http.StatusOK, map[string]string{
+		"message":    "Data deleted successfully",
+		"kode_ruang": kodeRuang,
+	})
+}
+
+func GetAvailableRuang(c echo.Context) error {
+	// Ambil id_alokasi dari parameter URL
+	idAlokasi := c.Param("idAlokasi")
+
+	// Buat koneksi database
+	dbConn := db.CreateCon()
+	// defer dbConn.Close()
+
+	// Query untuk mendapatkan ruang yang belum digunakan
+	query := `
+		SELECT r.kode_ruang, r.nama_ruang, r.gedung, r.lantai, r.fungsi, r.kapasitas
+		FROM ruang r
+		WHERE r.kode_ruang NOT IN (
+			SELECT ar.kode_ruang
+			FROM alokasi_ruang_detail ar
+			JOIN alokasi_ruang a ON ar.id_alokasi = a.id_alokasi
+			WHERE a.idsem = (SELECT idsem FROM alokasi_ruang WHERE id_alokasi = ?)
+		)
+	`
+
+	// Jalankan query
+	rows, err := dbConn.Query(query, idAlokasi)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Failed to execute query",
+		})
+	}
+	defer rows.Close()
+
+	// Parse hasil query ke dalam slice Ruang
+	var ruangList []models.Ruang
+	for rows.Next() {
+		var ruang models.Ruang
+
+		err = rows.Scan(&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai, &ruang.Fungsi, &ruang.Kapasitas)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"message": "Failed to parse data",
+			})
+		}
+
+		ruangList = append(ruangList, ruang)
+	}
+
+	// Kirim hasil ke client
+	return c.JSON(http.StatusOK, ruangList)
+}
