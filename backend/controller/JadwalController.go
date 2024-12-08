@@ -802,6 +802,36 @@ func GetMahasiswaInfo(c echo.Context) error {
 		"current_semester": semester,
 	})
 }
+<<<<<<< HEAD
+func GetIRSInfo(c echo.Context) error {
+	nim := c.Param("nim")
+	semester := c.QueryParam("semester")
+
+	connection := db.CreateCon()
+	rows, err := connection.Query("SELECT irs_id, nim, semester, idsem,status FROM irs WHERE nim = ? AND semester = ?", nim, semester)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error querying database"})
+	}
+	defer rows.Close()
+
+	irsInfo := []map[string]interface{}{}
+	for rows.Next() {
+		var irsID, semester, idSem, status string
+		if err := rows.Scan(&irsID, &nim, &semester, &idSem, &status); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning rows"})
+		}
+		irsInfo = append(irsInfo, map[string]interface{}{
+			"irs_id":   irsID,
+			"nim":      nim,
+			"semester": semester,
+			"idsem":    idSem,
+			"status":   status,
+		})
+	}
+
+	return c.JSON(http.StatusOK, irsInfo)
+}
+=======
 
 type ResponseData struct {
 	TotalSKS int     `json:"total_sks"`
@@ -973,3 +1003,4 @@ func GetDetailJadwal(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, groupedJadwals)
 }
+>>>>>>> 552fff1b68bf7e3804744f872204e640bd17d47b

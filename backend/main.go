@@ -29,10 +29,12 @@ func main() {
 	e.GET("/mahasiswa/all-jadwal/:nim", controller.GetAllJadwalByMataKuliah)
 	e.GET("/mahasiswa/daftar-matkul/:nim", controller.GetDaftarMataKuliah)
 	e.GET("/mahasiswa/info-mahasiswa/:nim", controller.GetMahasiswaInfo)
+	e.GET("/mahasiswa/:nim/irs-info", controller.GetIRSInfo)
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
 	e.POST("/mahasiswa/:nim/approve-irs", controller.ApproveIRS)
-
+	e.GET("/dosen/:nip/angkatan", controller.GetAngkatanMahasiswaPerwalian)
+	e.POST("/mahasiswa/:nim/unapprove-irs", controller.UnApproveIRS)
 	//Route BA
 	e.POST("/upload-csv", controller.UploadCSV)
 	e.POST("/upload-single", controller.AddSingleRuang)

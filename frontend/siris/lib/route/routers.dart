@@ -24,6 +24,18 @@ class Routers {
       case '/login':
         return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/dashboard':
+<<<<<<< HEAD
+        return MaterialPageRoute(
+            builder: (context) => Dashboard(userData: userData));
+      case '/irs':
+        return MaterialPageRoute(
+            builder: (context) => IRSPage(userData: userData));
+      case '/Jadwal':
+        return MaterialPageRoute(
+            builder: (context) => AmbilIRS(userData: userData));
+      case '/Perwalian':
+        return MaterialPageRoute(builder: (context) => DaftarMahasiswaPerwalianPage(userData: userData));
+=======
         return MaterialPageRoute(builder: (context) => Dashboard(userData: data));
       case '/test':
         return MaterialPageRoute(builder: (context) => DashboardPageDosen(userData: data));
@@ -43,6 +55,7 @@ class Routers {
       //   return MaterialPageRoute(builder: (context) => RuangPage(userData: data));
       // case '/dekan/ruang/detail/':
       //   return MaterialPageRoute(builder: (context) => DetailRuangPage(userData: data, idAlokasiRuang: data['idAlokasi']));
+>>>>>>> 552fff1b68bf7e3804744f872204e640bd17d47b
       default:
         logger.warning('No route defined for ${settings.name}');
         return MaterialPageRoute(
