@@ -27,7 +27,7 @@ func main() {
 	e.GET("/mahasiswa/:kode_mk/jadwal-mata-kuliah", controller.GetJadwalByMataKuliah)
 	e.GET("/mahasiswa/:nim/jadwal-irs", controller.GetIRSJadwal) //Mendapatkan jadwal IRS by semester
 	e.GET("/mahasiswa/all-jadwal/:nim", controller.GetAllJadwalByMataKuliah)
-
+	e.GET("/mahasiswa/daftar-matkul/:nim", controller.GetDaftarMataKuliah)
 	// Route dosen
 	e.GET("/dosen/:nip/mahasiswa", controller.GetMahasiswaPerwalian) // Mendapatkan daftar mahasiswa perwalian
 	e.POST("/mahasiswa/:nim/approve-irs", controller.ApproveIRS)
@@ -49,6 +49,11 @@ func main() {
 
 	//Kaprodi
 	e.GET("/kaprodi/get-matkul", controller.GetMatkul)
+
+	// Route Kaprodi
+	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
+	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
+	e.POST("/kaprodi/add-jadwal", controller.AddJadwal)
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

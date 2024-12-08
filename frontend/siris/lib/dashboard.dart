@@ -268,17 +268,26 @@ class DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatusWidget('Status Mahasiswa:', '${userData['status']}', Colors.green, Colors.white),
-                  _buildStatusWidget('IPK:', '2.3',Colors.transparent, Colors.black),
-                  _buildStatusWidget('SKS:', '80',Colors.transparent, Colors.black),
-                ],
-              ),
+              child: _buildStatusMahasiswa(userData['currentLoginAs'])
             ),
           ],
         ));
+  }
+
+  Widget _buildStatusMahasiswa(String role){
+    if(role == "Mahasiswa"){
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatusWidget('Status Mahasiswa:', '${userData['status']}', Colors.green, Colors.white),
+          _buildStatusWidget('IPK:', '2.3',Colors.transparent, Colors.black),
+          _buildStatusWidget('SKS:', '80',Colors.transparent, Colors.black),
+        ],
+      );
+    }
+    else{
+      return Container();
+    }
   }
 
   Widget _buildStatusWidget(String title, String value, Color color, Color fontcolor ) {

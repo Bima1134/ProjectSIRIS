@@ -609,3 +609,72 @@ GROUP BY
 
 	return c.JSON(http.StatusOK, jadwalList)
 }
+
+type MataKuliahNama struct {
+	KodeMK string `json:"kode_mk"`
+	NamaMK string `json:"nama_mk"`
+}
+
+// Handler untuk mendapatkan daftar mata kuliah mahasiswa
+func GetDaftarMataKuliah(c echo.Context) error {
+	nim := c.Param("nim") // NIM mahasiswa
+
+	// Koneksi ke database
+	connection := db.CreateCon()
+	// Query untuk mendapatkan angkatan mahasiswa dan semester yang sedang ditempuh
+	var angkatan, semester int
+	err := connection.QueryRow(`
+		SELECT m.angkatan, m.semester
+		FROM mahasiswa m
+		WHERE m.nim = ?
+	`, nim).Scan(&angkatan, &semester)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, map[string]string{"message": "Mahasiswa tidak ditemukan"})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error fetching mahasiswa data"})
+	}
+
+	// Hitung idsem
+	idsem := calculateIDSem(angkatan, semester)
+
+	// Query untuk mendapatkan daftar jadwal_id berdasarkan irs_id
+	var irsID int
+	err = connection.QueryRow(`
+		SELECT i.irs_id
+		FROM irs i
+		WHERE i.nim = ? AND i.idsem = ?
+	`, nim, idsem).Scan(&irsID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, map[string]string{"message": "IRS tidak ditemukan untuk mahasiswa ini"})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error fetching IRS data"})
+	}
+
+	// Query untuk mendapatkan daftar mata kuliah berdasarkan jadwal_id
+	rows, err := connection.Query(`
+		SELECT mk.kode_mk, mk.nama_mk
+		FROM irs_detail id
+		INNER JOIN jadwal j ON id.jadwal_id = j.jadwal_id
+		INNER JOIN mata_kuliah mk ON j.kode_mk = mk.kode_mk
+		WHERE id.irs_id = ?
+	`, irsID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error fetching mata kuliah data"})
+	}
+	defer rows.Close()
+
+	var mataKuliahList []MataKuliahNama
+
+	for rows.Next() {
+		var mk MataKuliahNama
+		if err := rows.Scan(&mk.KodeMK, &mk.NamaMK); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error scanning mata kuliah data"})
+		}
+		mataKuliahList = append(mataKuliahList, mk)
+	}
+
+	// Return daftar mata kuliah sebagai JSON
+	return c.JSON(http.StatusOK, mataKuliahList)
+}

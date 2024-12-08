@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Dec 05, 2024 at 05:06 AM
+-- Host: 127.0.0.1:3308
+-- Generation Time: Dec 08, 2024 at 06:18 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -18,8 +18,105 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `siris3`
+-- Database: `dbfinal`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alokasi_ruang`
+--
+
+CREATE TABLE `alokasi_ruang` (
+  `id_alokasi` varchar(15) NOT NULL,
+  `idsem` char(5) NOT NULL,
+  `nama_prodi` varchar(20) NOT NULL,
+  `status` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `alokasi_ruang`
+--
+
+INSERT INTO `alokasi_ruang` (`id_alokasi`, `idsem`, `nama_prodi`, `status`) VALUES
+('AR-20201-Bio', '20201', 'Biologi', 'belum diisi'),
+('AR-20201-Fis', '20201', 'Fisika', 'belum diisi'),
+('AR-20201-Inf', '20201', 'Informatika', 'belum diisi'),
+('AR-20201-Kim', '20201', 'Kimia', 'belum diisi'),
+('AR-20201-Mat', '20201', 'Matematika', 'belum diisi'),
+('AR-20201-Sta', '20201', 'Statistika', 'belum diisi'),
+('AR-20202-Bio', '20202', 'Biologi', 'belum diisi'),
+('AR-20202-Fis', '20202', 'Fisika', 'belum diisi'),
+('AR-20202-Inf', '20202', 'Informatika', 'belum diisi'),
+('AR-20202-Kim', '20202', 'Kimia', 'belum diisi'),
+('AR-20202-Mat', '20202', 'Matematika', 'belum diisi'),
+('AR-20202-Sta', '20202', 'Statistika', 'belum diisi'),
+('AR-20211-Bio', '20211', 'Biologi', 'belum diisi'),
+('AR-20211-Fis', '20211', 'Fisika', 'belum diisi'),
+('AR-20211-Inf', '20211', 'Informatika', 'belum diisi'),
+('AR-20211-Kim', '20211', 'Kimia', 'belum diisi'),
+('AR-20211-Mat', '20211', 'Matematika', 'belum diisi'),
+('AR-20211-Sta', '20211', 'Statistika', 'belum diisi'),
+('AR-20212-Bio', '20212', 'Biologi', 'belum diisi'),
+('AR-20212-Fis', '20212', 'Fisika', 'belum diisi'),
+('AR-20212-Inf', '20212', 'Informatika', 'belum diisi'),
+('AR-20212-Kim', '20212', 'Kimia', 'belum diisi'),
+('AR-20212-Mat', '20212', 'Matematika', 'belum diisi'),
+('AR-20212-Sta', '20212', 'Statistika', 'belum diisi'),
+('AR-20221-Bio', '20221', 'Biologi', 'belum diisi'),
+('AR-20221-Fis', '20221', 'Fisika', 'belum diisi'),
+('AR-20221-Inf', '20221', 'Informatika', 'belum diisi'),
+('AR-20221-Kim', '20221', 'Kimia', 'belum diisi'),
+('AR-20221-Mat', '20221', 'Matematika', 'belum diisi'),
+('AR-20221-Sta', '20221', 'Statistika', 'belum diisi'),
+('AR-20222-Bio', '20222', 'Biologi', 'belum diisi'),
+('AR-20222-Fis', '20222', 'Fisika', 'belum diisi'),
+('AR-20222-Inf', '20222', 'Informatika', 'belum diisi'),
+('AR-20222-Kim', '20222', 'Kimia', 'belum diisi'),
+('AR-20222-Mat', '20222', 'Matematika', 'belum diisi'),
+('AR-20222-Sta', '20222', 'Statistika', 'belum diisi'),
+('AR-20231-Bio', '20231', 'Biologi', 'belum diisi'),
+('AR-20231-Fis', '20231', 'Fisika', 'belum diisi'),
+('AR-20231-Inf', '20231', 'Informatika', 'belum diisi'),
+('AR-20231-Kim', '20231', 'Kimia', 'belum diisi'),
+('AR-20231-Mat', '20231', 'Matematika', 'belum diisi'),
+('AR-20231-Sta', '20231', 'Statistika', 'belum diisi'),
+('AR-20232-Bio', '20232', 'Biologi', 'belum diisi'),
+('AR-20232-Fis', '20232', 'Fisika', 'belum diisi'),
+('AR-20232-Inf', '20232', 'Informatika', 'belum diisi'),
+('AR-20232-Kim', '20232', 'Kimia', 'belum diisi'),
+('AR-20232-Mat', '20232', 'Matematika', 'belum diisi'),
+('AR-20232-Sta', '20232', 'Statistika', 'belum diisi'),
+('AR-20241-Bio', '20241', 'Biologi', 'belum diisi'),
+('AR-20241-Fis', '20241', 'Fisika', 'belum diisi'),
+('AR-20241-Inf', '20241', 'Informatika', 'belum diisi'),
+('AR-20241-Kim', '20241', 'Kimia', 'belum diisi'),
+('AR-20241-Mat', '20241', 'Matematika', 'belum diisi'),
+('AR-20241-Sta', '20241', 'Statistika', 'belum diisi'),
+('AR-20242-Bio', '20242', 'Biologi', 'belum diisi'),
+('AR-20242-Fis', '20242', 'Fisika', 'belum diisi'),
+('AR-20242-Inf', '20242', 'Informatika', 'belum diisi'),
+('AR-20242-Kim', '20242', 'Kimia', 'belum diisi'),
+('AR-20242-Mat', '20242', 'Matematika', 'belum diisi'),
+('AR-20242-Sta', '20242', 'Statistika', 'belum diisi');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alokasi_ruang_detail`
+--
+
+CREATE TABLE `alokasi_ruang_detail` (
+  `id_alokasi` varchar(20) NOT NULL,
+  `kode_ruang` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `alokasi_ruang_detail`
+--
+
+INSERT INTO `alokasi_ruang_detail` (`id_alokasi`, `kode_ruang`) VALUES
+('AR-20242-Bio', 'B');
 
 -- --------------------------------------------------------
 
@@ -28,21 +125,18 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `bagian_akademik` (
-  `id_bagian` int(11) NOT NULL,
+  `nip` char(18) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `nama` varchar(100) NOT NULL,
   `jabatan` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table structure for table `kaprodi`
+--
+-- Dumping data for table `bagian_akademik`
 --
 
-CREATE TABLE `kaprodi` (
-  `id_kaprodi` int(11) NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `nama` varchar(100) NOT NULL,
-  `jabatan` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `bagian_akademik` (`nip`, `user_id`, `nama`, `jabatan`) VALUES
+('198611152023101001', 36, 'Beny Nugroho, S.Kom.', 'Teknisi Laboratorium');
 
 -- --------------------------------------------------------
 
@@ -173,27 +267,73 @@ CREATE TABLE `jadwal` (
   `jam_selesai` time NOT NULL,
   `kapasitas` int(11) DEFAULT 0,
   `kelas` char(1) DEFAULT NULL,
-  `idsem` char(5) DEFAULT NULL
+  `idsem` char(5) DEFAULT NULL,
+  `nama_prodi` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `jadwal`
 --
 
-INSERT INTO `jadwal` (`jadwal_id`, `kode_mk`, `kode_ruangan`, `hari`, `jam_mulai`, `jam_selesai`, `kapasitas`, `kelas`, `idsem`) VALUES
-(1, 'PAIK6101', 'E101', 'Senin', '15:30:00', '17:20:00', 1, 'A', '20241'),
-(2, 'PAIK6101', 'E101', 'Selasa', '15:30:00', '17:20:00', 0, 'B', '20241'),
-(3, 'PAIK6101', 'E101', 'Rabu', '15:30:00', '17:20:00', 0, 'C', '20241'),
-(4, 'PAIK6204', 'E103', 'Senin', '07:00:00', '09:30:00', 0, 'D', '20241'),
-(5, 'PAIK6204', 'E102', 'Selasa', '07:00:00', '09:30:00', 0, 'A', '20241'),
-(6, 'PAIK6204', 'E102', 'Selasa', '09:40:00', '12:10:00', 0, 'C', '20241'),
-(7, 'PAIK6204', 'E102', 'Selasa', '13:00:00', '15:30:00', 0, 'E', '20241'),
-(8, 'PAIK6204', 'E102', 'Rabu', '13:00:00', '15:30:00', 0, 'B', '20241'),
-(9, 'PAIK6102', 'E102', 'Senin', '09:40:00', '12:10:00', 1, 'A', '20241'),
-(10, 'PAIK6102', 'E103', 'Senin', '13:00:00', '15:30:00', 0, 'c', '20241'),
-(11, 'PAIK6102', 'E102', 'Senin', '15:40:00', '18:10:00', 0, 'E', '20241'),
-(12, 'PAIK6102', 'E103', 'Selasa', '07:00:00', '09:30:00', 0, 'B', '20241'),
-(13, 'PAIK6102', 'E102', 'Selasa', '09:40:00', '12:10:00', 0, 'D', '20241');
+INSERT INTO `jadwal` (`jadwal_id`, `kode_mk`, `kode_ruangan`, `hari`, `jam_mulai`, `jam_selesai`, `kapasitas`, `kelas`, `idsem`, `nama_prodi`) VALUES
+(1, 'PAIK6101', 'E101', 'Senin', '15:30:00', '17:20:00', 1, 'A', '20241', NULL),
+(2, 'PAIK6101', 'E101', 'Selasa', '15:30:00', '17:20:00', 0, 'B', '20241', NULL),
+(3, 'PAIK6101', 'E101', 'Rabu', '15:30:00', '17:20:00', 0, 'C', '20241', NULL),
+(4, 'PAIK6204', 'E103', 'Senin', '07:00:00', '09:30:00', 0, 'D', '20241', NULL),
+(5, 'PAIK6204', 'E102', 'Selasa', '07:00:00', '09:30:00', 0, 'A', '20241', NULL),
+(6, 'PAIK6204', 'E102', 'Selasa', '09:40:00', '12:10:00', 0, 'C', '20241', NULL),
+(7, 'PAIK6204', 'E102', 'Selasa', '13:00:00', '15:30:00', 0, 'E', '20241', NULL),
+(8, 'PAIK6204', 'E102', 'Rabu', '13:00:00', '15:30:00', 0, 'B', '20241', NULL),
+(9, 'PAIK6102', 'E102', 'Senin', '09:40:00', '12:10:00', 1, 'A', '20241', NULL),
+(10, 'PAIK6102', 'E103', 'Senin', '13:00:00', '15:30:00', 0, 'c', '20241', NULL),
+(11, 'PAIK6102', 'E102', 'Senin', '15:40:00', '18:10:00', 0, 'E', '20241', NULL),
+(12, 'PAIK6102', 'E103', 'Selasa', '07:00:00', '09:30:00', 0, 'B', '20241', NULL),
+(13, 'PAIK6102', 'E102', 'Selasa', '09:40:00', '12:10:00', 0, 'D', '20241', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `jadwal_kaprodi`
+--
+
+CREATE TABLE `jadwal_kaprodi` (
+  `kode_mk` char(8) NOT NULL,
+  `kelas` varchar(10) NOT NULL,
+  `kode_ruang` varchar(10) NOT NULL,
+  `hari` varchar(15) NOT NULL,
+  `jam_mulai` time NOT NULL,
+  `jam_selesai` time NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `jadwal_kaprodi`
+--
+
+INSERT INTO `jadwal_kaprodi` (`kode_mk`, `kelas`, `kode_ruang`, `hari`, `jam_mulai`, `jam_selesai`) VALUES
+('PAIK6101', 'B', 'C', 'Jumat', '07:00:00', '08:00:00'),
+('PAIK6102', 'C', 'I', 'Rabu', '11:43:00', '11:43:00'),
+('PAIK6102', 'A', 'K', 'Kamis', '12:14:00', '12:14:00');
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `jadwal_kaprodi_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `jadwal_kaprodi_view` (
+`kode_mk` char(8)
+,`namaMatkul` varchar(100)
+,`semester` int(11)
+,`sks` tinyint(4)
+,`sifat` enum('Wajib','Pilihan')
+,`dosen_pengampu` mediumtext
+,`kelas` varchar(10)
+,`kode_ruang` varchar(10)
+,`kapasitas` int(3)
+,`hari` varchar(15)
+,`jam_mulai` time
+,`jam_selesai` time
+);
 
 -- --------------------------------------------------------
 
@@ -261,61 +401,62 @@ CREATE TABLE `mata_kuliah` (
   `nama_mk` varchar(100) NOT NULL,
   `sks` tinyint(4) NOT NULL,
   `status` enum('Wajib','Pilihan') NOT NULL,
-  `semester` int(11) NOT NULL
+  `semester` int(11) NOT NULL,
+  `prodi` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `mata_kuliah`
 --
 
-INSERT INTO `mata_kuliah` (`kode_mk`, `nama_mk`, `sks`, `status`, `semester`) VALUES
-('PAIK6101', 'Matematika I', 2, 'Wajib', 1),
-('PAIK6102', 'Dasar Pemrograman', 3, 'Wajib', 1),
-('PAIK6103', 'Dasar Sistem', 3, 'Wajib', 1),
-('PAIK6104', 'Logika Informatika', 4, 'Wajib', 1),
-('PAIK6105', 'Struktur Diskrit', 4, 'Wajib', 1),
-('PAIK6201', 'Matematika II', 2, 'Wajib', 2),
-('PAIK6202', 'Algoritma dan Pemrograman', 4, 'Wajib', 2),
-('PAIK6203', 'Organisasi dan Arsitektur Komputer', 3, 'Wajib', 2),
-('PAIK6204', 'Aljabar Linear', 3, 'Wajib', 2),
-('PAIK6301', 'Struktur Data', 4, 'Wajib', 3),
-('PAIK6302', 'Sistem Operasi', 3, 'Wajib', 3),
-('PAIK6303', 'Basis Data', 4, 'Wajib', 3),
-('PAIK6304', 'Metode Numerik', 3, 'Wajib', 3),
-('PAIK6305', 'Interaksi Manusia dan Komputer', 3, 'Wajib', 3),
-('PAIK6306', 'Statistika', 2, 'Wajib', 3),
-('PAIK6401', 'Pemrograman Berorientasi Objek', 3, 'Wajib', 4),
-('PAIK6402', 'Jaringan Komputer', 3, 'Wajib', 4),
-('PAIK6403', 'Manajemen Basis Data', 3, 'Wajib', 4),
-('PAIK6404', 'Grafika dan Komputasi Visual', 3, 'Wajib', 4),
-('PAIK6405', 'Rekayasa Perangkat Lunak', 3, 'Wajib', 4),
-('PAIK6406', 'Sistem Cerdas', 3, 'Wajib', 4),
-('PAIK6501', 'Pengembangan Berbasis Platform', 4, 'Wajib', 5),
-('PAIK6502', 'Komputasi Tersebar dan Paralel', 3, 'Wajib', 5),
-('PAIK6503', 'Sistem Informasi', 3, 'Wajib', 5),
-('PAIK6504', 'Proyek Perangkat Lunak', 3, 'Wajib', 5),
-('PAIK6505', 'Pembelajaran Mesin', 3, 'Wajib', 5),
-('PAIK6506', 'Keamanan dan Jaminan Informasi', 3, 'Wajib', 5),
-('PAIK6601', 'Analisis dan Strategi Algoritma', 2, 'Wajib', 6),
-('PAIK6602', 'Uji Perangkat Lunak', 3, 'Wajib', 6),
-('PAIK6603', 'Masyarakat dan Etika Profesi', 3, 'Wajib', 6),
-('PAIK6604', 'Praktik Kerja Lapangan', 3, 'Wajib', 6),
-('PAIK6605', 'Manajemen Proyek', 3, 'Wajib', 6),
-('PAIK6701', 'Metodologi dan Penulisan Ilmiah', 2, 'Wajib', 7),
-('PAIK6702', 'Teori Bahasa dan Otomata', 3, 'Wajib', 7),
-('PAIK6801', 'Topik Khusus RPL STI', 3, 'Pilihan', 8),
-('PAIK6802', 'Topik Khusus SC KV', 3, 'Pilihan', 8),
-('PAIK6813', 'Data Besar', 3, 'Pilihan', 8),
-('PAIK6814', 'Intelijen Bisnis', 3, 'Pilihan', 8),
-('PAIK6817', 'Robotika', 3, 'Pilihan', 8),
-('PAIK6818', 'Pengolahan Bahasa Alami', 3, 'Pilihan', 8),
-('UNW00007', 'Kewirausahaan', 2, 'Wajib', 0),
-('UUW00003', 'Pancasila dan Kewarganegaraan', 3, 'Wajib', 0),
-('UUW00004', 'Bahasa Indonesia', 2, 'Wajib', 0),
-('UUW00005', 'Olah Raga', 1, 'Wajib', 0),
-('UUW00006', 'Internet of Things (IoT)', 2, 'Wajib', 0),
-('UUW00007', 'Bahasa Inggris', 2, 'Wajib', 0),
-('UUW00011', 'Pendidikan Agama', 2, 'Wajib', 0);
+INSERT INTO `mata_kuliah` (`kode_mk`, `nama_mk`, `sks`, `status`, `semester`, `prodi`) VALUES
+('PAIK6101', 'Matematika I', 2, 'Wajib', 1, 'Informatika'),
+('PAIK6102', 'Dasar Pemrograman', 3, 'Wajib', 1, 'Informatika'),
+('PAIK6103', 'Dasar Sistem', 3, 'Wajib', 1, 'Informatika'),
+('PAIK6104', 'Logika Informatika', 4, 'Wajib', 1, 'Informatika'),
+('PAIK6105', 'Struktur Diskrit', 4, 'Wajib', 1, 'Informatika'),
+('PAIK6201', 'Matematika II', 2, 'Wajib', 2, 'Informatika'),
+('PAIK6202', 'Algoritma dan Pemrograman', 4, 'Wajib', 2, 'Informatika'),
+('PAIK6203', 'Organisasi dan Arsitektur Komputer', 3, 'Wajib', 2, 'Informatika'),
+('PAIK6204', 'Aljabar Linear', 3, 'Wajib', 2, 'Informatika'),
+('PAIK6301', 'Struktur Data', 4, 'Wajib', 3, 'Informatika'),
+('PAIK6302', 'Sistem Operasi', 3, 'Wajib', 3, 'Informatika'),
+('PAIK6303', 'Basis Data', 4, 'Wajib', 3, 'Informatika'),
+('PAIK6304', 'Metode Numerik', 3, 'Wajib', 3, 'Informatika'),
+('PAIK6305', 'Interaksi Manusia dan Komputer', 3, 'Wajib', 3, 'Informatika'),
+('PAIK6306', 'Statistika', 2, 'Wajib', 3, 'Informatika'),
+('PAIK6401', 'Pemrograman Berorientasi Objek', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6402', 'Jaringan Komputer', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6403', 'Manajemen Basis Data', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6404', 'Grafika dan Komputasi Visual', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6405', 'Rekayasa Perangkat Lunak', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6406', 'Sistem Cerdas', 3, 'Wajib', 4, 'Informatika'),
+('PAIK6501', 'Pengembangan Berbasis Platform', 4, 'Wajib', 5, 'Informatika'),
+('PAIK6502', 'Komputasi Tersebar dan Paralel', 3, 'Wajib', 5, 'Informatika'),
+('PAIK6503', 'Sistem Informasi', 3, 'Wajib', 5, 'Informatika'),
+('PAIK6504', 'Proyek Perangkat Lunak', 3, 'Wajib', 5, 'Informatika'),
+('PAIK6505', 'Pembelajaran Mesin', 3, 'Wajib', 5, 'Informatika'),
+('PAIK6506', 'Keamanan dan Jaminan Informasi', 3, 'Wajib', 5, 'Informatika'),
+('PAIK6601', 'Analisis dan Strategi Algoritma', 2, 'Wajib', 6, 'Informatika'),
+('PAIK6602', 'Uji Perangkat Lunak', 3, 'Wajib', 6, 'Informatika'),
+('PAIK6603', 'Masyarakat dan Etika Profesi', 3, 'Wajib', 6, 'Informatika'),
+('PAIK6604', 'Praktik Kerja Lapangan', 3, 'Wajib', 6, 'Informatika'),
+('PAIK6605', 'Manajemen Proyek', 3, 'Wajib', 6, 'Informatika'),
+('PAIK6701', 'Metodologi dan Penulisan Ilmiah', 2, 'Wajib', 7, 'Informatika'),
+('PAIK6702', 'Teori Bahasa dan Otomata', 3, 'Wajib', 7, 'Informatika'),
+('PAIK6801', 'Topik Khusus RPL STI', 3, 'Pilihan', 8, 'Informatika'),
+('PAIK6802', 'Topik Khusus SC KV', 3, 'Pilihan', 8, 'Informatika'),
+('PAIK6813', 'Data Besar', 3, 'Pilihan', 8, 'Informatika'),
+('PAIK6814', 'Intelijen Bisnis', 3, 'Pilihan', 8, 'Informatika'),
+('PAIK6817', 'Robotika', 3, 'Pilihan', 8, 'Informatika'),
+('PAIK6818', 'Pengolahan Bahasa Alami', 3, 'Pilihan', 8, 'Informatika'),
+('UNW00007', 'Kewirausahaan', 2, 'Wajib', 0, NULL),
+('UUW00003', 'Pancasila dan Kewarganegaraan', 3, 'Wajib', 0, NULL),
+('UUW00004', 'Bahasa Indonesia', 2, 'Wajib', 0, NULL),
+('UUW00005', 'Olah Raga', 1, 'Wajib', 0, NULL),
+('UUW00006', 'Internet of Things (IoT)', 2, 'Wajib', 0, NULL),
+('UUW00007', 'Bahasa Inggris', 2, 'Wajib', 0, NULL),
+('UUW00011', 'Pendidikan Agama', 2, 'Wajib', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -343,7 +484,6 @@ INSERT INTO `pesertajadwal` (`nim`, `jadwal_id`) VALUES
 --
 
 CREATE TABLE `prodi` (
-  `id_prodi` varchar(10) NOT NULL,
   `nama_prodi` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -351,9 +491,13 @@ CREATE TABLE `prodi` (
 -- Dumping data for table `prodi`
 --
 
-INSERT INTO `prodi` (`id_prodi`, `nama_prodi`) VALUES
-('FSM01', 'Informatika'),
-('FSM02', 'Biologi');
+INSERT INTO `prodi` (`nama_prodi`) VALUES
+('Biologi'),
+('Fisika'),
+('Informatika'),
+('Kimia'),
+('Matematika'),
+('Statistika');
 
 -- --------------------------------------------------------
 
@@ -394,22 +538,33 @@ CREATE TABLE `ruang` (
   `kapasitas` int(3) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `ruang`
+--
+
+INSERT INTO `ruang` (`kode_ruang`, `nama_ruang`, `gedung`, `lantai`, `fungsi`, `kapasitas`) VALUES
+('A', 'Ruang A', 'A', 2, 'Lab', 70),
+('B', 'Ruang B', 'B', 2, 'Classroom', 50),
+('C', 'Ruang C', 'B', 2, 'Classroom', 50),
+('D', 'Ruang D', 'B', 2, 'Classroom', 50),
+('E', 'Ruang E', 'B', 2, 'Classroom', 50),
+('F', 'Ruang F', 'B', 2, 'Classroom', 50),
+('G', 'Ruang G', 'B', 2, 'Classroom', 50),
+('H', 'Ruang H', 'B', 2, 'Classroom', 50),
+('I', 'Ruang I', 'B', 2, 'Classroom', 50),
+('J', 'Ruang J', 'B', 2, 'Classroom', 50),
+('K', 'Ruang K', 'A', 2, 'Lab', 70),
+('L', 'Ruang L', 'B', 2, 'Classroom', 50),
+('M', 'Ruang M', 'B', 2, 'Classroom', 50),
+('N', 'Ruang N', 'B', 2, 'Classroom', 50),
+('O', 'Ruang O', 'B', 2, 'Classroom', 50),
+('P', 'Ruang P', 'B', 2, 'Classroom', 50),
+('Q', 'Ruang Q', 'B', 2, 'Classroom', 50),
+('R', 'Ruang R', 'B', 2, 'Classroom', 50),
+('S', 'Ruang S', 'B', 2, 'Classroom', 50),
+('T', 'Ruang T', 'B', 2, 'Classroom', 50);
 
 -- --------------------------------------------------------
-
--- Table structure for table 'JadwalKaprodi'
-CREATE TABLE `JadwalKaprodi` (
-  `kode_mk` varchar(10) NOT NULL,
-  `pengampu1` varchar(50) NOT NULL,
-  `pengampu2` varchar(50),
-  `pengampu3` varchar(50),
-  `kelas` char(1) NOT NULL,
-  `ruangan` varchar(10) NOT NULL,
-  `kapasitas` int(3) DEFAULT NULL
-  `hari` varchar(10) NOT NULL,
-  `JamMulai` TIME NOT NULL,
-  `JamMulai` TIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Table structure for table `ruangan`
@@ -476,6 +631,42 @@ INSERT INTO `semester` (`idsem`, `posisi`) VALUES
 ('20241', 'Semester gasal 2024/2025'),
 ('20242', ' Semester genap 2024/202');
 
+--
+-- Triggers `semester`
+--
+DELIMITER $$
+CREATE TRIGGER `insert_alokasi_ruang_after_semester_insert` AFTER INSERT ON `semester` FOR EACH ROW BEGIN
+    -- Declare variables to store the results of the `prodi` table query
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_nama_prodi VARCHAR(20);
+    DECLARE v_id_alokasi VARCHAR(10);
+    DECLARE cur CURSOR FOR SELECT nama_prodi FROM prodi;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open the cursor to loop through each `nama_prodi`
+    OPEN cur;
+
+    -- Loop through all rows in `prodi` table and insert into `alokasi_ruang`
+    read_loop: LOOP
+        FETCH cur INTO v_nama_prodi;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Generate the id_alokasi using the format AR-{idsem}-{first_three_letters_of_nama_prodi}
+        SET v_id_alokasi = CONCAT('AR-', NEW.idsem, '-', SUBSTRING(v_nama_prodi, 1, 3));
+
+        -- Insert into the `alokasi_ruang` table for each `nama_prodi`
+        INSERT INTO alokasi_ruang (id_alokasi, idsem, nama_prodi, status)
+        VALUES (v_id_alokasi, NEW.idsem, v_nama_prodi, 'belum diisi');
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE cur;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -526,7 +717,8 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `created_at`) VA
 (32, 'Yunila', 'admin123', 'yunila@gmail.com', '2024-12-01 10:11:26'),
 (33, 'Yeva', 'admin123', 'yeva@gmail.com', '2024-12-01 10:11:36'),
 (34, 'Etna', 'admin123', 'etna@gmail.com', '2024-12-01 10:11:46'),
-(35, 'Helmie', 'admin123', 'helmie@gmail.com', '2024-12-01 10:13:46');
+(35, 'Helmie', 'admin123', 'helmie@gmail.com', '2024-12-01 10:13:46'),
+(36, 'beny', 'admin123', 'beny@gmail.com', '2024-12-06 09:39:02');
 
 -- --------------------------------------------------------
 
@@ -549,18 +741,45 @@ INSERT INTO `user_role` (`user_id`, `role_id`, `assigned_at`) VALUES
 (2, 2, '2024-10-25 15:27:44'),
 (6, 2, '2024-10-25 16:10:44'),
 (7, 1, '2024-10-25 16:13:36'),
+(11, 2, '2024-12-06 12:25:12'),
+(11, 5, '2024-12-06 12:25:12'),
 (15, 2, '2024-12-01 10:12:12'),
-(15, 6, '2024-12-01 10:12:53');
+(15, 6, '2024-12-01 10:12:53'),
+(36, 3, '2024-12-06 09:43:52');
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `jadwal_kaprodi_view`
+--
+DROP TABLE IF EXISTS `jadwal_kaprodi_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `jadwal_kaprodi_view`  AS SELECT `j`.`kode_mk` AS `kode_mk`, `m`.`nama_mk` AS `namaMatkul`, `m`.`semester` AS `semester`, `m`.`sks` AS `sks`, `m`.`status` AS `sifat`, group_concat(`d`.`nama` separator '| ') AS `dosen_pengampu`, `j`.`kelas` AS `kelas`, `j`.`kode_ruang` AS `kode_ruang`, `r`.`kapasitas` AS `kapasitas`, `j`.`hari` AS `hari`, `j`.`jam_mulai` AS `jam_mulai`, `j`.`jam_selesai` AS `jam_selesai` FROM ((((`mata_kuliah` `m` left join `dosenpengampu` `dp` on(`m`.`kode_mk` = `dp`.`kode_mk`)) left join `dosen` `d` on(`dp`.`nip` = `d`.`nip`)) left join `jadwal_kaprodi` `j` on(`m`.`kode_mk` = `j`.`kode_mk`)) left join `ruang` `r` on(`j`.`kode_ruang` = `r`.`kode_ruang`)) WHERE `j`.`kode_mk` is not null GROUP BY `j`.`kode_mk`, `m`.`nama_mk`, `m`.`sks`, `m`.`status`, `m`.`semester`, `m`.`prodi`, `j`.`kelas`, `j`.`kode_ruang`, `r`.`kapasitas`, `j`.`hari`, `j`.`jam_mulai`, `j`.`jam_selesai` ;
 
 --
 -- Indexes for dumped tables
 --
 
 --
+-- Indexes for table `alokasi_ruang`
+--
+ALTER TABLE `alokasi_ruang`
+  ADD PRIMARY KEY (`id_alokasi`),
+  ADD KEY `idsem` (`idsem`),
+  ADD KEY `nama_prodi` (`nama_prodi`);
+
+--
+-- Indexes for table `alokasi_ruang_detail`
+--
+ALTER TABLE `alokasi_ruang_detail`
+  ADD PRIMARY KEY (`id_alokasi`,`kode_ruang`),
+  ADD KEY `kode_ruang` (`kode_ruang`);
+
+--
 -- Indexes for table `bagian_akademik`
 --
 ALTER TABLE `bagian_akademik`
-  ADD PRIMARY KEY (`id_bagian`),
+  ADD PRIMARY KEY (`nip`),
   ADD KEY `user_id` (`user_id`);
 
 --
@@ -602,7 +821,15 @@ ALTER TABLE `jadwal`
   ADD PRIMARY KEY (`jadwal_id`),
   ADD KEY `kode_mk` (`kode_mk`),
   ADD KEY `kode_ruangan` (`kode_ruangan`),
-  ADD KEY `idsem` (`idsem`);
+  ADD KEY `idsem` (`idsem`),
+  ADD KEY `fk_nama_prodi` (`nama_prodi`);
+
+--
+-- Indexes for table `jadwal_kaprodi`
+--
+ALTER TABLE `jadwal_kaprodi`
+  ADD PRIMARY KEY (`kode_mk`,`kode_ruang`),
+  ADD KEY `fk_jadwal_kaprodi_ruang` (`kode_ruang`);
 
 --
 -- Indexes for table `khs`
@@ -644,7 +871,7 @@ ALTER TABLE `pesertajadwal`
 -- Indexes for table `prodi`
 --
 ALTER TABLE `prodi`
-  ADD PRIMARY KEY (`id_prodi`);
+  ADD PRIMARY KEY (`nama_prodi`);
 
 --
 -- Indexes for table `role`
@@ -690,12 +917,6 @@ ALTER TABLE `user_role`
 --
 
 --
--- AUTO_INCREMENT for table `bagian_akademik`
---
-ALTER TABLE `bagian_akademik`
-  MODIFY `id_bagian` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `irs`
 --
 ALTER TABLE `irs`
@@ -735,11 +956,26 @@ ALTER TABLE `role`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `alokasi_ruang`
+--
+ALTER TABLE `alokasi_ruang`
+  ADD CONSTRAINT `alokasi_ruang_ibfk_1` FOREIGN KEY (`idsem`) REFERENCES `semester` (`idsem`),
+  ADD CONSTRAINT `alokasi_ruang_ibfk_2` FOREIGN KEY (`nama_prodi`) REFERENCES `prodi` (`nama_prodi`);
+
+--
+-- Constraints for table `alokasi_ruang_detail`
+--
+ALTER TABLE `alokasi_ruang_detail`
+  ADD CONSTRAINT `alokasi_ruang_detail_ibfk_1` FOREIGN KEY (`id_alokasi`) REFERENCES `alokasi_ruang` (`id_alokasi`),
+  ADD CONSTRAINT `alokasi_ruang_detail_ibfk_2` FOREIGN KEY (`kode_ruang`) REFERENCES `ruang` (`kode_ruang`),
+  ADD CONSTRAINT `fk_id_alokasi` FOREIGN KEY (`id_alokasi`) REFERENCES `alokasi_ruang` (`id_alokasi`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `bagian_akademik`
@@ -780,9 +1016,17 @@ ALTER TABLE `irs_detail`
 -- Constraints for table `jadwal`
 --
 ALTER TABLE `jadwal`
+  ADD CONSTRAINT `fk_nama_prodi` FOREIGN KEY (`nama_prodi`) REFERENCES `prodi` (`nama_prodi`),
   ADD CONSTRAINT `jadwal_ibfk_1` FOREIGN KEY (`kode_mk`) REFERENCES `mata_kuliah` (`kode_mk`),
   ADD CONSTRAINT `jadwal_ibfk_3` FOREIGN KEY (`kode_ruangan`) REFERENCES `ruangan` (`kode_ruangan`),
   ADD CONSTRAINT `jadwal_ibfk_4` FOREIGN KEY (`idsem`) REFERENCES `semester` (`idsem`);
+
+--
+-- Constraints for table `jadwal_kaprodi`
+--
+ALTER TABLE `jadwal_kaprodi`
+  ADD CONSTRAINT `fk_jadwal_kaprodi_mk` FOREIGN KEY (`kode_mk`) REFERENCES `mata_kuliah` (`kode_mk`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_jadwal_kaprodi_ruang` FOREIGN KEY (`kode_ruang`) REFERENCES `ruang` (`kode_ruang`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `khs`
