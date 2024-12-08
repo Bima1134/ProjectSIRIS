@@ -212,7 +212,7 @@ func GetMataKuliahByProdi(c echo.Context) error {
 		LEFT JOIN 
 			dosen d ON dp.nip = d.nip
 		WHERE 
-			m.prodi = ? AND (m.kode_mk = "PAIK6101" OR m.kode_mk = "PAIK6102")
+			m.prodi = ? and semester % 2 = 1
 		GROUP BY 
 			m.kode_mk, m.nama_mk, m.sks, m.status, m.semester, m.prodi
 	`

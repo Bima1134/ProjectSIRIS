@@ -294,17 +294,6 @@ INSERT INTO `jadwal` (`jadwal_id`, `kode_mk`, `kode_ruangan`, `hari`, `jam_mulai
 (22, 'PAIK6102', 'J', 'Kamis', '21:26:00', '12:26:00', 50, 'R', '20241', 'Informatika'),
 (23, 'PAIK6101', 'F', 'Selasa', '17:27:00', '21:27:00', 50, 'Q', '20241', 'Informatika');
 
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `jadwal_kaprodi_view`
--- (See below for the actual view)
---
-CREATE TABLE `jadwal_kaprodi_view` (
-);
-
--- --------------------------------------------------------
-
 --
 -- Table structure for table `jadwal_prodi`
 --
@@ -750,16 +739,6 @@ INSERT INTO `user_role` (`user_id`, `role_id`, `assigned_at`) VALUES
 (36, 3, '2024-12-06 09:43:52');
 
 -- --------------------------------------------------------
-
---
--- Structure for view `jadwal_kaprodi_view`
---
-DROP TABLE IF EXISTS `jadwal_kaprodi_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `jadwal_kaprodi_view`  AS SELECT `j`.`kode_mk` AS `kode_mk`, `m`.`nama_mk` AS `namaMatkul`, `m`.`semester` AS `semester`, `m`.`sks` AS `sks`, `m`.`status` AS `sifat`, group_concat(`d`.`nama` separator '| ') AS `dosen_pengampu`, `j`.`kelas` AS `kelas`, `j`.`kode_ruang` AS `kode_ruang`, `r`.`kapasitas` AS `kapasitas`, `j`.`hari` AS `hari`, `j`.`jam_mulai` AS `jam_mulai`, `j`.`jam_selesai` AS `jam_selesai` FROM ((((`mata_kuliah` `m` left join `dosenpengampu` `dp` on(`m`.`kode_mk` = `dp`.`kode_mk`)) left join `dosen` `d` on(`dp`.`nip` = `d`.`nip`)) left join `jadwal_kaprodi` `j` on(`m`.`kode_mk` = `j`.`kode_mk`)) left join `ruang` `r` on(`j`.`kode_ruang` = `r`.`kode_ruang`)) WHERE `j`.`kode_mk` is not null GROUP BY `j`.`kode_mk`, `m`.`nama_mk`, `m`.`sks`, `m`.`status`, `m`.`semester`, `m`.`prodi`, `j`.`kelas`, `j`.`kode_ruang`, `r`.`kapasitas`, `j`.`hari`, `j`.`jam_mulai`, `j`.`jam_selesai` ;
-
--- --------------------------------------------------------
-
 --
 -- Structure for view `jadwal_view`
 --

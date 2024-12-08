@@ -10,9 +10,8 @@ final loggerAddJadwal = Logger('AddJadwalPage');
 
 class AddJadwalPage extends StatefulWidget {
   final Map<String, dynamic> userData;
-  
-  const AddJadwalPage({super.key, required this.userData});
 
+  const AddJadwalPage({super.key, required this.userData});
 
   @override
   _AddJadwalPageState createState() => _AddJadwalPageState();
@@ -59,9 +58,9 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   Future<void> fetchMatakuliah() async {
-    final url = 'http://localhost:8080/kaprodi/mata-kuliah/${userData['nama_prodi']}';
-    final response = await http
-        .get(Uri.parse(url));
+    final url =
+        'http://localhost:8080/kaprodi/mata-kuliah/${userData['nama_prodi']}';
+    final response = await http.get(Uri.parse(url));
     loggerAddJadwal.info("Fetching Mata Kuliah URL: $url");
     if (response.statusCode == 200) {
       try {
@@ -152,8 +151,11 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   }
 
   Future<void> addJadwal() async {
-    final url = 'http://localhost:8080/kaprodi/add-jadwal/20241/${userData['nama_prodi']}';
+    final prodi = widget.userData['nama_prodi'];
+    final url =
+        'http://localhost:8080/kaprodi/add-jadwal/20241/${userData['nama_prodi']}';
     loggerAddJadwal.info("Adding Jadwal URL: $url");
+    debugPrint("Pordu : $prodi");
     // Data yang akan dikirimkan
     final data = {
       'kodeMK': selectedKodeMK,

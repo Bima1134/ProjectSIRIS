@@ -127,7 +127,7 @@ type UserResponse struct {
 	ProfileImageBase64 string `json:"profile_image_base64"`      // Base64 string
 	DosenWaliName      string `json:"dosen_wali_name,omitempty"` // Nama dosen wali
 	DosenWaliNIP       string `json:"dosen_wali_nip,omitempty"`  // NIP dosen wali
-	NamaProdi			string`json:"nama_prodi"`	
+	NamaProdi          string `json:"nama_prodi"`
 }
 
 type RegisterRequest struct {
@@ -276,7 +276,7 @@ func Login(c echo.Context) error {
 		}
 		userResponse.Role = "Bagian Akademik"
 		log.Println("Bagian Akademik data fetched successfully")
-		
+
 	case "Kaprodi":
 		log.Println(("Fetching data for Kaprodi Role"))
 		err = connection.QueryRow("SELECT d.nip, d.nama, d.nama_prodi FROM dosen d JOIN user u ON d.user_id = u.user_id WHERE u.email = ?", req.Email).
@@ -287,7 +287,6 @@ func Login(c echo.Context) error {
 		}
 		userResponse.Role = "Kaprodi"
 		log.Println("Kaprodi data fetched successfully")
-		
 
 	default:
 		log.Println("Invalid role for user:", req.Email) // Debugging jika role tidak ditemukan
