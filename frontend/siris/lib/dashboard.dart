@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:siris/navbar.dart';
 import 'package:logging/logging.dart';
+import 'package:http/http.dart' as http;
+
 
 final loggerDashboard = Logger('DashboardState');
 
@@ -16,6 +18,45 @@ class Dashboard extends StatefulWidget {
 
 class DashboardState extends State<Dashboard> {
   get userData => widget.userData;
+  String totalSks = '0';
+  String ipk = '0.0';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+   final nim = widget.userData['identifier'];
+    final semester = widget.userData['semester'];
+    final String apiUrl = 'http://localhost:8080/mahasiswa/info-mahasiswa/$nim?semester=$semester'; // Ganti dengan endpoint API Anda
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        // Decode the JSON response
+        final data = json.decode(response.body);
+        setState(() {
+          totalSks = data['total_sks'].toString();
+          ipk = data['ipk'].toString();
+        });
+      } else {
+        setState(() {
+          totalSks = 'Error';
+          ipk = 'Error';
+        });
+        print('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        totalSks = 'Error';
+        ipk = 'Error';
+      });
+      print('Error fetching data: $e');
+    }
+  }
 
   Widget _getDashboard(BuildContext context, String role){
     switch (role){
@@ -48,6 +89,8 @@ class DashboardState extends State<Dashboard> {
         );
     }
   }
+
+
 
   Widget _dashboardMahasiswa(BuildContext context){
     return Transform.translate(
@@ -376,8 +419,8 @@ class DashboardState extends State<Dashboard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStatusWidget('Status Mahasiswa:', '${userData['status']}', Colors.green, Colors.white),
-          _buildStatusWidget('IPK:', '2.3',Colors.transparent, Colors.black),
-          _buildStatusWidget('SKS:', '80',Colors.transparent, Colors.black),
+          _buildStatusWidget('IPK:', ipk,Colors.transparent, Colors.black),
+          _buildStatusWidget('SKS:', totalSks,Colors.transparent, Colors.black),
         ],
       );
     }

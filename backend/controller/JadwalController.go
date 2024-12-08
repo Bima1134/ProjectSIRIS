@@ -680,6 +680,133 @@ func GetDaftarMataKuliah(c echo.Context) error {
 	return c.JSON(http.StatusOK, mataKuliahList)
 }
 
+// GetMahasiswaInfo fetches IPK, IPS for the current semester, total SKS, and SKS for the current semester
+func GetMahasiswaInfo(c echo.Context) error {
+	log.Printf("GetMahasiswaInfo called")
+
+	// Ambil parameter dari request
+	nim := c.Param("nim")
+	semesterStr := c.QueryParam("semester")
+	log.Printf("Received NIM: %s, Semester: %s", nim, semesterStr)
+
+	// Validasi semester sebagai integer
+	semester, err := strconv.Atoi(semesterStr)
+	if err != nil || semester <= 0 {
+		log.Printf("Invalid semester: %s", semesterStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Semester must be a positive integer",
+		})
+	}
+	log.Printf("Parsed Semester: %d", semester)
+
+	// Buat koneksi database
+	connection := db.CreateCon()
+	log.Println("Database connection established")
+
+	// Ambil angkatan dari tabel mahasiswa
+	var angkatan int
+	query := "SELECT angkatan FROM mahasiswa WHERE nim = ?"
+	err = connection.QueryRow(query, nim).Scan(&angkatan)
+	if err == sql.ErrNoRows {
+		log.Printf("Mahasiswa with NIM %s not found", nim)
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"error": "Mahasiswa not found",
+		})
+	} else if err != nil {
+		log.Printf("Error querying angkatan: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Internal server error",
+		})
+	}
+	log.Printf("Angkatan for NIM %s: %d", nim, angkatan)
+
+	// Hitung idsem menggunakan calculateIDSem
+	idsem := calculateIDSem(angkatan, semester)
+	log.Printf("Calculated idsem: %s for angkatan %d and semester %d", idsem, angkatan, semester)
+
+	// Query untuk mendapatkan total SKS
+	var totalSKS int
+	totalSKSQuery := `
+		SELECT SUM(mk.sks) AS total_sks
+		FROM irs_detail id
+		JOIN irs i ON id.irs_id = i.irs_id
+		JOIN mata_kuliah mk ON id.kode_mk = mk.kode_mk
+		WHERE i.nim = ?
+	`
+	err = connection.QueryRow(totalSKSQuery, nim).Scan(&totalSKS)
+	if err != nil {
+		log.Printf("Error fetching total SKS for NIM %s: %v", nim, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Error fetching total SKS",
+			"error":   err.Error(),
+		})
+	}
+	log.Printf("Total SKS for NIM %s: %d", nim, totalSKS)
+
+	// Query untuk mendapatkan SKS pada semester sekarang (idsem)
+	var currentSKS int
+	currentSKSQuery := `
+		SELECT SUM(mk.sks) AS sks_semester
+		FROM irs_detail id
+		JOIN irs i ON id.irs_id = i.irs_id
+		JOIN mata_kuliah mk ON id.kode_mk = mk.kode_mk
+		WHERE i.nim = ? AND i.idsem = ?
+	`
+	err = connection.QueryRow(currentSKSQuery, nim, idsem).Scan(&currentSKS)
+	if err != nil {
+		log.Printf("Error fetching current SKS for NIM %s and idsem %s: %v", nim, idsem, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Error fetching SKS for current semester",
+			"error":   err.Error(),
+		})
+	}
+	log.Printf("Current SKS for NIM %s in semester %s: %d", nim, idsem, currentSKS)
+
+	// Query untuk mendapatkan IPK
+	var ipk float64
+	ipkQuery := "SELECT ipk FROM ipk WHERE nim = ?"
+	err = connection.QueryRow(ipkQuery, nim).Scan(&ipk)
+	if err != nil {
+		log.Printf("Error fetching IPK for NIM %s: %v", nim, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Error fetching IPK",
+			"error":   err.Error(),
+		})
+	}
+	log.Printf("IPK for NIM %s: %.2f", nim, ipk)
+
+	// Query untuk mendapatkan IPS pada semester sekarang
+	var ips float64
+	ipsQuery := "SELECT ips FROM ips WHERE nim = ? AND idsem = ?"
+	err = connection.QueryRow(ipsQuery, nim, idsem).Scan(&ips)
+	if err != nil {
+		log.Printf("Error fetching IPS for NIM %s and idsem %s: %v", nim, idsem, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Error fetching IPS",
+			"error":   err.Error(),
+		})
+	}
+	log.Printf("IPS for NIM %s in semester %s: %.2f", nim, idsem, ips)
+
+	// Return data dalam JSON response
+	log.Printf("Returning data for NIM %s: total_sks=%d, current_sks=%d, ipk=%.2f, ips=%.2f, angkatan=%d, current_semester=%d",
+		nim, totalSKS, currentSKS, ipk, ips, angkatan, semester)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"nim":              nim,
+		"idsem":            idsem,
+		"ipk":              ipk,
+		"ips":              ips,
+		"total_sks":        totalSKS,
+		"current_sks":      currentSKS,
+		"angkatan":         angkatan,
+		"current_semester": semester,
+	})
+}
+
+type ResponseData struct {
+	TotalSKS int     `json:"total_sks"`
+	IPK      float64 `json:"ipk"`
+}
 
 // Dekan Related
 func GetAllJadwalProdi(c echo.Context) error {
