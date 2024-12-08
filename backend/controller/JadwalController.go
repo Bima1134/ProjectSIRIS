@@ -329,14 +329,14 @@ func GetMataKuliahBySemester(c echo.Context) error {
 // Fungsi untuk menampilkan daftar jadwal berdasarkan kode mata kuliah
 func GetJadwalByMataKuliah(c echo.Context) error {
 	kodeMK := c.Param("kode_mk") // Mendapatkan kode mata kuliah dari parameter URL
-	fmt.Println("GetjadwalByMataKuliah")
-	fmt.Println("kodemk:", kodeMK)
+	log.Println("[DEBUG] Starting GetJadwalByMataKuliah")
+	log.Printf("[DEBUG] Received kodeMK: %s\n", kodeMK)
 
 	// Query untuk mendapatkan daftar jadwal berdasarkan kode mata kuliah
 	query := `
 		SELECT 
 			mk.nama_mk, mk.status, mk.kode_mk, mk.semester, mk.sks, 
-			jadwal.jadwal_id, jadwal.kode_ruangan, jadwal.hari, jadwal.jam_mulai, jadwal.jam_selesai
+			jadwal.jadwal_id, jadwal.kode_ruangan,jadwal.kelas, jadwal.hari, jadwal.jam_mulai, jadwal.jam_selesai
 		FROM 
 			mata_kuliah mk
 		JOIN 
@@ -344,9 +344,11 @@ func GetJadwalByMataKuliah(c echo.Context) error {
 		WHERE 
 			mk.kode_mk = ?
 	`
+	log.Printf("[DEBUG] Executing query: %s\n", query)
+
 	rows, err := db.CreateCon().Query(query, kodeMK)
 	if err != nil {
-		fmt.Println("Error connecting to database:", err)
+		log.Printf("[ERROR] Failed to execute query: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan daftar jadwal"})
 	}
 	defer rows.Close()
@@ -354,13 +356,17 @@ func GetJadwalByMataKuliah(c echo.Context) error {
 	var jadwalList []map[string]interface{}
 	for rows.Next() {
 		var namaMK, status, kodeMK, hari, jamMulai, jamSelesai string
-		var semester, sks, kodeRuangan string
+		var semester, sks, kodeRuangan, kelas string
 		var jadwalID int
 
 		// Scan data dari query
-		if err := rows.Scan(&namaMK, &status, &kodeMK, &semester, &sks, &jadwalID, &kodeRuangan, &hari, &jamMulai, &jamSelesai); err != nil {
+		if err := rows.Scan(&namaMK, &status, &kodeMK, &semester, &sks, &jadwalID, &kodeRuangan, &kelas, &hari, &jamMulai, &jamSelesai); err != nil {
+			log.Printf("[ERROR] Failed to scan row: %v\n", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
 		}
+
+		log.Printf("[DEBUG] Retrieved row: namaMK=%s, status=%s, kodeMK=%s, semester=%s, sks=%s, jadwalID=%d, kodeRuangan=%s, hari=%s, jamMulai=%s, jamSelesai=%s\n",
+			namaMK, status, kodeMK, semester, sks, jadwalID, kodeRuangan, hari, jamMulai, jamSelesai)
 
 		// Tambahkan data jadwal ke dalam list
 		jadwalList = append(jadwalList, map[string]interface{}{
@@ -371,11 +377,14 @@ func GetJadwalByMataKuliah(c echo.Context) error {
 			"sks":          sks,
 			"jadwal_id":    jadwalID,
 			"kode_ruangan": kodeRuangan,
+			"kelas":        kelas,
 			"hari":         hari,
 			"jam_mulai":    jamMulai,
 			"jam_selesai":  jamSelesai,
 		})
 	}
+	log.Printf("[DEBUG] Total jadwal retrieved: %d\n", len(jadwalList))
+	log.Printf("[DEBUG] Final JadwalList: %+v\n", jadwalList)
 
 	// Kembalikan data dalam format JSON
 	return c.JSON(http.StatusOK, jadwalList)
@@ -389,7 +398,7 @@ func calculateIDSem(angkatan int, semester int) string {
 }
 
 type JadwalIRS struct {
-	JadwalID      int      `json:"jadwal_id"` // Tambahkan field ini
+	JadwalID      int      `json:"id_jadwal"` // Tambahkan field ini
 	KodeMK        string   `json:"kode_mk"`
 	NamaMK        string   `json:"nama_mk"`
 	Ruangan       string   `json:"kode_ruangan"`
@@ -433,6 +442,7 @@ func GetIRSJadwal(c echo.Context) error {
 	// Query untuk mendapatkan jadwal IRS mahasiswa
 	query := `
 		SELECT 
+			j.jadwal_id,
 			j.kode_mk, 
 			mk.nama_mk, 
 			r.kode_ruangan AS ruangan, 
@@ -459,7 +469,7 @@ func GetIRSJadwal(c echo.Context) error {
 				SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?
 			)
 		GROUP BY 
-			j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
+			j.jadwal_id , j.kode_mk, mk.nama_mk, r.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, 
 			j.kelas, mk.sks`
 
 	rows, err := connection.Query(query, nim, idsem)
@@ -476,7 +486,7 @@ func GetIRSJadwal(c echo.Context) error {
 	for rows.Next() {
 		var jadwal JadwalIRS
 		var dosenPengampuString string
-		if err := rows.Scan(&jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan, &jadwal.Hari,
+		if err := rows.Scan(&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan, &jadwal.Hari,
 			&jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas, &jadwal.SKS, &dosenPengampuString); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
@@ -492,6 +502,7 @@ func GetIRSJadwal(c echo.Context) error {
 	if len(jadwalList) == 0 {
 		return c.JSON(http.StatusNotFound, map[string]string{"message": "Tidak ada jadwal untuk semester ini"})
 	}
+	log.Println("JadwalList:", jadwalList)
 
 	// Return data jadwal
 	return c.JSON(http.StatusOK, jadwalList)
@@ -588,8 +599,7 @@ GROUP BY
 		// Tambahkan j.jadwal_id di sini
 		if err := rows.Scan(&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.Ruangan,
 			&jadwal.Hari, &jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas,
-			&jadwal.SKS, &dosenPengampuString, &status); 
-		err != nil {
+			&jadwal.SKS, &dosenPengampuString, &status); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
 		}
@@ -802,7 +812,6 @@ func GetMahasiswaInfo(c echo.Context) error {
 		"current_semester": semester,
 	})
 }
-<<<<<<< HEAD
 func GetIRSInfo(c echo.Context) error {
 	nim := c.Param("nim")
 	semester := c.QueryParam("semester")
@@ -831,7 +840,6 @@ func GetIRSInfo(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, irsInfo)
 }
-=======
 
 type ResponseData struct {
 	TotalSKS int     `json:"total_sks"`
@@ -862,8 +870,7 @@ func GetAllJadwalProdi(c echo.Context) error {
 	for rows.Next() {
 		var jadwal models.JadwalProdiResponse
 		if err := rows.Scan(
-			&jadwal.JadwalIDProdi, &jadwal.NamaProdi, &jadwal.IdSem, &jadwal.Status); 
-		err != nil {
+			&jadwal.JadwalIDProdi, &jadwal.NamaProdi, &jadwal.IdSem, &jadwal.Status); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
 		}
@@ -942,7 +949,6 @@ func ApproveJadwal(c echo.Context) error {
 	})
 }
 
-
 func GetDetailJadwal(c echo.Context) error {
 	idJadwal := c.Param("idjadwal")
 
@@ -989,9 +995,9 @@ func GetDetailJadwal(c echo.Context) error {
 		var dosenPengampuString string
 
 		if err := rows.Scan(
-			&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.KodeRuangan, 
+			&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NamaMK, &jadwal.KodeRuangan,
 			&jadwal.Hari, &jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.Kelas,
-			&dosenPengampuString, &jadwal.SKS, 
+			&dosenPengampuString, &jadwal.SKS,
 		); err != nil {
 			fmt.Println("Scan error:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data jadwal"})
@@ -1003,4 +1009,3 @@ func GetDetailJadwal(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, groupedJadwals)
 }
->>>>>>> 552fff1b68bf7e3804744f872204e640bd17d47b

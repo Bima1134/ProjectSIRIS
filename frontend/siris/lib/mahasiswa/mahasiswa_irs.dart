@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:siris/mahasiswa/ambil_irs.dart';
 import 'dart:convert';
 import 'package:siris/navbar.dart';
 import 'package:siris/class/JadwalIRS.dart';
@@ -36,27 +37,45 @@ class IRSPageState extends State<IRSPage> {
 
   }
   Future<void> fetchIRSJadwal(int semester) async {
-    final nim = widget.userData["identifier"];
-    final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
-    loggerIRS.info('Fetching jadwal for semester: $semester at URL: $url');
+  final nim = widget.userData["identifier"];
+  final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
+  loggerIRS.info('Fetching jadwal for semester: $semester at URL: $url');
 
+  try {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
+      
+      // Print each item in data
+      data.forEach((item) {
+        debugPrint("Item in data: $item");
+      });
+
       setState(() {
         jadwalIRS = data.map((item) => JadwalIRS.fromJson(item)).toList();
+        // Print the processed jadwalIRS list
+        debugPrint("Processed JadwalIRS: $jadwalIRS");
       });
     } else {
       // Handle error
       Map<String, dynamic> e = json.decode(response.body);
       loggerIRS.severe('Status Code: ${response.statusCode}, Error Message: ${e['message']}');
-      if(mounted){
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gagal mengambil data jadwal IRS')),
         );
       }
     }
+  } catch (e) {
+    loggerIRS.severe('Unexpected error: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Terjadi kesalahan saat mengambil data jadwal IRS')),
+      );
+    }
   }
+}
+
 
   @override
 Widget build(BuildContext context) {
@@ -192,15 +211,16 @@ Widget build(BuildContext context) {
                         ],
                         rows: jadwalIRS.map((jadwal) {
                           return DataRow(cells: [
-                            DataCell(Text('${jadwal.KodeMK} - ${jadwal.NamaMK}')),
-                            DataCell(Text(jadwal.NamaMK)),
-                            DataCell(Text(jadwal.Ruangan)),
-                            DataCell(Text(jadwal.Hari)),
-                            DataCell(Text(jadwal.JamMulai)),
-                            DataCell(Text(jadwal.JamSelesai)),
-                            DataCell(Text(jadwal.Kelas)),
-                            DataCell(Text(jadwal.SKS.toString())),
-                            DataCell(Text(jadwal.DosenPengampu.join(", "))),
+                            DataCell(Text('${jadwal.KodeMK ?? 'N/A'} - ${jadwal.NamaMK ?? 'N/A'}')),
+                            DataCell(Text(jadwal.NamaMK ?? 'N/A')),
+                            DataCell(Text(jadwal.Ruangan ?? 'N/A')),
+                            DataCell(Text(jadwal.Hari ?? 'N/A')),
+                            DataCell(Text(jadwal.JamMulai ?? 'N/A')),
+                            DataCell(Text(jadwal.JamSelesai ?? 'N/A')),
+                            DataCell(Text(jadwal.Kelas ?? 'N/A')),
+                            DataCell(Text(jadwal.SKS?.toString() ?? '0')), // Pastikan untuk menangani null pada SKS
+                            DataCell(Text(jadwal.DosenPengampu?.join(", ") ?? 'N/A')),
+
                           ]);
                         }).toList(),
                       ),
@@ -216,43 +236,55 @@ Widget build(BuildContext context) {
   );
 }
 
+Widget _buildEditButton() {
+  final bool isButtonEnabled = selectedSemester == widget.userData['semester'];
+
+  return ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: isButtonEnabled ? Colors.blue : Colors.grey, // Ubah warna tombol jika diperlukan
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24), // Rounded edges
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    ),
+    onPressed: isButtonEnabled
+        ? () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AmbilIRS(
+                  userData: widget.userData, // Kirim userData ke halaman baru
+                ),
+              ),
+            );
+          }
+        : null, // Disabled button
+    child: const Row(
+      mainAxisSize: MainAxisSize.min, // Keeps the button compact
+      children: [
+        Icon(
+          Icons.edit, // Edit icon
+          color: Colors.white,
+        ),
+        SizedBox(width: 8), // Space between icon and text
+        Text(
+          'Edit IRS',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 
   
 
-  Widget _buildEditButton(){
-    return ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue, // Button background color
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24), // Rounded edges
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            onPressed: () {
-              // Add button action here
-            },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min, // Keeps the button compact
-              children: [
-                Icon(
-                  Icons.edit, // Edit icon
-                  color: Colors.white,
-                ),
-                SizedBox(width: 8), // Space between icon and text
-                Text(
-                  'Edit IRS',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-  }
-
+  
 class _DropdownSelection extends StatefulWidget {
   final int currentSemester;
   final Function(int) onSemesterChanged;
