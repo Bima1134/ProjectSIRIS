@@ -3,31 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/BA/BA_alokasi_page.dart';
-
-class AlokasiRuang {
-  final String idAlokasi;
-  final String idSem;
-  final String namaProdi;
-  final String status;
-
-
-  AlokasiRuang({
-    required this.idAlokasi,
-    required this.idSem,
-    required this.namaProdi,
-    required this.status,
-  });
-
-  factory AlokasiRuang.fromJson(Map<String, dynamic> json) {
-    return AlokasiRuang(
-      idAlokasi: json['id_alokasi'],
-      idSem: json['idsem'],
-      namaProdi: json['nama_prodi'],
-      status: json['status'],
-    );
-  }
-}
-
+import 'package:siris/class/indexClass.dart';
 
 class ListAlokasiPage extends StatefulWidget {
   @override
@@ -198,93 +174,91 @@ Future<void> fetchAlokasiData(String idsem) async {
                                         .map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(value.split(" - ")[1]),
                                       );
                                     }).toList(),
                                   ),
                           ],
                         ),
                       ),
-                  Container(
-                child:
-                    SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                          child: DataTable(
-                            columnSpacing: 16.0,
-                            headingRowColor: MaterialStateProperty.resolveWith(
-                              (states) => const Color(0xFF162953),
+                  SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                        child: DataTable(
+                          columnSpacing: 16.0,
+                          headingRowColor: WidgetStateProperty.resolveWith(
+                            (states) => const Color(0xFF162953),
+                          ),
+                          columns: const [
+                            DataColumn(
+                              label: Text(
+                                'Id Alokasi',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                            columns: const [
-                              DataColumn(
-                                label: Text(
-                                  'Id Alokasi',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
+                            DataColumn(
+                              label: Text(
+                                'Program Studi',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
-                              DataColumn(
-                                label: Text(
-                                  'Program Studi',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Status',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
-                              DataColumn(
-                                label: Text(
-                                  'Status',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                ' ',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
-                              DataColumn(
-                                label: Text(
-                                  ' ',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                            rows: DataAlokasi.map((alokasi) {
-                              return DataRow(
-                                cells: [
-                                  DataCell(Text(alokasi.idAlokasi)),
-                                  DataCell(Text(alokasi.namaProdi)),
-                                  DataCell(Text(alokasi.status)),
-                                  DataCell(
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                            ),
+                          ],
+                          rows: DataAlokasi.map((alokasi) {
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(alokasi.idAlokasi)),
+                                DataCell(Text(alokasi.namaProdi)),
+                                DataCell(Text(alokasi.status)),
+                                DataCell(
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                    onPressed: () {
+                                      // Handle button press
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AlokasiPage(alokasi : alokasi),
+                                        )
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.details, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Detail',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      ),
-                                      onPressed: () {
-                                        // Handle button press
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AlokasiPage(alokasi : alokasi),
-                                          )
-                                        );
-                                      },
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          Icon(Icons.details, color: Colors.white),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Detail',
-                                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              );
-                            }).toList(),
-                          ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
                         ),
-                      ),),
+                      ),
+                    ),
               ],
             ),
         ),

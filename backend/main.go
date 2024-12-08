@@ -54,6 +54,18 @@ func main() {
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
 	e.POST("/kaprodi/add-jadwal", controller.AddJadwal)
+	
+	// Route Dekan
+		// Jadwal Related
+	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
+	e.PUT("/dekan/jadwal/approve/:idjadwal", controller.ApproveJadwal)
+	e.GET("/dekan/jadwal/detail/:idjadwal", controller.GetDetailJadwal)
+
+		// Ruang Related
+	e.GET("/dekan/ruang/:idsem", controller.GetAllRuangProdi)
+	e.PUT("/dekan/ruang/approve/:idalokasi", controller.ApproveRuang)
+	e.GET("/dekan/ruang/detail/:idalokasi", controller.GetDetailRuang)
+	
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

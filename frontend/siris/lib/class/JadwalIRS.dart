@@ -3,6 +3,7 @@ class JadwalIRS extends Jadwal {
   final String status;
 
   JadwalIRS({
+    required super.idJadwal,
     required super.KodeMK,
     required super.NamaMK,
     required super.Ruangan,
@@ -17,6 +18,7 @@ class JadwalIRS extends Jadwal {
 
   factory JadwalIRS.fromJson(Map<String, dynamic> json) {
     return JadwalIRS(
+      idJadwal: json['id_jadwal'],
       KodeMK: json['kode_mk'],
       NamaMK: json['nama_mk'],
       Ruangan: json['kode_ruangan'],

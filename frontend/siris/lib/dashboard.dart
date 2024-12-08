@@ -68,7 +68,7 @@ class DashboardState extends State<Dashboard> {
         return _dashboardDekan(context);
       case "Kaprodi":
         return _dashboardKaprodi(context);
-      case "Baka":
+      case "Bagian Akademik":
         return _dashboardBaka(context);
       default:
         loggerDashboard.warning("Role hasn't been set");
@@ -188,11 +188,83 @@ class DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _dashboardDosen(BuildContext context){
-    return Container();
+  Widget _dashboardDekan(BuildContext context){
+    // return Row(
+    //   children: [
+    //     Flexible(
+    //       flex: 2,
+    //       fit: FlexFit.tight,
+    //       child: Container(
+    //         color: Colors.black,
+    //         child: Text("Test"),
+    //       ),
+    //     ),
+    //     Flexible(
+    //       flex: 2,
+    //       fit: FlexFit.tight,
+    //       child: Expanded(
+    //         child:Row(
+    //           children: [
+    //             Container(
+    //               margin: const EdgeInsets.all(4.0),
+    //               padding: const EdgeInsets.all(4.0),
+    //               decoration: const BoxDecoration(
+    //                 borderRadius: BorderRadius.all(Radius.circular(10)),
+    //                 color: Color(0xFF00549C)
+    //               ),
+    //               child: GestureDetector(
+    //                 onTap: () => Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData),
+    //                 child: Column(
+    //                   children: [
+    //                     Icon(Icons.room, color: Colors.white),
+    //                     const SizedBox(width: 5),
+    //                     Text("Ruangan", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),)
+    //                   ]
+    //                 ),
+    //               ),
+    //             ),
+    //             Container(
+    //               margin: const EdgeInsets.all(4.0),
+    //               padding: const EdgeInsets.all(4.0),
+    //               decoration: const BoxDecoration(
+    //                 borderRadius: BorderRadius.all(Radius.circular(10)),
+    //                 color: Color(0xFF00549C)
+    //               ),
+    //               child: SizedBox(
+    //                 width: 300,
+    //                 height: 300,
+    //                 child: ElevatedButton(
+    //                   onPressed: () => Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData),
+    //                   child: Column(
+    //                     children: [
+    //                       Icon(Icons.schedule, color: Colors.white),
+    //                       const SizedBox(width: 5),
+    //                       Text("Jadwal", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),)
+    //                     ]
+    //                   ),
+    //                 ),
+    //               )
+    //             )  
+    //           ],
+    //         )
+    //       ),
+    //     )
+    //   ],
+    // );
+    
+    return Row(
+      children: [
+        _buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
+          Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData);
+        }),
+        _buildMenuItem(Icons.room, "Ruang", onTap: () {
+          Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
+        }),
+      ]
+    );
   }
 
-  Widget _dashboardDekan(BuildContext context){
+  Widget _dashboardDosen(BuildContext context){
     return Container();
   }
 
@@ -252,43 +324,49 @@ class DashboardState extends State<Dashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        Flexible(
+                          flex: 1,
+                          fit: FlexFit.tight,
+                          child: Text(
                           'Hi, ${userData['name']}',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
+                                                    )
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(
-                              '${userData['identifier']}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                '|',
-                                style: TextStyle(
+                        Flexible(
+                          flex: 2,
+                          child: Row(
+                            children: [
+                              Text(
+                                '${userData['identifier']}',
+                                style: const TextStyle(
+                                  fontSize: 16,
                                   color: Colors.white,
-                                  fontSize: 20,
                                 ),
                               ),
-                            ),
-                            Text(
-                              '${userData['jurusan'] ?? userData['departemen']}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  '|',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                  ),
+                                ),
                               ),
-                            )
-                          ],
-                        )
+                              Text(
+                                '${userData['jurusan'] ?? userData['departemen']}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              )
+                            ],
+                          )
+                        ),
                       ],
                     ),
                   ),
@@ -311,13 +389,31 @@ class DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
-              child: _buildStatusMahasiswa(userData['currentLoginAs'])
+              child: _buildStatus(userData['currentLoginAs'])
             ),
           ],
         ));
   }
 
-  Widget _buildStatusMahasiswa(String role){
+    Widget _buildMenuItem(IconData icon, String label, {required VoidCallback onTap}) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.black),
+              const SizedBox(width: 4),
+              Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
+              const SizedBox(width: 16),
+            ],
+          ) 
+        ),
+      ]
+    );
+  }
+
+  Widget _buildStatus(String role){
     if(role == "Mahasiswa"){
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
