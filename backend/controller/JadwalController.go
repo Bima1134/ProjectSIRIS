@@ -50,7 +50,7 @@ func AddJadwalToIRS(c echo.Context) error {
 	}
 	log.Printf("IRS ID ditemukan: %d\n", irsID)
 
-	// Mengecek apakah jadwal sudah penuh
+	// Mengecek apakah jadwal sudah penuh dan mendapatkan data kapasitas jadwal dan ruangan
 	var jadwalKapasitas, ruanganKapasitas int
 	err = tx.QueryRow(`
 		SELECT j.kapasitas, r.kapasitas 
@@ -65,25 +65,97 @@ func AddJadwalToIRS(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memeriksa kapasitas jadwal"})
 	}
 	log.Printf("Kapasitas jadwal: %d, Kapasitas ruangan: %d\n", jadwalKapasitas, ruanganKapasitas)
-
+	var mahasiswaterkick = true
 	// Membandingkan kapasitas jadwal dengan kapasitas ruangan
 	if jadwalKapasitas >= ruanganKapasitas {
-		log.Println("Error: Kapasitas jadwal sudah penuh")
-		return c.JSON(http.StatusConflict, map[string]string{"message": "Kapasitas jadwal sudah penuh"})
-	}
+		log.Println("Error: Kapasitas jadwal sudah penuh, memeriksa prioritas mahasiswa")
 
-	// Mengecek apakah kode mata kuliah sudah ada di irs_detail
-	var existingID int
-	err = tx.QueryRow("SELECT irs_detail_id FROM irs_detail WHERE irs_id = ? AND kode_mk = ?", irsID, kodeMK).Scan(&existingID)
-	if err != nil && err != sql.ErrNoRows {
-		log.Println("Error: Gagal memeriksa keberadaan mata kuliah di IRS:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memeriksa keberadaan mata kuliah di IRS"})
+		// Mendapatkan semester mahasiswa dan jadwal mata kuliah
+		var mahasiswaSemester, mataKuliahSemester int
+		if err := tx.QueryRow(`
+			SELECT m.semester, mk.semester
+			FROM mahasiswa m 
+			JOIN mata_kuliah mk ON mk.kode_mk = ?
+			WHERE m.nim = ?`, kodeMK, nim).Scan(&mahasiswaSemester, &mataKuliahSemester); err != nil {
+			log.Println("Error: Gagal mengambil data semester mahasiswa atau mata kuliah:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil data semester mahasiswa atau mata kuliah"})
+		}
+		log.Printf("Semester Mahasiswa: %d, Semester Mata Kuliah: %d\n", mahasiswaSemester, mataKuliahSemester)
+
+		// Mengecek prioritas berdasarkan aturan
+		prioritas := 0
+		if mahasiswaSemester == mataKuliahSemester {
+			prioritas = 1
+		} else if mahasiswaSemester > mataKuliahSemester {
+			prioritas = 2
+		} else {
+			prioritas = 3
+		}
+		log.Printf("Prioritas Mahasiswa: %d\n", prioritas)
+
+		// Mendapatkan daftar peserta jadwal dengan prioritas lebih rendah
+		rows, err := tx.Query(`
+			SELECT p.nim, m.semester
+			FROM pesertajadwal p 
+			JOIN mahasiswa m ON p.nim = m.nim
+			WHERE p.jadwal_id = ?`, jadwalID)
+		if err != nil {
+			log.Println("Error: Gagal mendapatkan peserta jadwal:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan peserta jadwal"})
+		}
+		defer rows.Close()
+
+		var pesertaDenganPrioritasLebihRendah []struct {
+			NIM      string
+			Semester int
+		}
+		for rows.Next() {
+			var nimPeserta string
+			var semesterPeserta int
+			if err := rows.Scan(&nimPeserta, &semesterPeserta); err != nil {
+				log.Println("Error: Gagal membaca data peserta jadwal:", err)
+				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal membaca data peserta jadwal"})
+			}
+			if semesterPeserta > mahasiswaSemester {
+				pesertaDenganPrioritasLebihRendah = append(pesertaDenganPrioritasLebihRendah, struct {
+					NIM      string
+					Semester int
+				}{nimPeserta, semesterPeserta})
+			}
+		}
+
+		// Jika ada peserta dengan prioritas lebih rendah, hapus mereka
+		if len(pesertaDenganPrioritasLebihRendah) > 0 {
+			mahasiswaterkick = false
+			// Menghapus peserta dengan prioritas lebih rendah (menggunakan yang terakhir jika lebih dari satu)
+			pesertaTerakhir := pesertaDenganPrioritasLebihRendah[len(pesertaDenganPrioritasLebihRendah)-1]
+			log.Printf("Menghapus peserta dengan prioritas lebih rendah: %s\n", pesertaTerakhir.NIM)
+
+			if _, err := tx.Exec("DELETE FROM pesertajadwal WHERE jadwal_id = ? AND nim = ?", jadwalID, pesertaTerakhir.NIM); err != nil {
+				log.Println("Error: Gagal menghapus peserta dari jadwal:", err)
+				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus peserta dari jadwal"})
+			}
+			var angkatanMahasiswa, semesterMahasiswa int
+			err = tx.QueryRow("SELECT angkatan, semester FROM mahasiswa WHERE nim = ?", pesertaTerakhir.NIM).Scan(&angkatanMahasiswa, &semesterMahasiswa)
+			if err != nil {
+				log.Println("Error: Gagal mendapatkan angkatan dan semester mahasiswa:", err)
+				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mendapatkan angkatan dan semester mahasiswa"})
+			}
+			idSem := calculateIDSem(angkatanMahasiswa, semesterMahasiswa) // Memanggil fungsi calculateIDSem
+			log.Printf("IDSEM Mahasiswa: %s\n", idSem)
+			if _, err := tx.Exec(`
+				DELETE FROM irs_detail 
+				WHERE irs_id = (SELECT irs_id FROM irs WHERE nim = ? AND idsem = ?) 
+				AND jadwal_id = ?`, pesertaTerakhir.NIM, idSem, jadwalID); err != nil {
+				log.Println("Error: Gagal menghapus jadwal dari IRS peserta:", err)
+				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus jadwal dari IRS peserta"})
+			}
+
+		} else {
+			log.Println("Error: Mahasiswa tidak dapat ditambahkan karena prioritas lebih rendah")
+			return c.JSON(http.StatusConflict, map[string]string{"message": "Mahasiswa tidak dapat ditambahkan karena prioritas lebih rendah"})
+		}
 	}
-	if existingID != 0 {
-		log.Println("Error: Mata kuliah sudah ada di IRS")
-		return c.JSON(http.StatusConflict, map[string]string{"message": "Mata kuliah sudah ada di IRS"})
-	}
-	log.Println("Mata kuliah belum ada di IRS")
 
 	// Memasukkan data ke tabel irs_detail
 	_, err = tx.Exec("INSERT INTO irs_detail (irs_id, kode_mk, jadwal_id) VALUES (?, ?, ?)", irsID, kodeMK, jadwalID)
@@ -102,12 +174,14 @@ func AddJadwalToIRS(c echo.Context) error {
 	log.Println("Peserta berhasil ditambahkan ke jadwal")
 
 	// Menambah kapasitas di tabel jadwal
-	_, err = tx.Exec("UPDATE jadwal SET kapasitas = kapasitas + 1 WHERE jadwal_id = ?", jadwalID)
-	if err != nil {
-		log.Println("Error: Gagal memperbarui kapasitas jadwal:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memperbarui kapasitas jadwal"})
+	if mahasiswaterkick {
+		_, err = tx.Exec("UPDATE jadwal SET kapasitas = kapasitas + 1 WHERE jadwal_id = ?", jadwalID)
+		if err != nil {
+			log.Println("Error: Gagal memperbarui kapasitas jadwal:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memperbarui kapasitas jadwal"})
+		}
+		log.Println("Kapasitas jadwal berhasil diperbarui")
 	}
-	log.Println("Kapasitas jadwal berhasil diperbarui")
 
 	// Commit transaksi
 	if err := tx.Commit(); err != nil {
