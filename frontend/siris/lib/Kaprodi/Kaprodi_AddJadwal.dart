@@ -83,27 +83,35 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
 
   // Method untuk memilih waktu
   Future<void> _selectTime(
-      BuildContext context, TextEditingController controller) async {
-    TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+    BuildContext context, TextEditingController controller) async {
+  final TimeOfDay? picked = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+  );
 
-    if (pickedTime != null) {
-      // Konversi TimeOfDay ke format HH:MM:SS
-      final now = DateTime.now();
-      final formattedTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        pickedTime.hour,
-        pickedTime.minute,
-      ).toIso8601String().substring(11, 19); // Ambil hanya HH:MM:SS
+  if (picked != null) {
+    setState(() {
+      controller.text = picked.format(context);
 
-      // Set waktu ke controller
-      controller.text = formattedTime;
-    }
+      // Jika memilih jam mulai, otomatis hitung jam selesai
+      if (controller == jamMulaiController) {
+        final int totalMinutes = selectedMataKuliah!.sks * 50; // Total menit berdasarkan SKS
+        final sks = selectedMataKuliah?.sks;
+        debugPrint("Sks $sks");
+        final TimeOfDay jamMulai = picked;
+
+        // Hitung waktu selesai
+        final TimeOfDay jamSelesai = TimeOfDay(
+          hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
+          minute: (jamMulai.minute + totalMinutes % 60) % 60,
+        );
+
+        // Set teks pada controller jam selesai
+        jamSelesaiController.text = jamSelesai.format(context);
+      }
+    });
   }
+}
 
   // Fetch ruang data from the backend
   Future<void> fetchRuangData() async {
@@ -155,15 +163,17 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
     final url =
         'http://localhost:8080/kaprodi/add-jadwal/20241/${userData['nama_prodi']}';
     loggerAddJadwal.info("Adding Jadwal URL: $url");
-    debugPrint("Pordu : $prodi");
+    debugPrint("Prodi : $prodi");
     // Data yang akan dikirimkan
     final data = {
-      'kodeMK': selectedKodeMK,
+      'kode_mk': selectedKodeMK,
+      'kode_ruang': selectedRuangan,
       'kelas': kelasController.text,
-      'kodeRuang': selectedRuangan,
       'hari': selectedHari,
-      'jamMulai': jamMulaiController.text,
-      'jamSelesai': jamSelesaiController.text,
+      'jam_mulai': jamMulaiController.text,
+      'jam_selesai': jamSelesaiController.text,
+      'idsem' : "20241",
+      'nama_prodi' : prodi,  
     };
 
     try {
@@ -225,6 +235,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
                         .map((dosen) => TextEditingController(text: dosen))
                         .toList();
                   });
+                  debugPrint("Selected kode Mk $selectedKodeMK");
                 },
                 validator: (value) =>
                     value == null ? 'Pilih Mata Kuliah' : null,
@@ -296,6 +307,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
                     kapasitasController.text =
                         ruangTerpilih.kapasitas.toString();
                   });
+                  debugPrint("Selected Ruangan Mk $selectedRuangan");
                 },
                 validator: (value) => value == null ? 'Pilih Ruangan' : null,
               ),
