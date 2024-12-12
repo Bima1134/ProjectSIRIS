@@ -25,7 +25,7 @@ class EditJadwalPage extends StatefulWidget {
       required this.jamMulai,
       required this.jamSelesai,
       required this.kelas,
-      required this.ruangan, 
+      required this.ruangan,
       required this.sks});
 
   @override
@@ -34,6 +34,7 @@ class EditJadwalPage extends StatefulWidget {
 
 class _EditJadwalPageState extends State<EditJadwalPage> {
   final _formKey = GlobalKey<FormState>();
+  get userData => widget.userData;
 
   // Controllers
   late TextEditingController kelasController;
@@ -131,20 +132,23 @@ class _EditJadwalPageState extends State<EditJadwalPage> {
     }
   }
 
-// Fetch ruang data from the backend
   Future<void> fetchRuangData() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/ruang'));
+      final prodi = widget.userData['nama_prodi'];
+      final response = await http.get(
+          Uri.parse('http://localhost:8080/kaprodi/get-ruang-by-prodi/$prodi'));
+      debugPrint(
+          'Fetching data from: http://localhost:8080/kaprodi/get-ruang-by-prodi/${userData['nama_prodi']}');
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           try {
             final data = json.decode(response.body);
+            debugPrint("Data : $data");
             if (data is List) {
               setState(() {
                 ruangList = data.map((item) => Ruang.fromJson(item)).toList();
               });
-              debugPrint("ruangList : $ruangList");
             } else {
               setState(() {
                 ruangList = []; // Default to empty list if data is not a list
@@ -178,37 +182,37 @@ class _EditJadwalPageState extends State<EditJadwalPage> {
   }
 
   // Fungsi memilih waktu
-Future<void> _selectTime(
-    BuildContext context, TextEditingController controller) async {
-  final TimeOfDay? picked = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-  );
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
 
-  if (picked != null) {
-    setState(() {
-      controller.text = picked.format(context);
+    if (picked != null) {
+      setState(() {
+        controller.text = picked.format(context);
 
-      // Jika memilih jam mulai, otomatis hitung jam selesai
-      if (controller == jamMulaiController) {
-        final int totalMinutes = widget.sks * 50; // Total menit berdasarkan SKS
-        final sks = widget.sks;
-        debugPrint("Sks $sks");
-        final TimeOfDay jamMulai = picked;
+        // Jika memilih jam mulai, otomatis hitung jam selesai
+        if (controller == jamMulaiController) {
+          final int totalMinutes =
+              widget.sks * 50; // Total menit berdasarkan SKS
+          final sks = widget.sks;
+          debugPrint("Sks $sks");
+          final TimeOfDay jamMulai = picked;
 
-        // Hitung waktu selesai
-        final TimeOfDay jamSelesai = TimeOfDay(
-          hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
-          minute: (jamMulai.minute + totalMinutes % 60) % 60,
-        );
+          // Hitung waktu selesai
+          final TimeOfDay jamSelesai = TimeOfDay(
+            hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
+            minute: (jamMulai.minute + totalMinutes % 60) % 60,
+          );
 
-        // Set teks pada controller jam selesai
-        jamSelesaiController.text = jamSelesai.format(context);
-      }
-    });
+          // Set teks pada controller jam selesai
+          jamSelesaiController.text = jamSelesai.format(context);
+        }
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -279,24 +283,24 @@ Future<void> _selectTime(
               validator: (value) => value == null ? 'Pilih Hari' : null,
             ),
 
-           // Jam Mulai
-          TextFormField(
-            controller: jamMulaiController,
-            decoration: const InputDecoration(labelText: 'Jam Mulai'),
-            readOnly: true,
-            onTap: () => _selectTime(context, jamMulaiController),
-            validator: (value) => value!.isEmpty ? 'Pilih jam mulai' : null,
-          ),
+            // Jam Mulai
+            TextFormField(
+              controller: jamMulaiController,
+              decoration: const InputDecoration(labelText: 'Jam Mulai'),
+              readOnly: true,
+              onTap: () => _selectTime(context, jamMulaiController),
+              validator: (value) => value!.isEmpty ? 'Pilih jam mulai' : null,
+            ),
 
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Jam Selesai
-          TextFormField(
-            controller: jamSelesaiController,
-            decoration: const InputDecoration(labelText: 'Jam Selesai'),
-            readOnly: true,
-            validator: (value) => value!.isEmpty ? 'Pilih jam selesai' : null,
-          ),
+            // Jam Selesai
+            TextFormField(
+              controller: jamSelesaiController,
+              decoration: const InputDecoration(labelText: 'Jam Selesai'),
+              readOnly: true,
+              validator: (value) => value!.isEmpty ? 'Pilih jam selesai' : null,
+            ),
 
             SizedBox(height: 8),
 

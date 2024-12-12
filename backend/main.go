@@ -64,8 +64,12 @@ func main() {
 	e.POST("/kaprodi/upload-csv", controller.UploadCSVMK)
 	e.PUT("/kaprodi/edit-jadwal/:jadwal_id", controller.UpdateJadwal)
 	e.DELETE("/kaprodi/remove-jadwal/:jadwal_id", controller.DeleteJadwalHandler)
+<<<<<<< HEAD
+	e.GET("/kaprodi/get-ruang-by-prodi/:namaProdi", controller.GetRuangbyProdi)
+=======
 	// e.GET("/idsem". controller.GetIdSem)
 	e.DELETE("/kaprodi/remove-all-jadwal", controller.DeleteMultipleJadwal)
+>>>>>>> 6c38da7073f8ca4dc891c76f77b63f13ed6ec2eb
 	// Route Dekan
 	// Jadwal Related
 	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
@@ -76,6 +80,7 @@ func main() {
 	e.GET("/dekan/ruang/:idsem", controller.GetAllRuangProdi)
 	e.PUT("/dekan/ruang/approve/:idalokasi", controller.ApproveRuang)
 	e.GET("/dekan/ruang/detail/:idalokasi", controller.GetDetailRuang)
+
 
 	// Middleware untuk menangani CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

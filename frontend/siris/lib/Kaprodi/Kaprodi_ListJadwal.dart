@@ -110,8 +110,8 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
 //   int currentPage = 1;  // Track the current page
 //   int rowsPerPage = 10; // Number of rows per page
 //   List<Ruang> paginatedList = []; // To hold the current page data
-    Set<int> selectedJadwal = {}; // Store selected room names
-    bool selectAll = false;
+  Set<int> selectedJadwal = {}; // Store selected room names
+  bool selectAll = false;
 
   @override
   void initState() {
@@ -173,156 +173,154 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
   }
 
   Future<void> removeJadwal(int jadwalID) async {
-  // URL backend untuk menghapus jadwal
-  final String url = 'http://localhost:8080/kaprodi/remove-jadwal/$jadwalID'; // Sesuaikan URL backend Anda
-  
-  try {
-    // Mengirim permintaan DELETE ke backend
-    final response = await http.delete(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
+    // URL backend untuk menghapus jadwal
+    final String url =
+        'http://localhost:8080/kaprodi/remove-jadwal/$jadwalID'; // Sesuaikan URL backend Anda
 
-    // Cek respons dari server
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data['message']),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      // Mengirim permintaan DELETE ke backend
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       );
-    } else {
-      // Error dari server
-      final data = jsonDecode(response.body);
+
+      // Cek respons dari server
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message']),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Error dari server
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Gagal menghapus jadwal'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Menangani error dari sisi jaringan
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(data['message'] ?? 'Gagal menghapus jadwal'),
+          content: Text('Terjadi kesalahan: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } catch (e) {
-    // Menangani error dari sisi jaringan
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Terjadi kesalahan: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
   void showDeleteConfirmationDialog(int jadwalId) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text(
-          'Konfirmasi Hapus',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Apakah yakin ingin menghapus jadwal?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Tutup dialog tanpa aksi
-            },
-            child: const Text('Tidak'),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Konfirmasi Hapus',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+          content: const Text('Apakah yakin ingin menghapus jadwal?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog tanpa aksi
+              },
+              child: const Text('Tidak'),
             ),
-            onPressed: () async {
-              Navigator.of(context).pop(); // Tutup dialog
-              // Panggil fungsi removeJadwal dan tunggu hasilnya
-              await removeJadwal(jadwalId);
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Tutup dialog
+                // Panggil fungsi removeJadwal dan tunggu hasilnya
+                await removeJadwal(jadwalId);
 
-              // Refresh data jadwal
-              setState(() {
-                fetchJadwalData();
-              });
-            },
-            child: const Text('Ya'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-Future<void> deleteSelectedJadwal(List<int> selectedJadwal) async {
-  final url = Uri.parse('http://localhost:8080/kaprodi/remove-all-jadwal');
-
-  try {
-    // Kirim permintaan DELETE dengan header dan body JSON
-    final response = await http.delete(
-      url,
-      headers: {
-        'Content-Type': 'application/json', // Set Content-Type header
+                // Refresh data jadwal
+                setState(() {
+                  fetchJadwalData();
+                });
+              },
+              child: const Text('Ya'),
+            ),
+          ],
+        );
       },
-      body: jsonEncode({
-        'jadwal_id': selectedJadwal, // Kirim daftar jadwal yang ingin dihapus
-      }),
     );
-
-    if (response.statusCode == 200) {
-      // Jika berhasil menghapus, tampilkan notifikasi atau perbarui UI
-      print("Jadwal berhasil dihapus: ${response.body}");
-    } else {
-      // Jika gagal, tampilkan pesan error
-      print("Gagal menghapus jadwal. Status: ${response.statusCode}, Body: ${response.body}");
-    }
-  } catch (e) {
-    // Tangani kesalahan seperti koneksi yang gagal
-    print("Terjadi kesalahan saat menghapus jadwal: $e");
   }
-}
 
+  Future<void> deleteSelectedJadwal(List<int> selectedJadwal) async {
+    final url = Uri.parse('http://localhost:8080/kaprodi/remove-all-jadwal');
 
-
-
-void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text(
-          'Konfirmasi Hapus',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-            'Apakah yakin ingin menghapus ${selectedJadwal.length} jadwal terpilih?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Tutup dialog tanpa aksi
-            },
-            child: const Text('Tidak'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () async {
-              Navigator.of(context).pop(); // Tutup dialog
-              // Panggil fungsi deleteSelectedJadwal
-              await deleteSelectedJadwal(selectedJadwal.toList());
-              setState(() {
-                fetchJadwalData();
-              });
-            },
-            child: const Text('Ya'),
-          ),
-        ],
+    try {
+      // Kirim permintaan DELETE dengan header dan body JSON
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json', // Set Content-Type header
+        },
+        body: jsonEncode({
+          'jadwal_id': selectedJadwal, // Kirim daftar jadwal yang ingin dihapus
+        }),
       );
-    },
-  );
-}
 
+      if (response.statusCode == 200) {
+        // Jika berhasil menghapus, tampilkan notifikasi atau perbarui UI
+        print("Jadwal berhasil dihapus: ${response.body}");
+      } else {
+        // Jika gagal, tampilkan pesan error
+        print(
+            "Gagal menghapus jadwal. Status: ${response.statusCode}, Body: ${response.body}");
+      }
+    } catch (e) {
+      // Tangani kesalahan seperti koneksi yang gagal
+      print("Terjadi kesalahan saat menghapus jadwal: $e");
+    }
+  }
+
+  void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Konfirmasi Hapus',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+              'Apakah yakin ingin menghapus ${selectedJadwal.length} jadwal terpilih?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog tanpa aksi
+              },
+              child: const Text('Tidak'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Tutup dialog
+                // Panggil fungsi deleteSelectedJadwal
+                await deleteSelectedJadwal(selectedJadwal.toList());
+                setState(() {
+                  fetchJadwalData();
+                });
+              },
+              child: const Text('Ya'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -495,10 +493,11 @@ void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
                         ),
                         onPressed: () {
                           setState(() {
-                            if (selectAll){
+                            if (selectAll) {
                               selectedJadwal.clear();
                             } else {
-                              selectedJadwal.addAll(jadwalKaprodi.map((jadwal)=> jadwal.jadwalID));
+                              selectedJadwal.addAll(jadwalKaprodi
+                                  .map((jadwal) => jadwal.jadwalID));
                             }
                             selectAll = !selectAll;
                           });
@@ -535,7 +534,7 @@ void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
                               horizontal: 16, vertical: 12),
                         ),
                         onPressed: () {
-                          if (selectedJadwal.isNotEmpty){
+                          if (selectedJadwal.isNotEmpty) {
                             deleteSelectedConfirmationDialog(selectedJadwal);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -704,7 +703,8 @@ void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
                                             selectedJadwal.remove(jadwal
                                                 .jadwalID); // Remove from selection
                                           }
-                                          debugPrint("Selected jadwal: $selectedJadwal");
+                                          debugPrint(
+                                              "Selected jadwal: $selectedJadwal");
                                         });
                                       },
                                     ),
@@ -771,9 +771,8 @@ void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
                                                         jamSelesai:
                                                             jadwal.jamSelesai,
                                                         hari: jadwal.hari,
-                                                        ruangan:
-                                                            jadwal.ruangan,
-                                                        sks : jadwal.sks),
+                                                        ruangan: jadwal.ruangan,
+                                                        sks: jadwal.sks),
                                               ),
                                             ).then((value) {
                                               if (value == true) {
@@ -802,21 +801,28 @@ void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            showDeleteConfirmationDialog(jadwal.jadwalID);
+                                            showDeleteConfirmationDialog(
+                                                jadwal.jadwalID);
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: const [
-                                              Icon(Icons.delete, color: Colors.white),
+                                              Icon(Icons.delete,
+                                                  color: Colors.white),
                                               SizedBox(width: 8),
                                               Text(
                                                 'Delete',
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ],
                                           ),

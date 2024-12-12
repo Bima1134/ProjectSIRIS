@@ -654,3 +654,72 @@ func DeleteMultipleJadwal(c echo.Context) error {
 		"message": "Selected jadwal deleted successfully",
 	})
 }
+
+
+func GetRuangbyProdi(c echo.Context) error {
+	// Get the `namaProdi` parameter from the request
+	namaProdi := c.Param("namaProdi")
+	log.Println("DEBUG: Received request for GetRuangbyProdi with namaProdi:", namaProdi)
+
+	// Validate the parameter
+	if namaProdi == "" {
+		log.Println("ERROR: namaProdi parameter is empty")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "Nama prodi tidak boleh kosong",
+		})
+	}
+
+	// Create a database connection
+	connection := db.CreateCon()
+	log.Println("DEBUG: Database connection created successfully")
+
+	// SQL query to fetch only kode_ruang
+	query := `
+		SELECT r.kode_ruang, r.nama_ruang, r.gedung, r.lantai, r.fungsi, r.kapasitas
+		from ruang r
+		JOIN
+			alokasi_ruang_detail d ON r.kode_ruang = d.kode_ruang 
+		JOIN 
+			alokasi_ruang a ON d.id_alokasi = a.id_alokasi 
+		WHERE 
+			a.nama_prodi = ? AND a.status = "sudah disetujui"
+	`
+	log.Println("DEBUG: Query prepared:", query)
+
+	// Execute the query
+	rows, err := connection.Query(query, namaProdi)
+	if err != nil {
+		log.Println("ERROR: Failed to execute query:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal mendapatkan daftar ruang",
+		})
+	}
+	defer rows.Close()
+	log.Println("DEBUG: Query executed successfully for namaProdi:", namaProdi)
+
+	// Collect results into a slice
+	var ruangList []models.Ruang
+	for rows.Next() {
+		var ruang models.Ruang
+		if err := rows.Scan(&ruang.KodeRuang,&ruang.NamaRuang,&ruang.Gedung,&ruang.Lantai,&ruang.Fungsi,&ruang.Kapasitas); err != nil {
+			log.Println("ERROR: Failed to scan query result:", err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"message": "Gagal memproses hasil daftar ruang",
+			})
+		}
+		log.Println("DEBUG: Fetched kode_ruang:", ruang)
+		ruangList = append(ruangList, ruang)
+	}
+
+	// Check if no rooms were found
+	if len(ruangList) == 0 {
+		log.Printf("WARNING: No rooms found for prodi %s\n", namaProdi)
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "Tidak ada ruang yang disetujui untuk prodi ini",
+		})
+	}
+
+	// Return the result as JSON
+	log.Printf("DEBUG: Approved rooms for prodi %s: %v\n", namaProdi, ruangList)
+	return c.JSON(http.StatusOK, ruangList)
+}
