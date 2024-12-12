@@ -57,14 +57,19 @@ func main() {
 	// Route Kaprodi
 	e.GET("/kaprodi/jadwalViewKaprodi", controller.GetViewJadwalKaprodi)
 	e.GET("/kaprodi/mata-kuliah/:prodi", controller.GetMataKuliahByProdi)
-	e.POST("/kaprodi/add-jadwal/:idsem/:prodi", controller.AddJadwal)
+	e.POST("/kaprodi/add-jadwal/:prodi", controller.AddJadwal)
 	e.DELETE("/kaprodi/delete-matkul/:KodeMK", controller.DeleteMatkul)
 	e.DELETE("/kaprodi/delete-matkul-multiple", controller.DeleteMultipleMatkul)
 	e.PUT("/kaprodi/update-matkul/:KodeMK", controller.UpdateMatkul)
 	e.POST("/kaprodi/upload-csv", controller.UploadCSVMK)
 	e.PUT("/kaprodi/edit-jadwal/:jadwal_id", controller.UpdateJadwal)
 	e.DELETE("/kaprodi/remove-jadwal/:jadwal_id", controller.DeleteJadwalHandler)
+<<<<<<< HEAD
 	e.GET("/kaprodi/get-ruang-by-prodi/:namaProdi", controller.GetRuangbyProdi)
+=======
+	// e.GET("/idsem". controller.GetIdSem)
+	e.DELETE("/kaprodi/remove-all-jadwal", controller.DeleteMultipleJadwal)
+>>>>>>> 6c38da7073f8ca4dc891c76f77b63f13ed6ec2eb
 	// Route Dekan
 	// Jadwal Related
 	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
