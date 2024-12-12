@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/Kaprodi/Kaprodi_AddJadwal.dart';
+import 'package:siris/Kaprodi/Kaprodi_EditJadwal.dart';
+
 import 'package:siris/class/jadwalKaprodi.dart';
 
 class JadwalKaprodiView {
+  final int jadwalID;
   final String kodeMk;
   final String namaMatkul;
   final String semester;
@@ -19,6 +22,7 @@ class JadwalKaprodiView {
   final String jamSelesai;
 
   JadwalKaprodiView({
+    required this.jadwalID,
     required this.kodeMk,
     required this.namaMatkul,
     required this.semester,
@@ -27,7 +31,7 @@ class JadwalKaprodiView {
     required this.dosenPengampu,
     required this.kelas,
     required this.ruangan,
-    this.kapasitas,
+    required this.kapasitas,
     required this.hari,
     required this.jamMulai,
     required this.jamSelesai,
@@ -47,24 +51,26 @@ class JadwalKaprodiView {
     }
 
     return JadwalKaprodiView(
-      kodeMk: json['kode_mk'],
-      namaMatkul: json['namaMatkul'],
-      semester: json['semester'],
-      sks: json['sks'],
-      sifat: json['sifat'],
+      jadwalID: json['jadwal_id'] ?? 0, // Jika null, set ke 0
+      kodeMk: json['kode_mk'] ?? 'N/A', // Jika null, set ke 'N/A'
+      namaMatkul: json['namaMatkul'] ?? 'N/A', // Jika null, set ke 'N/A'
+      semester: json['semester'] ?? 'N/A', // Jika null, set ke 'N/A'
+      sks: json['sks'] ?? 0, // Jika null, set ke 0
+      sifat: json['sifat'] ?? 'N/A', // Jika null, set ke 'N/A'
       dosenPengampu: dosenPengampuList, // Menyimpan list dosen pengampu
-      kelas: json['kelas'],
-      ruangan: json['kode_ruang'], // Sesuaikan dengan nama field yang sesuai
-      kapasitas: json['kapasitas'],
-      hari: json['hari'],
-      jamMulai: (json['Jam_mulai']),
-      jamSelesai: (json['Jam_selesai']),
+      kelas: json['kelas'] ?? 'N/A', // Jika null, set ke 'N/A'
+      ruangan: json['kode_ruang'] ?? 'N/A', // Jika null, set ke 'N/A'
+      kapasitas: json['kapasitas'] ?? 0, // Jika null, set ke 0
+      hari: json['hari'] ?? 'N/A', // Jika null, set ke 'N/A'
+      jamMulai: json['Jam_mulai'] ?? 'N/A', // Jika null, set ke 'N/A'
+      jamSelesai: json['Jam_selesai'] ?? 'N/A', // Jika null, set ke 'N/A'
     );
   }
 
   // Method untuk mengonversi ke Map<String, dynamic> (opsional)
   Map<String, dynamic> toJson() {
     return {
+      'jadwal_id': jadwalID,
       'kode_mk': kodeMk,
       'namaMatkul': namaMatkul,
       'semester': semester,
@@ -88,7 +94,7 @@ class JadwalKaprodiView {
 
 class ListJadwalKaprodiPage extends StatefulWidget {
   final Map<String, dynamic> userData;
-  
+
   const ListJadwalKaprodiPage({super.key, required this.userData});
 
   @override
@@ -114,13 +120,14 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
   // Fetch ruang data from the backend
   Future<void> fetchJadwalData() async {
     try {
-      final response = await http
-          .get(Uri.parse('http://localhost:8080/kaprodi/jadwalViewKaprodi'));
+      final response =
+          await http.get(Uri.parse('http://localhost:8080/mahasiswa/jadwal'));
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           try {
             final data = json.decode(response.body);
+            debugPrint("Data $data");
             if (data is List) {
               setState(() {
                 jadwalKaprodi = data
@@ -295,8 +302,9 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                           Navigator.push(
                             context, // context should be available if used within StatefulWidget
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  AddJadwalPage(userData: userData), // Navigate to ListRuangPage
+                              builder: (context) => AddJadwalPage(
+                                  userData:
+                                      userData), // Navigate to ListRuangPage
                             ),
                           );
                         },
@@ -487,6 +495,14 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                   fontWeight: FontWeight.bold),
                             ),
                           ),
+                          DataColumn(
+                            label: Text(
+                              'Action',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ],
                         // rows: []
                         rows: jadwalKaprodi
@@ -526,6 +542,95 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                   DataCell(Text(jadwal.hari ?? 'N/A')),
                                   DataCell(Text(
                                       '${jadwal.jamMulai ?? 'N/A'} - ${jadwal.jamSelesai ?? 'N/A'}')),
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditJadwalPage(
+                                                        userData: userData,
+                                                        jadwalID: jadwal
+                                                            .jadwalID
+                                                            .toString(),
+                                                        kodeMk: jadwal.kodeMk,
+                                                        kelas: jadwal.kelas,
+                                                        jamMulai:
+                                                            jadwal.jamMulai,
+                                                        jamSelesai:
+                                                            jadwal.jamSelesai,
+                                                        hari: jadwal.hari,
+                                                        ruangan:
+                                                            jadwal.ruangan),
+                                              ),
+                                            ).then((value) {
+                                              if (value == true) {
+                                                fetchJadwalData(); // Refresh the data after returning
+                                              }
+                                            });
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.edit,
+                                                  color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Edit',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
+                                          ),
+                                          onPressed: () {
+                                            // _showDeleteConfirmationDialog(
+                                            //     rooms: [ruang]);
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.delete,
+                                                  color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ) //map

@@ -38,7 +38,8 @@ class _EditMatkulPageState extends State<EditMatkulPage> {
     KodeMKController = TextEditingController(text: widget.KodeMK);
     NamaMKController = TextEditingController(text: widget.NamaMK);
     SKSController = TextEditingController(text: widget.SKS.toString());
-    SemesterController = TextEditingController(text: widget.Semester.toString());
+    SemesterController =
+        TextEditingController(text: widget.Semester.toString());
     NamaProdiController = TextEditingController(text: widget.NamaProdi);
     selectedStatus = widget.Status;
   }
@@ -58,7 +59,8 @@ class _EditMatkulPageState extends State<EditMatkulPage> {
 
       try {
         final response = await http.put(
-          Uri.parse('http://localhost:8080/kaprodi/update-matkul/${widget.KodeMK}'),
+          Uri.parse(
+              'http://localhost:8080/kaprodi/update-matkul/${widget.KodeMK}'),
           headers: {'Content-Type': 'application/json'},
           body: requestBody,
         );
@@ -126,21 +128,26 @@ class _EditMatkulPageState extends State<EditMatkulPage> {
                     SizedBox(height: 24),
                     TextFormField(
                       controller: KodeMKController,
-                      decoration: InputDecoration(labelText: 'Kode Mata Kuliah'),
-                      validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+                      decoration:
+                          InputDecoration(labelText: 'Kode Mata Kuliah'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 8),
                     TextFormField(
                       controller: NamaMKController,
-                      decoration: InputDecoration(labelText: 'Nama Mata Kuliah'),
-                      validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+                      decoration:
+                          InputDecoration(labelText: 'Nama Mata Kuliah'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 8),
                     TextFormField(
                       controller: SKSController,
                       decoration: InputDecoration(labelText: 'SKS'),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 8),
                     DropdownButtonFormField<String>(
@@ -157,20 +164,24 @@ class _EditMatkulPageState extends State<EditMatkulPage> {
                           selectedStatus = value;
                         });
                       },
-                      validator: (value) => value == null ? 'Field cannot be empty' : null,
+                      validator: (value) =>
+                          value == null ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 8),
                     TextFormField(
                       controller: SemesterController,
                       decoration: InputDecoration(labelText: 'Semester'),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 8),
                     TextFormField(
                       controller: NamaProdiController,
-                      decoration: InputDecoration(labelText: 'Nama Program Studi'),
-                      validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
+                      decoration:
+                          InputDecoration(labelText: 'Nama Program Studi'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Field cannot be empty' : null,
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(

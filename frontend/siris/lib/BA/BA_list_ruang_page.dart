@@ -10,11 +10,9 @@ import 'package:siris/navbar.dart';
 class ListRuangPage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-   const ListRuangPage({super.key, required this.userData});
+  const ListRuangPage({super.key, required this.userData});
   @override
   _ListRuangPageState createState() => _ListRuangPageState();
-   
-  
 }
 
 class _ListRuangPageState extends State<ListRuangPage> {
@@ -23,7 +21,7 @@ class _ListRuangPageState extends State<ListRuangPage> {
   List<Ruang> ruangList = [];
   Set<String> selectedRuang = {}; // Store selected room names
 
-  int currentPage = 1;  // Track the current page
+  int currentPage = 1; // Track the current page
   int rowsPerPage = 10; // Number of rows per page
   List<Ruang> paginatedList = []; // To hold the current page data
 
@@ -78,7 +76,6 @@ class _ListRuangPageState extends State<ListRuangPage> {
       });
     }
   }
-
 
   // Unified method to handle the confirmation dialog for both single and multiple rooms
   void _showDeleteConfirmationDialog({required List<Ruang> rooms}) {
@@ -139,357 +136,399 @@ class _ListRuangPageState extends State<ListRuangPage> {
 
     try {
       final response = await http.delete(
-      Uri.parse('http://localhost:8080/ruang/deleteMultiple'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({"kodeRuang": selectedCodes}),
+        Uri.parse('http://localhost:8080/ruang/deleteMultiple'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({"kodeRuang": selectedCodes}),
       );
-    loggerRuang.info(response.body);
-    if (response.statusCode == 200) {
-      setState(() {
-        ruangList.removeWhere((ruang) => selectedCodes.contains(ruang.kodeRuang));
-        selectedRuang.clear();
-        
-      });
-      await fetchRuangData();
-      updatePaginatedData();
+      loggerRuang.info(response.body);
+      if (response.statusCode == 200) {
+        setState(() {
+          ruangList
+              .removeWhere((ruang) => selectedCodes.contains(ruang.kodeRuang));
+          selectedRuang.clear();
+        });
+        await fetchRuangData();
+        updatePaginatedData();
 
-      if (currentPage > 1 && ruangList.length <= (currentPage - 1) * rowsPerPage) {
-      setState(() {
-        currentPage = 1; // Reset to first page if current page is out of range
-      });
-      updatePaginatedData();
-    }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected Ruang deleted successfully')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete selected rooms')));
-    }
+        if (currentPage > 1 &&
+            ruangList.length <= (currentPage - 1) * rowsPerPage) {
+          setState(() {
+            currentPage =
+                1; // Reset to first page if current page is out of range
+          });
+          updatePaginatedData();
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Selected Ruang deleted successfully')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete selected rooms')));
+      }
     } catch (e) {
       loggerRuang.info("error:", e);
     }
-    
   }
-  
+
   void updatePaginatedData() {
-  final startIndex = (currentPage - 1) * rowsPerPage;
-  final endIndex = startIndex + rowsPerPage;
-  setState(() {
-    paginatedList = ruangList.sublist(startIndex, endIndex < ruangList.length ? endIndex : ruangList.length);
-  });
-}
+    final startIndex = (currentPage - 1) * rowsPerPage;
+    final endIndex = startIndex + rowsPerPage;
+    setState(() {
+      paginatedList = ruangList.sublist(startIndex,
+          endIndex < ruangList.length ? endIndex : ruangList.length);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Navbar(userData: userData),
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false, 
-      //   backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-      //   title: Container(
-      //     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-      //     child: Row (
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: [
-      //         // Title Section
-      //         Row(
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: [
-      //             const Text(
-      //               'SIRIS',
-      //               style: TextStyle(
-      //                 fontSize: 36,
-      //                 fontWeight: FontWeight.bold,
-      //                 color: Colors.white,
-      //               ),
-      //             ),
+        appBar: Navbar(userData: userData),
+        // appBar: AppBar(
+        //   automaticallyImplyLeading: false,
+        //   backgroundColor: const Color(0xFF162953), // Set the AppBar background color
+        //   title: Container(
+        //     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+        //     child: Row (
+        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //       children: [
+        //         // Title Section
+        //         Row(
+        //           crossAxisAlignment: CrossAxisAlignment.center,
+        //           children: [
+        //             const Text(
+        //               'SIRIS',
+        //               style: TextStyle(
+        //                 fontSize: 36,
+        //                 fontWeight: FontWeight.bold,
+        //                 color: Colors.white,
+        //               ),
+        //             ),
 
-      //             const SizedBox(width: 8),
+        //             const SizedBox(width: 8),
 
-      //             const Text(
-      //               'Sistem Informasi Isian Rencana Studi',
-      //               style: TextStyle(
-      //                 fontSize: 20,
-      //                 fontWeight: FontWeight.bold,
-      //                 color: Colors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-              
-      //         // Actions Section
-      //         Row(
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: [
-      //             GestureDetector(
-      //                     child: _buildMenuItem(Icons.book, 'IRS'),
-      //                   ),
-                  
-      //             const SizedBox(width: 16),
-      //               GestureDetector(
-      //                     child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-      //                   ),
-      //             const SizedBox(width: 16),
-      //             _buildMenuItem(Icons.settings, 'Setting'),
-      //             const SizedBox(width: 16),
-      //             _buildLogoutButton(),
-      //           ],
-      //         ),
-      //       ],
-      //     ),
-      //   )
-      // ),
-      body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 40),
-        color: Colors.grey[200],
-        child: Container(
+        //             const Text(
+        //               'Sistem Informasi Isian Rencana Studi',
+        //               style: TextStyle(
+        //                 fontSize: 20,
+        //                 fontWeight: FontWeight.bold,
+        //                 color: Colors.white,
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+
+        //         // Actions Section
+        //         Row(
+        //           crossAxisAlignment: CrossAxisAlignment.center,
+        //           children: [
+        //             GestureDetector(
+        //                     child: _buildMenuItem(Icons.book, 'IRS'),
+        //                   ),
+
+        //             const SizedBox(width: 16),
+        //               GestureDetector(
+        //                     child: _buildMenuItem(Icons.schedule, 'Jadwal'),
+        //                   ),
+        //             const SizedBox(width: 16),
+        //             _buildMenuItem(Icons.settings, 'Setting'),
+        //             const SizedBox(width: 16),
+        //             _buildLogoutButton(),
+        //           ],
+        //         ),
+        //       ],
+        //     ),
+        //   )
+        // ),
+        body: Container(
           padding: EdgeInsets.symmetric(horizontal: 40),
-          margin: EdgeInsets.symmetric(vertical: 40),
-          color: Colors.white,
-          child:Column(
+          color: Colors.grey[200],
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            margin: EdgeInsets.symmetric(vertical: 40),
+            color: Colors.white,
+            child: Column(
               children: [
-                      Container(
-                        margin: EdgeInsets.only(top: 32, bottom: 40),
-                        child: Text(
-                                'Daftar Ruang',
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold
-                                ),
-                              )
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                Container(
+                    margin: EdgeInsets.only(top: 32, bottom: 40),
+                    child: Text(
+                      'Daftar Ruang',
+                      style:
+                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    )),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.blue, // Button background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded edges
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        onPressed: () {
+                          // Add the navigation logic here
+                          Navigator.push(
+                            context, // context should be available if used within StatefulWidget
+                            MaterialPageRoute(
+                              builder: (context) => MyHomePage(
+                                  onCsvUploaded:
+                                      fetchRuangData), // Navigate to ListRuangPage
+                            ),
+                          );
+                        },
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children:[
-                            ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue, // Button background color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10), // Rounded edges
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
-                                onPressed: () {
-                                  // Add the navigation logic here
-                                  Navigator.push(
-                                    context, // context should be available if used within StatefulWidget
-                                    MaterialPageRoute(
-                                      builder: (context) => MyHomePage( onCsvUploaded: fetchRuangData), // Navigate to ListRuangPage
-                                    ),
-                                  );
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Keeps the button compact
-                                  children: const [
-                                    Icon(
-                                      Icons.folder, // Edit icon
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 8), // Space between icon and text
-                                    Text(
-                                      'Tambah Batch',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          mainAxisSize:
+                              MainAxisSize.min, // Keeps the button compact
+                          children: const [
+                            Icon(
+                              Icons.folder, // Edit icon
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 8), // Space between icon and text
+                            Text(
+                              'Tambah Batch',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
-
-                              const SizedBox(width: 8),
-
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue, // Button background color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10), // Rounded edges
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
-                                onPressed: () {
-                                  // Add the navigation logic here
-                                  Navigator.push(
-                                    context, // context should be available if used within StatefulWidget
-                                    MaterialPageRoute(
-                                      builder: (context) => AddRuangPage(onRoomAdded: fetchRuangData), // Navigate to ListRuangPage
-                                    ),
-                                  );
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Keeps the button compact
-                                  children: const [
-                                    Icon(
-                                      Icons.add, // Edit icon
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 8), // Space between icon and text
-                                    Text(
-                                      'Tambah Ruang',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green, // Button background color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10), // Rounded edges
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
-                                onPressed: () {
-                                    setState(() {
-                                      if (selectAll) {
-                                        selectedRuang.clear();  // Deselect all rooms
-                                      } else {
-                                        selectedRuang.addAll(ruangList.map((ruang) => ruang.kodeRuang));  // Select all rooms
-                                      }
-                                      selectAll = !selectAll;
-                                    });
-                                  },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Keeps the button compact
-                                  children: const [
-                                    Icon(
-                                      Icons.select_all, // Edit icon
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 8), // Space between icon and text
-                                    Text(
-                                      'Select All',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red, // Button background color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10), // Rounded edges
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
-                                onPressed: () {
-                                if (selectedRuang.isNotEmpty) {
-                                  // Inside onPressed for the "Delete Selected" button
-                                  _showDeleteConfirmationDialog(rooms: selectedRuang.map((kode) => ruangList.firstWhere((ruang) => ruang.kodeRuang == kode)).toList());
-
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Pilih ruang terlebih dahulu!')),
-                                  );
-                                }
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Keeps the button compact
-                                  children: const [
-                                    Icon(
-                                      Icons.folder_delete, // Edit icon
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 8), // Space between icon and text
-                                    Text(
-                                      'Delete Selected',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
+                            ),
                           ],
                         ),
                       ),
-                  Container(
-                // padding: EdgeInsets.symmetric(horizontal: 100),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                        child: DataTable(
-                          columnSpacing: 16.0,
-                          headingRowColor: MaterialStateProperty.resolveWith(
-                            (states) => const Color(0xFF162953),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.blue, // Button background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded edges
                           ),
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                ' ',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        onPressed: () {
+                          // Add the navigation logic here
+                          Navigator.push(
+                            context, // context should be available if used within StatefulWidget
+                            MaterialPageRoute(
+                              builder: (context) => AddRuangPage(
+                                  onRoomAdded:
+                                      fetchRuangData), // Navigate to ListRuangPage
                             ),
-                            DataColumn(
-                              label: Text(
-                                'Kode Ruang',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
+                          );
+                        },
+                        child: Row(
+                          mainAxisSize:
+                              MainAxisSize.min, // Keeps the button compact
+                          children: const [
+                            Icon(
+                              Icons.add, // Edit icon
+                              color: Colors.white,
                             ),
-                            DataColumn(
-                              label: Text(
-                                'Nama Ruang',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Gedung',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Lantai',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Fungsi',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Kapasitas',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Action',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            SizedBox(width: 8), // Space between icon and text
+                            Text(
+                              'Tambah Ruang',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
-                          rows: paginatedList
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.green, // Button background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded edges
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (selectAll) {
+                              selectedRuang.clear(); // Deselect all rooms
+                            } else {
+                              selectedRuang.addAll(ruangList.map((ruang) =>
+                                  ruang.kodeRuang)); // Select all rooms
+                            }
+                            selectAll = !selectAll;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize:
+                              MainAxisSize.min, // Keeps the button compact
+                          children: const [
+                            Icon(
+                              Icons.select_all, // Edit icon
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 8), // Space between icon and text
+                            Text(
+                              'Select All',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.red, // Button background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded edges
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        onPressed: () {
+                          if (selectedRuang.isNotEmpty) {
+                            // Inside onPressed for the "Delete Selected" button
+                            _showDeleteConfirmationDialog(
+                                rooms: selectedRuang
+                                    .map((kode) => ruangList.firstWhere(
+                                        (ruang) => ruang.kodeRuang == kode))
+                                    .toList());
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('Pilih ruang terlebih dahulu!')),
+                            );
+                          }
+                        },
+                        child: Row(
+                          mainAxisSize:
+                              MainAxisSize.min, // Keeps the button compact
+                          children: const [
+                            Icon(
+                              Icons.folder_delete, // Edit icon
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 8), // Space between icon and text
+                            Text(
+                              'Delete Selected',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  // padding: EdgeInsets.symmetric(horizontal: 100),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                          minWidth: MediaQuery.of(context).size.width),
+                      child: DataTable(
+                        columnSpacing: 16.0,
+                        headingRowColor: MaterialStateProperty.resolveWith(
+                          (states) => const Color(0xFF162953),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              ' ',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Kode Ruang',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Nama Ruang',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Gedung',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Lantai',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Fungsi',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Kapasitas',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Action',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                        rows: paginatedList
                             .map(
                               (ruang) => DataRow(
                                 // selected: selectedRuang.contains(ruang.namaRuang),
                                 cells: [
                                   DataCell(
                                     Checkbox(
-                                      value: selectedRuang.contains(ruang.kodeRuang),
+                                      value: selectedRuang
+                                          .contains(ruang.kodeRuang),
                                       onChanged: (bool? selected) {
                                         setState(() {
                                           if (selected == true) {
-                                            selectedRuang.add(ruang.kodeRuang); // Add to selection
+                                            selectedRuang.add(ruang
+                                                .kodeRuang); // Add to selection
                                           } else {
-                                            selectedRuang.remove(ruang.kodeRuang); // Remove from selection
+                                            selectedRuang.remove(ruang
+                                                .kodeRuang); // Remove from selection
                                           }
                                         });
                                       },
@@ -508,15 +547,18 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => EditRuangPage(
+                                                builder: (context) =>
+                                                    EditRuangPage(
                                                   kodeRuang: ruang.kodeRuang,
                                                   namaRuang: ruang.namaRuang,
                                                   gedung: ruang.gedung,
@@ -534,11 +576,15 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: const [
-                                              Icon(Icons.edit, color: Colors.white),
+                                              Icon(Icons.edit,
+                                                  color: Colors.white),
                                               SizedBox(width: 8),
                                               Text(
                                                 'Edit',
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ],
                                           ),
@@ -548,21 +594,28 @@ class _ListRuangPageState extends State<ListRuangPage> {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            _showDeleteConfirmationDialog(rooms: [ruang]);
+                                            _showDeleteConfirmationDialog(
+                                                rooms: [ruang]);
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: const [
-                                              Icon(Icons.delete, color: Colors.white),
+                                              Icon(Icons.delete,
+                                                  color: Colors.white),
                                               SizedBox(width: 8),
                                               Text(
                                                 'Delete',
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ],
                                           ),
@@ -574,43 +627,42 @@ class _ListRuangPageState extends State<ListRuangPage> {
                               ),
                             )
                             .toList(),
-                        ),
                       ),
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back),
-                        onPressed: currentPage > 1
-                            ? () {
-                                setState(() {
-                                  currentPage--;
-                                  updatePaginatedData(); // Refresh the data
-                                });
-                              }
-                            : null,
-                      ),
-                        Text('Page $currentPage'),
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward),
-                          onPressed: currentPage * rowsPerPage < ruangList.length
-                              ? () {
-                                  setState(() {
-                                    currentPage++;
-                                    updatePaginatedData(); // Refresh the data
-                                  });
-                                }
-                              : null,
-                        ),
-                      ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: currentPage > 1
+                          ? () {
+                              setState(() {
+                                currentPage--;
+                                updatePaginatedData(); // Refresh the data
+                              });
+                            }
+                          : null,
                     ),
+                    Text('Page $currentPage'),
+                    IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      onPressed: currentPage * rowsPerPage < ruangList.length
+                          ? () {
+                              setState(() {
+                                currentPage++;
+                                updatePaginatedData(); // Refresh the data
+                              });
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
               ],
             ),
-        ),
-      )
-    );
+          ),
+        ));
   }
 }
 
@@ -636,5 +688,3 @@ class _ListRuangPageState extends State<ListRuangPage> {
 //       child: const Text('Logout', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
 //     );
 //   }
-
-
