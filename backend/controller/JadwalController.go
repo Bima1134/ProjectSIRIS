@@ -318,25 +318,22 @@ func GetJadwalIRS(c echo.Context) error {
 	return c.JSON(http.StatusOK, jadwalList)
 }
 
-
 // JadwalResponse digunakan untuk memodelkan response jadwal lengkap yang diterima oleh pengguna
 type JadwalResponse1 struct {
-	JadwalID      int    `json:"jadwal_id"`       // ID Jadwal
-	KodeMK        string `json:"kode_mk"`         // Kode Mata Kuliah
-	NamaMK        string `json:"namaMatkul"`      // Nama Mata Kuliah
-	Semester      string `json:"semester"`         // Semester
-	SKS           int    `json:"sks"`              // SKS Mata Kuliah
-	Sifat 		string `json:"sifat"`
-	DosenPengampu string `json:"dosen_pengampu"`   // Dosen Pengampu
-	Kelas         string `json:"kelas"`            // Kelas
-	KodeRuangan   string `json:"kode_ruang"`       // Kode Ruang
-	Kapasitas     int    `json:"kapasitas"`        // Kapasitas Ruang
-	Hari          string `json:"hari"`             // Hari Pelaksanaan
-	JamMulai      string `json:"Jam_mulai"`        // Jam Mulai
-	JamSelesai    string `json:"Jam_selesai"`      // Jam Selesai
+	JadwalID      int    `json:"jadwal_id"`  // ID Jadwal
+	KodeMK        string `json:"kode_mk"`    // Kode Mata Kuliah
+	NamaMK        string `json:"namaMatkul"` // Nama Mata Kuliah
+	Semester      string `json:"semester"`   // Semester
+	SKS           int    `json:"sks"`        // SKS Mata Kuliah
+	Sifat         string `json:"sifat"`
+	DosenPengampu string `json:"dosen_pengampu"` // Dosen Pengampu
+	Kelas         string `json:"kelas"`          // Kelas
+	KodeRuangan   string `json:"kode_ruang"`     // Kode Ruang
+	Kapasitas     int    `json:"kapasitas"`      // Kapasitas Ruang
+	Hari          string `json:"hari"`           // Hari Pelaksanaan
+	JamMulai      string `json:"Jam_mulai"`      // Jam Mulai
+	JamSelesai    string `json:"Jam_selesai"`    // Jam Selesai
 }
-
-
 
 func GetJadwal(c echo.Context) error {
 	connection := db.CreateCon()
@@ -388,25 +385,25 @@ func GetJadwal(c echo.Context) error {
 	for rows.Next() {
 		var jadwal JadwalResponse1
 		if err := rows.Scan(
-			&jadwal.JadwalID, 
-			&jadwal.KodeMK, 
-			&jadwal.NamaMK, 
-			&jadwal.Semester, 
-			&jadwal.SKS, 
+			&jadwal.JadwalID,
+			&jadwal.KodeMK,
+			&jadwal.NamaMK,
+			&jadwal.Semester,
+			&jadwal.SKS,
 			&jadwal.Sifat,
-			&jadwal.DosenPengampu, 
-			&jadwal.Kelas, 
-			&jadwal.KodeRuangan, 
-			&jadwal.Kapasitas, 
-			&jadwal.Hari, 
-			&jadwal.JamMulai, 
+			&jadwal.DosenPengampu,
+			&jadwal.Kelas,
+			&jadwal.KodeRuangan,
+			&jadwal.Kapasitas,
+			&jadwal.Hari,
+			&jadwal.JamMulai,
 			&jadwal.JamSelesai,
 		); err != nil {
 			// Debug: Log error saat scan data
 			log.Printf("Error scanning row: %v", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to parse jadwal"})
 		}
-		
+
 		// Debug: Log data jadwal yang berhasil diproses
 		log.Printf("Processed jadwal: %+v", jadwal)
 
@@ -418,7 +415,6 @@ func GetJadwal(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, jadwals)
 }
-
 
 func GetMataKuliahBySemester(c echo.Context) error {
 	nim := c.Param("nim") // Mendapatkan NIM dari parameter URL

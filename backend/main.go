@@ -64,6 +64,7 @@ func main() {
 	e.POST("/kaprodi/upload-csv", controller.UploadCSVMK)
 	e.PUT("/kaprodi/edit-jadwal/:jadwal_id", controller.UpdateJadwal)
 	e.DELETE("/kaprodi/remove-jadwal/:jadwal_id", controller.DeleteJadwalHandler)
+	e.DELETE("/kaprodi/remove-all-jadwal", controller.DeleteMultipleJadwal)
 	// Route Dekan
 	// Jadwal Related
 	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
