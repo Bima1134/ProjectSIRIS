@@ -62,6 +62,7 @@ func main() {
 	e.DELETE("/kaprodi/delete-matkul-multiple", controller.DeleteMultipleMatkul)
 	e.PUT("/kaprodi/update-matkul/:KodeMK", controller.UpdateMatkul)
 	e.POST("/kaprodi/upload-csv", controller.UploadCSVMK)
+	e.PUT("/kaprodi/edit-jadwal/:jadwal_id", controller.UpdateJadwal)
 
 	// Route Dekan
 	// Jadwal Related

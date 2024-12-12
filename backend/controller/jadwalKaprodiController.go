@@ -71,6 +71,86 @@ type MataKuliah struct {
 // 	return c.JSON(http.StatusOK, mataKuliahList)
 // }
 
+type Jadwal1 struct {
+	JadwalID    	string `json:"jadwal_id"`
+	KodeMK			string `json:"kode_mk"`
+	KodeRuangan 	string `json:"kode_ruang"`
+	Hari        	string `json:"hari"`
+	JamMulai    	string `json:"jam_mulai"`
+	JamSelesai  	string `json:"jam_selesai"`
+	Kelas			string `json:"kelas"`
+}
+
+func UpdateJadwal(c echo.Context) error {
+	// Get Nama Ruang from URL parameter
+	KodeJadwal := c.Param("jadwal_id")
+
+	// Debug: Log the KodeJadwal received
+	fmt.Println("Received jadwal_id:", KodeJadwal)
+
+	// Create a connection to the database
+	dbConn := db.CreateCon()
+
+	// Parse the request body into the Jadwal struct
+	var jadwal Jadwal1
+	if err := c.Bind(&jadwal); err != nil {
+		// Debug: Log error when binding
+		fmt.Println("Error binding request body:", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request body"})
+	}
+
+	// Debug: Log the parsed request body
+	fmt.Printf("Parsed Jadwal: %+v\n", jadwal)
+
+	// Execute the update query
+	query := `
+			UPDATE jadwal
+			SET kode_mk =?, kode_ruangan = ?, hari= ?, jam_mulai = ?, jam_selesai = ?, kelas = ?
+			WHERE jadwal_id = ?
+	`
+	result, err := dbConn.Exec(query,
+		jadwal.KodeMK,
+		jadwal.KodeRuangan,
+		jadwal.Hari,
+		jadwal.JamMulai,
+		jadwal.JamSelesai,
+		jadwal.Kelas,
+		jadwal.JadwalID,
+	)
+
+	// Debug: Log the query execution
+	if err != nil {
+		// Log the error from the query execution
+		fmt.Println("Error executing query:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to update data"})
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		// Log error when retrieving affected rows
+		fmt.Println("Error retrieving affected rows:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve affected rows"})
+	}
+
+	// Debug: Log the number of affected rows
+	fmt.Printf("Rows affected: %d\n", rowsAffected)
+
+	if rowsAffected == 0 {
+		// Debug: Log if no rows were affected
+		fmt.Println("No rows updated. Jadwal not found.")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Ruang not found"})
+	}
+
+	// Return success response
+	return c.JSON(http.StatusOK, map[string]string{
+		"message":   "Data updated successfully",
+		"jadwal_id": KodeJadwal,
+	})
+}
+
+
+
 func DeleteJadwal(c echo.Context) error {
 	// Get Nama Ruang from URL parameter
 	kode_mk := c.Param("kode_mk")

@@ -318,32 +318,107 @@ func GetJadwalIRS(c echo.Context) error {
 	return c.JSON(http.StatusOK, jadwalList)
 }
 
-// Mendapatkan jadwal
+
+// JadwalResponse digunakan untuk memodelkan response jadwal lengkap yang diterima oleh pengguna
+type JadwalResponse1 struct {
+	JadwalID      int    `json:"jadwal_id"`       // ID Jadwal
+	KodeMK        string `json:"kode_mk"`         // Kode Mata Kuliah
+	NamaMK        string `json:"namaMatkul"`      // Nama Mata Kuliah
+	Semester      string `json:"semester"`         // Semester
+	SKS           int    `json:"sks"`              // SKS Mata Kuliah
+	Sifat 		string `json:"sifat"`
+	DosenPengampu string `json:"dosen_pengampu"`   // Dosen Pengampu
+	Kelas         string `json:"kelas"`            // Kelas
+	KodeRuangan   string `json:"kode_ruang"`       // Kode Ruang
+	Kapasitas     int    `json:"kapasitas"`        // Kapasitas Ruang
+	Hari          string `json:"hari"`             // Hari Pelaksanaan
+	JamMulai      string `json:"Jam_mulai"`        // Jam Mulai
+	JamSelesai    string `json:"Jam_selesai"`      // Jam Selesai
+}
+
+
+
 func GetJadwal(c echo.Context) error {
 	connection := db.CreateCon()
 
-	// Query dengan join ke tabel mata_kuliah untuk mendapatkan data tambahan
+	// Debug: Log awal fungsi GetJadwal
+	log.Println("Start GetJadwal function")
+
+	// Query untuk mengambil semua jadwal dengan informasi tambahan yang dibutuhkan
 	rows, err := connection.Query(`
-        SELECT j.jadwal_id, j.kode_mk, j.nip_pengajar, j.kode_ruangan, j.hari, j.jam_mulai, j.jam_selesai, mk.nama_mk, mk.sks
-        FROM jadwal j
-        JOIN mata_kuliah mk ON j.kode_mk = mk.kode_mk
+        SELECT 
+            j.jadwal_id, 
+            j.kode_mk, 
+            mk.nama_mk AS nama_matkul, 
+            mk.semester, 
+            mk.sks, 
+			mk.status,
+            GROUP_CONCAT(d.nama SEPARATOR '| ') AS dosen_pengampu, 
+            j.kelas, 
+            r.kode_ruang AS kode_ruang, 
+            r.kapasitas, 
+            j.hari, 
+            j.jam_mulai, 
+            j.jam_selesai
+        FROM 
+            jadwal j
+        JOIN 
+            mata_kuliah mk ON j.kode_mk = mk.kode_mk
+        JOIN 
+            ruang r ON j.kode_ruangan = r.kode_ruang
+        JOIN 
+            dosenpengampu dp ON dp.kode_mk = j.kode_mk AND dp.idsem = j.idsem
+        JOIN 
+            dosen d ON dp.nip = d.nip
+        GROUP BY 
+            j.jadwal_id, j.kode_mk, mk.nama_mk, mk.semester, mk.sks, mk.status,j.kelas, r.kode_ruang, r.kapasitas, j.hari, j.jam_mulai, j.jam_selesai
     `)
+
 	if err != nil {
+		// Debug: Log error saat query gagal
+		log.Printf("Error querying jadwal: %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve jadwal"})
 	}
 	defer rows.Close()
 
-	var jadwals []models.JadwalResponse
+	// Debug: Log jumlah rows yang ditemukan
+	log.Println("Query executed successfully, processing rows")
+
+	var jadwals []JadwalResponse1
 	for rows.Next() {
-		var jadwal models.JadwalResponse
-		if err := rows.Scan(&jadwal.JadwalID, &jadwal.KodeMK, &jadwal.NipPengajar, &jadwal.KodeRuangan, &jadwal.Hari, &jadwal.JamMulai, &jadwal.JamSelesai, &jadwal.NamaMK, &jadwal.SKS); err != nil {
+		var jadwal JadwalResponse1
+		if err := rows.Scan(
+			&jadwal.JadwalID, 
+			&jadwal.KodeMK, 
+			&jadwal.NamaMK, 
+			&jadwal.Semester, 
+			&jadwal.SKS, 
+			&jadwal.Sifat,
+			&jadwal.DosenPengampu, 
+			&jadwal.Kelas, 
+			&jadwal.KodeRuangan, 
+			&jadwal.Kapasitas, 
+			&jadwal.Hari, 
+			&jadwal.JamMulai, 
+			&jadwal.JamSelesai,
+		); err != nil {
+			// Debug: Log error saat scan data
+			log.Printf("Error scanning row: %v", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to parse jadwal"})
 		}
+		
+		// Debug: Log data jadwal yang berhasil diproses
+		log.Printf("Processed jadwal: %+v", jadwal)
+
 		jadwals = append(jadwals, jadwal)
 	}
 
+	// Debug: Log jumlah jadwal yang ditemukan
+	log.Printf("Total jadwal found: %d", len(jadwals))
+
 	return c.JSON(http.StatusOK, jadwals)
 }
+
 
 func GetMataKuliahBySemester(c echo.Context) error {
 	nim := c.Param("nim") // Mendapatkan NIM dari parameter URL

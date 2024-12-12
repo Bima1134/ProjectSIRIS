@@ -3,18 +3,21 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/class/indexClass.dart';
+import 'package:siris/navbar.dart';
 
 class AlokasiPage extends StatefulWidget {
     final AlokasiRuang alokasi;
+    final Map<String, dynamic> userData;
 
-  AlokasiPage({required this.alokasi});
+  AlokasiPage({super.key, required this.alokasi, required this.userData});
+
   @override
-  _AlokasiPageState createState() => _AlokasiPageState();
-  
-  
+  AlokasiPageState createState() => AlokasiPageState();
+
 }
 
-class _AlokasiPageState extends State<AlokasiPage> {
+class AlokasiPageState extends State<AlokasiPage> {
+    get userData => widget.userData;
     // Define a list of options for the dropdown
   // List<String> _dropdownItems = ['Pilih Ruang', 'Option 2', 'Option 3'];
 
@@ -203,62 +206,7 @@ Future<void> fetchRuangDataById(String idAlokasi) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        backgroundColor: const Color(0xFF162953), // Set the AppBar background color
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-          child: Row (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Title Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'SIRIS',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  const Text(
-                    'Sistem Informasi Isian Rencana Studi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              
-              // Actions Section
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                          child: _buildMenuItem(Icons.book, 'IRS'),
-                        ),
-                  
-                  const SizedBox(width: 16),
-                    GestureDetector(
-                          child: _buildMenuItem(Icons.schedule, 'Jadwal'),
-                        ),
-                  const SizedBox(width: 16),
-                  _buildMenuItem(Icons.settings, 'Setting'),
-                  const SizedBox(width: 16),
-                  _buildLogoutButton(),
-                ],
-              ),
-            ],
-          ),
-        )
-      ),
+      appBar: Navbar(userData: userData),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 40),
         color: Colors.grey[200],

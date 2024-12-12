@@ -242,7 +242,7 @@ Future<void> fetchAlokasiData(String idsem) async {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => AlokasiPage(alokasi : alokasi),
+                                            builder: (context) => AlokasiPage(alokasi : alokasi, userData: userData),
                                           )
                                         );
                                       },

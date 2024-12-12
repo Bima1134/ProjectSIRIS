@@ -150,7 +150,7 @@ class RuangPageState extends State<RuangPage> {
                     child: PaginatedDataTable(
                       columnSpacing: 16.0,
                       headingRowColor: WidgetStateProperty.resolveWith(
-                        (states) => const Color(0xFF162953),
+                        (states) => Color(0xFF162953),
                       ),
                       columns: const [
                         DataColumn(
@@ -308,36 +308,121 @@ class RuangDataSource extends DataTableSource {
 
     final ruang = ruangProdi[index];
     final isDisetujui = ruang.status.toLowerCase() == "sudah disetujui";
-    return DataRow(cells: [
+        final isDiisi = ruang.status.toLowerCase() == "belum diisi";
+    return DataRow(
+      color: WidgetStateProperty.resolveWith<Color?>(
+        (Set<WidgetState> states) {
+          return Colors.white; // Apply row color
+        },
+      ),
+      cells: [
       DataCell(Text(ruang.idAlokasi)),
       DataCell(Text(ruang.namaProdi)),
       DataCell(Text(ruang.status)),
       DataCell(
         Row(
           children: [
-            !isDisetujui ?
-            Row(
-              children: [
-                ElevatedButton(
-                  child: const Text('Setujui'),
-                  onPressed: () {
-                    onApproveRuang(ruang.idAlokasi, ruang.idSem); // Memanggil callback saat tombol ditekan
-                  },
+            isDiisi?
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                ElevatedButton(
-                  child: const Text('Detail'),
-                  onPressed: () {
-                    detailRuang(ruang.idAlokasi);
-                  },
-                ),
-              ],
-            ) 
-            : ElevatedButton(
-                child: const Text('Detail'),
-                onPressed: () {
-                  detailRuang(ruang.idAlokasi);
-                },
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+              onPressed: () {
+                detailRuang(ruang.idAlokasi);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.info, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Detail',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            )
+            :Container(
+              child:
+                !isDisetujui ?
+                Row(
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onPressed: () {
+                        onApproveRuang(ruang.idAlokasi, ruang.idSem); // Memanggil callback saat tombol ditekan
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.check, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Setujui',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onPressed: () {
+                        detailRuang(ruang.idAlokasi);
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.info, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Detail',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ) 
+                : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onPressed: () {
+                      detailRuang(ruang.idAlokasi);
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.info, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Detail',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+              )
           ],
         ),
       ),

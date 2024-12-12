@@ -98,7 +98,7 @@ class DetailJadwalPageState extends State<DetailJadwalPage>{
                   child: PaginatedDataTable(
                     columnSpacing: 16.0,
                     headingRowColor: WidgetStateProperty.resolveWith(
-                      (states) => const Color(0xFF162953),
+                      (states) => Color(0xFF162953),
                     ),
                     columns: const [
                       DataColumn(
