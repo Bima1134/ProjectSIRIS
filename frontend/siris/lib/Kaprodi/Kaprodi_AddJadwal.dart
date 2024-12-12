@@ -23,6 +23,7 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
   String? selectedKodeMK;
   String? selectedRuangan;
   String? selectedHari;
+  String? idsem;
 
   MataKuliah? selectedMataKuliah;
 
@@ -158,10 +159,50 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
     }
   }
 
+  Future<void> fetchIdSem() async {
+    final url = 'http://localhost:8080/idsem';
+    loggerAddJadwal.info("Fetching id sem url: $url");
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          try {
+            final data = json.decode(response.body);
+            idsem = data;
+          } catch (e) {
+            debugPrint('Error decoding JSON: $e');
+            setState(() {
+              idsem = ""; // Default to empty string if decoding fails
+            });
+          }
+        } else {
+          setState(() {
+            idsem = ""; // Default to empty string if body is empty
+          });
+          debugPrint('Response body is empty');
+        }
+      } else {
+        debugPrint('Failed to fetch data. Status code: ${response.statusCode}');
+        setState(() {
+          idsem = ""; // Default to empty string on error
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
+      );
+    }
+  }
+
   Future<void> addJadwal() async {
     final prodi = widget.userData['nama_prodi'];
     final url =
-        'http://localhost:8080/kaprodi/add-jadwal/20241/${userData['nama_prodi']}';
+        'http://localhost:8080/kaprodi/add-jadwal/${userData['nama_prodi']}';
     loggerAddJadwal.info("Adding Jadwal URL: $url");
     debugPrint("Prodi : $prodi");
     // Data yang akan dikirimkan

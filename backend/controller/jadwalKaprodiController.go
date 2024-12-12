@@ -337,7 +337,13 @@ type JadwalKaprodi struct {
 }
 
 func AddJadwal(c echo.Context) error {
-	idsem := c.Param("idsem")
+	idsem, err := GetIdSem()
+	if err != nil {
+		log.Println("Error: Gagal mendapatkan idsem:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Failed to fetch idsem",
+		})
+	}	
 	prodi := c.Param("prodi")
 	log.Println("Prodi dan Idsem", prodi, idsem)
 	// idJadwal := "J-"+idsem+"-"+prodi
@@ -393,16 +399,18 @@ func AddJadwal(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Jadwal conflicts with an existing schedule"})
 	}
 
-	// Memasukkan data ke tabel jadwal_kaprodi
+	// Memasukkan data ke tabel jadwal
 	_, err = tx.Exec(`
 		INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kelas, idsem, nama_prodi)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		jadwal.KodeMK, jadwal.KodeRuang, jadwal.Hari, jadwal.JamMulai, jadwal.JamSelesai, jadwal.Kelas, idsem, prodi)
 	if err != nil {
 		log.Println("Error: Gagal memasukkan data ke jadwal:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to insert into jadwal_kaprodi"})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to insert into jadwal"})
 	}
-	log.Println("Jadwal successfully added to jadwal_kaprodi")
+	log.Println("Jadwal successfully added to jadwal")
+
+	updateStatusJadwal(c, idsem, prodi)
 
 	// Commit transaksi
 	if err := tx.Commit(); err != nil {
@@ -522,14 +530,39 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 	if err := tx.Commit(); err != nil {
 		log.Println("Error: Gagal melakukan commit transaksi:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"message": "Gagal menyetujui jadwal",
+			"message": "Gagal mengupdate status jadwal",
 		})
 	}
 
-	log.Printf("Jadwal dengan idsem %s, prodi %s berhasil disetujui\n", idsem, prodi)
+	log.Printf("Status jadwal dengan idsem %s, prodi %s berhasil diupdate\n", idsem, prodi)
 	return c.JSON(http.StatusOK, map[string]string{
-		"message": "Jadwal berhasil disetujui",
+		"message": "Status jadwal berhasil diupdate",
 	})
+}
+func GetIdSem() (string, error) {
+	query := `
+		SELECT idsem
+		FROM semester
+		ORDER BY idsem DESC
+		LIMIT 1
+	`
+	connection := db.CreateCon()
+	if connection == nil {
+		log.Println("Database connection is nil")
+		return "", fmt.Errorf("failed to connect to the database")
+	}
+
+	log.Printf("Executing query: %s", query)
+
+	var idsem string
+	err := connection.QueryRow(query).Scan(&idsem)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return "", fmt.Errorf("database query error")
+	}
+
+	log.Printf("Idsem fetched: %s", idsem)
+	return idsem, nil
 }
 
 // DeleteMultipleJadwal deletes multiple schedules based on the list of IDs sent in the request body
