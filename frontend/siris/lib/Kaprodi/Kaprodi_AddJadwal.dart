@@ -83,45 +83,51 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
 
   // Method untuk memilih waktu
   Future<void> _selectTime(
-    BuildContext context, TextEditingController controller) async {
-  final TimeOfDay? picked = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-  );
+      BuildContext context, TextEditingController controller) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
 
-  if (picked != null) {
-    setState(() {
-      controller.text = picked.format(context);
+    if (picked != null) {
+      setState(() {
+        controller.text = picked.format(context);
 
-      // Jika memilih jam mulai, otomatis hitung jam selesai
-      if (controller == jamMulaiController) {
-        final int totalMinutes = selectedMataKuliah!.sks * 50; // Total menit berdasarkan SKS
-        final sks = selectedMataKuliah?.sks;
-        debugPrint("Sks $sks");
-        final TimeOfDay jamMulai = picked;
+        // Jika memilih jam mulai, otomatis hitung jam selesai
+        if (controller == jamMulaiController) {
+          final int totalMinutes =
+              selectedMataKuliah!.sks * 50; // Total menit berdasarkan SKS
+          final sks = selectedMataKuliah?.sks;
+          debugPrint("Sks $sks");
+          final TimeOfDay jamMulai = picked;
 
-        // Hitung waktu selesai
-        final TimeOfDay jamSelesai = TimeOfDay(
-          hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
-          minute: (jamMulai.minute + totalMinutes % 60) % 60,
-        );
+          // Hitung waktu selesai
+          final TimeOfDay jamSelesai = TimeOfDay(
+            hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
+            minute: (jamMulai.minute + totalMinutes % 60) % 60,
+          );
 
-        // Set teks pada controller jam selesai
-        jamSelesaiController.text = jamSelesai.format(context);
-      }
-    });
+          // Set teks pada controller jam selesai
+          jamSelesaiController.text = jamSelesai.format(context);
+        }
+      });
+    }
   }
-}
 
   // Fetch ruang data from the backend
   Future<void> fetchRuangData() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/ruang'));
+      final prodi = widget.userData['nama_prodi'];
+      final response = await http.get(
+          Uri.parse('http://localhost:8080/kaprodi/get-ruang-by-prodi/$prodi'));
+      debugPrint(
+          'Fetching data from: http://localhost:8080/kaprodi/get-ruang-by-prodi/${userData['nama_prodi']}');
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           try {
             final data = json.decode(response.body);
+            debugPrint("Data : $data");
             if (data is List) {
               setState(() {
                 ruangList = data.map((item) => Ruang.fromJson(item)).toList();
@@ -172,8 +178,8 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
       'hari': selectedHari,
       'jam_mulai': jamMulaiController.text,
       'jam_selesai': jamSelesaiController.text,
-      'idsem' : "20241",
-      'nama_prodi' : prodi,  
+      'idsem': "20241",
+      'nama_prodi': prodi,
     };
 
     try {

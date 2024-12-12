@@ -171,88 +171,87 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
   }
 
   Future<void> removeJadwal(int jadwalID) async {
-  // URL backend untuk menghapus jadwal
-  final String url = 'http://localhost:8080/kaprodi/remove-jadwal/$jadwalID'; // Sesuaikan URL backend Anda
-  
-  try {
-    // Mengirim permintaan DELETE ke backend
-    final response = await http.delete(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
+    // URL backend untuk menghapus jadwal
+    final String url =
+        'http://localhost:8080/kaprodi/remove-jadwal/$jadwalID'; // Sesuaikan URL backend Anda
 
-    // Cek respons dari server
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data['message']),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      // Mengirim permintaan DELETE ke backend
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       );
-    } else {
-      // Error dari server
-      final data = jsonDecode(response.body);
+
+      // Cek respons dari server
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message']),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Error dari server
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Gagal menghapus jadwal'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Menangani error dari sisi jaringan
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(data['message'] ?? 'Gagal menghapus jadwal'),
+          content: Text('Terjadi kesalahan: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } catch (e) {
-    // Menangani error dari sisi jaringan
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Terjadi kesalahan: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
   void showDeleteConfirmationDialog(int jadwalId) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text(
-          'Konfirmasi Hapus',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Apakah yakin ingin menghapus jadwal?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Tutup dialog tanpa aksi
-            },
-            child: const Text('Tidak'),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Konfirmasi Hapus',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+          content: const Text('Apakah yakin ingin menghapus jadwal?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog tanpa aksi
+              },
+              child: const Text('Tidak'),
             ),
-            onPressed: () async {
-              Navigator.of(context).pop(); // Tutup dialog
-              // Panggil fungsi removeJadwal dan tunggu hasilnya
-              await removeJadwal(jadwalId);
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Tutup dialog
+                // Panggil fungsi removeJadwal dan tunggu hasilnya
+                await removeJadwal(jadwalId);
 
-              // Refresh data jadwal
-              setState(() {
-                fetchJadwalData();
-              });
-            },
-            child: const Text('Ya'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
+                // Refresh data jadwal
+                setState(() {
+                  fetchJadwalData();
+                });
+              },
+              child: const Text('Ya'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -656,9 +655,8 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                                         jamSelesai:
                                                             jadwal.jamSelesai,
                                                         hari: jadwal.hari,
-                                                        ruangan:
-                                                            jadwal.ruangan,
-                                                        sks : jadwal.sks),
+                                                        ruangan: jadwal.ruangan,
+                                                        sks: jadwal.sks),
                                               ),
                                             ).then((value) {
                                               if (value == true) {
@@ -687,21 +685,28 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 12),
                                           ),
                                           onPressed: () {
-                                            showDeleteConfirmationDialog(jadwal.jadwalID);
+                                            showDeleteConfirmationDialog(
+                                                jadwal.jadwalID);
                                           },
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: const [
-                                              Icon(Icons.delete, color: Colors.white),
+                                              Icon(Icons.delete,
+                                                  color: Colors.white),
                                               SizedBox(width: 8),
                                               Text(
                                                 'Delete',
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ],
                                           ),

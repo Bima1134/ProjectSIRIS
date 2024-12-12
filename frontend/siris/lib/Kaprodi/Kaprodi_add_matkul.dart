@@ -68,13 +68,15 @@ class _MyAddMatkulBatchPageState extends State<MyAddMatkulBatchPage> {
         final url = Uri.parse('http://localhost:8080/kaprodi/upload-csv');
 
         final request = http.MultipartRequest('POST', url)
-          ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: file.name));
+          ..files.add(
+              http.MultipartFile.fromBytes('file', bytes, filename: file.name));
 
         try {
           loggerRuang.info('Sending file to server...');
           final response = await request.send();
           final responseBody = await response.stream.bytesToString();
-          loggerRuang.info('Server responded with status: ${response.statusCode}');
+          loggerRuang
+              .info('Server responded with status: ${response.statusCode}');
           loggerRuang.info('Response body: $responseBody');
 
           if (response.statusCode == 200) {
@@ -86,7 +88,8 @@ class _MyAddMatkulBatchPageState extends State<MyAddMatkulBatchPage> {
             setState(() {
               _statusMessage = 'Failed to upload CSV';
             });
-            loggerRuang.warning('Failed to upload CSV. Server responded with status: ${response.statusCode}');
+            loggerRuang.warning(
+                'Failed to upload CSV. Server responded with status: ${response.statusCode}');
           }
         } catch (e) {
           setState(() {
@@ -123,7 +126,8 @@ class _MyAddMatkulBatchPageState extends State<MyAddMatkulBatchPage> {
               _statusMessage,
               style: TextStyle(
                 fontSize: 16,
-                color: _statusMessage.contains('Error') || _statusMessage.contains('Failed')
+                color: _statusMessage.contains('Error') ||
+                        _statusMessage.contains('Failed')
                     ? Colors.red
                     : Colors.green,
               ),
