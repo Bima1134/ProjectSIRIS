@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -528,5 +529,69 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 	log.Printf("Jadwal dengan idsem %s, prodi %s berhasil disetujui\n", idsem, prodi)
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Jadwal berhasil disetujui",
+	})
+}
+
+// DeleteMultipleJadwal deletes multiple schedules based on the list of IDs sent in the request body
+func DeleteMultipleJadwal(c echo.Context) error {
+	// Parse the request body to get the list of jadwal IDs
+	log.Println("Parsing request body for jadwal IDs...")
+	var request struct {
+		JadwalID []int `json:"jadwal_id"`
+	}
+	if err := c.Bind(&request); err != nil {
+		log.Println("Error parsing request body:", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request body"})
+	}
+
+	// Validate that the list is not empty
+	log.Println("Validating jadwal ID list...")
+	if len(request.JadwalID) == 0 {
+		log.Println("No jadwal IDs provided in request.")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "No jadwal IDs provided"})
+	}
+
+	// Create a connection to the database
+	log.Println("Connecting to the database...")
+	dbConn := db.CreateCon()
+	if dbConn == nil {
+		log.Println("Database connection failed.")
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to connect to the database"})
+	}
+
+	// Build the query for deleting multiple jadwal entries
+	log.Printf("Building delete query for jadwal IDs: %v\n", request.JadwalID)
+	query := `DELETE FROM jadwal WHERE jadwal_id IN (?` + strings.Repeat(",?", len(request.JadwalID)-1) + `)`
+	args := make([]interface{}, len(request.JadwalID))
+	for i, id := range request.JadwalID {
+		args[i] = id
+	}
+	log.Printf("Query: %s, Args: %v\n", query, args)
+
+	// Execute the delete query
+	log.Println("Executing delete query...")
+	result, err := dbConn.Exec(query, args...)
+	if err != nil {
+		log.Println("Error executing delete query:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to delete jadwal"})
+	}
+
+	// Check how many rows were affected
+	log.Println("Checking rows affected...")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error retrieving affected rows:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve affected rows"})
+	}
+
+	// Return a suitable response based on the result
+	if rowsAffected == 0 {
+		log.Println("No jadwal found to delete.")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "No jadwal found to delete"})
+	}
+
+	log.Printf("Successfully deleted %d jadwal entries.\n", rowsAffected)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Selected jadwal deleted successfully",
 	})
 }

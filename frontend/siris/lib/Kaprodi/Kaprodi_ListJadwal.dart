@@ -110,6 +110,8 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
 //   int currentPage = 1;  // Track the current page
 //   int rowsPerPage = 10; // Number of rows per page
 //   List<Ruang> paginatedList = []; // To hold the current page data
+    Set<int> selectedJadwal = {}; // Store selected room names
+    bool selectAll = false;
 
   @override
   void initState() {
@@ -252,6 +254,74 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
   );
 }
 
+Future<void> deleteSelectedJadwal(List<int> selectedJadwal) async {
+  final url = Uri.parse('http://localhost:8080/kaprodi/remove-all-jadwal');
+
+  try {
+    // Kirim permintaan DELETE dengan header dan body JSON
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json', // Set Content-Type header
+      },
+      body: jsonEncode({
+        'jadwal_id': selectedJadwal, // Kirim daftar jadwal yang ingin dihapus
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Jika berhasil menghapus, tampilkan notifikasi atau perbarui UI
+      print("Jadwal berhasil dihapus: ${response.body}");
+    } else {
+      // Jika gagal, tampilkan pesan error
+      print("Gagal menghapus jadwal. Status: ${response.statusCode}, Body: ${response.body}");
+    }
+  } catch (e) {
+    // Tangani kesalahan seperti koneksi yang gagal
+    print("Terjadi kesalahan saat menghapus jadwal: $e");
+  }
+}
+
+
+
+
+void deleteSelectedConfirmationDialog(Set<int> selectedJadwal) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text(
+          'Konfirmasi Hapus',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+            'Apakah yakin ingin menghapus ${selectedJadwal.length} jadwal terpilih?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Tutup dialog tanpa aksi
+            },
+            child: const Text('Tidak'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.of(context).pop(); // Tutup dialog
+              // Panggil fungsi deleteSelectedJadwal
+              await deleteSelectedJadwal(selectedJadwal.toList());
+              setState(() {
+                fetchJadwalData();
+              });
+            },
+            child: const Text('Ya'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
   @override
@@ -423,7 +493,16 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          setState(() {
+                            if (selectAll){
+                              selectedJadwal.clear();
+                            } else {
+                              selectedJadwal.addAll(jadwalKaprodi.map((jadwal)=> jadwal.jadwalID));
+                            }
+                            selectAll = !selectAll;
+                          });
+                        },
                         child: Row(
                           mainAxisSize:
                               MainAxisSize.min, // Keeps the button compact
@@ -455,7 +534,17 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          if (selectedJadwal.isNotEmpty){
+                            deleteSelectedConfirmationDialog(selectedJadwal);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('Pilih jadwal terlebih dahulu!')),
+                            );
+                          }
+                        },
                         child: Row(
                           mainAxisSize:
                               MainAxisSize.min, // Keeps the button compact
@@ -491,6 +580,14 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                           (states) => const Color(0xFF162953),
                         ),
                         columns: const [
+                          DataColumn(
+                            label: Text(
+                              ' ',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
                           DataColumn(
                             label: Text(
                               'Kode MK',
@@ -592,8 +689,26 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                         rows: jadwalKaprodi
                             .map(
                               (jadwal) => DataRow(
-                                // selected: selectedRuang.contains(ruang.namaRuang),
+                                // selected: selectedJadwal.contains(ruang.namaRuang),
                                 cells: [
+                                  DataCell(
+                                    Checkbox(
+                                      value: selectedJadwal
+                                          .contains(jadwal.jadwalID),
+                                      onChanged: (bool? selected) {
+                                        setState(() {
+                                          if (selected == true) {
+                                            selectedJadwal.add(jadwal
+                                                .jadwalID); // Add to selection
+                                          } else {
+                                            selectedJadwal.remove(jadwal
+                                                .jadwalID); // Remove from selection
+                                          }
+                                          debugPrint("Selected jadwal: $selectedJadwal");
+                                        });
+                                      },
+                                    ),
+                                  ),
                                   DataCell(Text(jadwal.kodeMk ?? 'N/A')),
                                   DataCell(Text(jadwal.namaMatkul ?? 'N/A')),
                                   DataCell(Text(jadwal.semester ?? 'N/A')),
