@@ -150,7 +150,7 @@ class JadwalPageState extends State<JadwalPage> {
                     child: PaginatedDataTable(
                       columnSpacing: 16.0,
                       headingRowColor: WidgetStateProperty.resolveWith(
-                        (states) => const Color(0xFF162953),
+                        (states) => Color(0xFF162953),
                       ),
                       columns: const [
                         DataColumn(
@@ -309,7 +309,13 @@ class JadwalDataSource extends DataTableSource {
     final jadwal = jadwalProdi[index];
     final isDisetujui = jadwal.status.toLowerCase() == "sudah disetujui";
     final isDiisi = jadwal.status.toLowerCase() == "belum diisi";
-    return DataRow(cells: [
+    return DataRow(
+      color: WidgetStateProperty.resolveWith<Color?>(
+        (Set<WidgetState> states) {
+          return Colors.white; // Apply row color
+        },
+      ),
+      cells: [
       DataCell(Text(jadwal.idJadwal)),
       DataCell(Text(jadwal.namaProdi)),
       DataCell(isDisetujui ? Container( 
@@ -322,14 +328,28 @@ class JadwalDataSource extends DataTableSource {
         Row(
           children: [
             isDiisi?
-            Container(
-              child: 
-                ElevatedButton(
-                  child: const Text('Detail'),
-                  onPressed: () {
-                    detailJadwal(jadwal.idJadwal);
-                  },
-                )
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onPressed: () {
+                detailJadwal(jadwal.idJadwal);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.info, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Detail',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             )
             :Container(
               child:
@@ -337,24 +357,75 @@ class JadwalDataSource extends DataTableSource {
                 Row(
                   children: [
                     ElevatedButton(
-                      child: const Text('Setujui'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
                       onPressed: () {
                         onApproveJadwal(jadwal.idJadwal, jadwal.idSem); // Memanggil callback saat tombol ditekan
                       },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.check, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Setujui',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                     ElevatedButton(
-                      child: const Text('Detail'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
                       onPressed: () {
                         detailJadwal(jadwal.idJadwal);
                       },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.info, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Detail',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ) 
                 : ElevatedButton(
-                    child: const Text('Detail'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
                     onPressed: () {
                       detailJadwal(jadwal.idJadwal);
                     },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.info, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Detail',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
               )
             ],  
