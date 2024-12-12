@@ -15,6 +15,7 @@ class EditJadwalPage extends StatefulWidget {
   final String jamSelesai;
   final String kelas;
   final String ruangan;
+  final int sks;
 
   EditJadwalPage(
       {required this.userData,
@@ -24,7 +25,8 @@ class EditJadwalPage extends StatefulWidget {
       required this.jamMulai,
       required this.jamSelesai,
       required this.kelas,
-      required this.ruangan});
+      required this.ruangan, 
+      required this.sks});
 
   @override
   _EditJadwalPageState createState() => _EditJadwalPageState();
@@ -62,6 +64,8 @@ class _EditJadwalPageState extends State<EditJadwalPage> {
     // Fetch dropdown data
     fetchMatakuliah();
     fetchRuangData();
+    final sks = widget.sks;
+    debugPrint("Sks $sks");
   }
 
   Future<void> fetchMatakuliah() async {
@@ -173,19 +177,38 @@ class _EditJadwalPageState extends State<EditJadwalPage> {
     }
   }
 
-  Future<void> _selectTime(
-      BuildContext context, TextEditingController controller) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+  // Fungsi memilih waktu
+Future<void> _selectTime(
+    BuildContext context, TextEditingController controller) async {
+  final TimeOfDay? picked = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+  );
 
-    if (picked != null) {
-      setState(() {
-        controller.text = picked.format(context);
-      });
-    }
+  if (picked != null) {
+    setState(() {
+      controller.text = picked.format(context);
+
+      // Jika memilih jam mulai, otomatis hitung jam selesai
+      if (controller == jamMulaiController) {
+        final int totalMinutes = widget.sks * 50; // Total menit berdasarkan SKS
+        final sks = widget.sks;
+        debugPrint("Sks $sks");
+        final TimeOfDay jamMulai = picked;
+
+        // Hitung waktu selesai
+        final TimeOfDay jamSelesai = TimeOfDay(
+          hour: (jamMulai.hour + (totalMinutes ~/ 60)) % 24,
+          minute: (jamMulai.minute + totalMinutes % 60) % 60,
+        );
+
+        // Set teks pada controller jam selesai
+        jamSelesaiController.text = jamSelesai.format(context);
+      }
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -256,25 +279,24 @@ class _EditJadwalPageState extends State<EditJadwalPage> {
               validator: (value) => value == null ? 'Pilih Hari' : null,
             ),
 
-            // Jam Mulai
-            TextFormField(
-              controller: jamMulaiController,
-              decoration: InputDecoration(labelText: 'Jam Mulai'),
-              readOnly: true,
-              onTap: () => _selectTime(context, jamMulaiController),
-              validator: (value) => value!.isEmpty ? 'Pilih jam mulai' : null,
-            ),
+           // Jam Mulai
+          TextFormField(
+            controller: jamMulaiController,
+            decoration: const InputDecoration(labelText: 'Jam Mulai'),
+            readOnly: true,
+            onTap: () => _selectTime(context, jamMulaiController),
+            validator: (value) => value!.isEmpty ? 'Pilih jam mulai' : null,
+          ),
 
-            SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-            // Jam Selesai
-            TextFormField(
-              controller: jamSelesaiController,
-              decoration: InputDecoration(labelText: 'Jam Selesai'),
-              readOnly: true,
-              onTap: () => _selectTime(context, jamSelesaiController),
-              validator: (value) => value!.isEmpty ? 'Pilih jam selesai' : null,
-            ),
+          // Jam Selesai
+          TextFormField(
+            controller: jamSelesaiController,
+            decoration: const InputDecoration(labelText: 'Jam Selesai'),
+            readOnly: true,
+            validator: (value) => value!.isEmpty ? 'Pilih jam selesai' : null,
+          ),
 
             SizedBox(height: 8),
 

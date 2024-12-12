@@ -3,7 +3,6 @@ package controller
 import (
 	"SIRIS/db"
 	"SIRIS/models"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -72,13 +71,13 @@ type MataKuliah struct {
 // }
 
 type Jadwal1 struct {
-	JadwalID    	string `json:"jadwal_id"`
-	KodeMK			string `json:"kode_mk"`
-	KodeRuangan 	string `json:"kode_ruang"`
-	Hari        	string `json:"hari"`
-	JamMulai    	string `json:"jam_mulai"`
-	JamSelesai  	string `json:"jam_selesai"`
-	Kelas			string `json:"kelas"`
+	JadwalID    string `json:"jadwal_id"`
+	KodeMK      string `json:"kode_mk"`
+	KodeRuangan string `json:"kode_ruang"`
+	Hari        string `json:"hari"`
+	JamMulai    string `json:"jam_mulai"`
+	JamSelesai  string `json:"jam_selesai"`
+	Kelas       string `json:"kelas"`
 }
 
 func UpdateJadwal(c echo.Context) error {
@@ -149,40 +148,38 @@ func UpdateJadwal(c echo.Context) error {
 	})
 }
 
+// func DeleteJadwal(c echo.Context) error {
+// 	// Get Nama Ruang from URL parameter
+// 	kode_mk := c.Param("kode_mk")
 
+// 	// Create a connection to the database
+// 	dbConn := db.CreateCon()
 
-func DeleteJadwal(c echo.Context) error {
-	// Get Nama Ruang from URL parameter
-	kode_mk := c.Param("kode_mk")
+// 	// Execute the delete query
+// 	query := `
+//         DELETE FROM jadwal_kaprodi
+//         WHERE kode_ruang = ?
+//     `
+// 	result, err := dbConn.Exec(query, kode_mk)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to delete data"})
+// 	}
 
-	// Create a connection to the database
-	dbConn := db.CreateCon()
+// 	// Check if any rows were affected
+// 	rowsAffected, err := result.RowsAffected()
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve affected rows"})
+// 	}
+// 	if rowsAffected == 0 {
+// 		return c.JSON(http.StatusNotFound, map[string]string{"message": "Ruang not found"})
+// 	}
 
-	// Execute the delete query
-	query := `
-        DELETE FROM jadwal_kaprodi
-        WHERE kode_ruang = ?
-    `
-	result, err := dbConn.Exec(query, kode_mk)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to delete data"})
-	}
-
-	// Check if any rows were affected
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve affected rows"})
-	}
-	if rowsAffected == 0 {
-		return c.JSON(http.StatusNotFound, map[string]string{"message": "Ruang not found"})
-	}
-
-	// Return success response
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "Data deleted successfully",
-		"kode_mk": kode_mk,
-	})
-}
+// 	// Return success response
+// 	return c.JSON(http.StatusOK, map[string]string{
+// 		"message": "Data deleted successfully",
+// 		"kode_mk": kode_mk,
+// 	})
+// }
 
 func GetViewJadwalKaprodi(c echo.Context) error {
 	// Create database connection
@@ -327,37 +324,21 @@ func GetMataKuliahByProdi(c echo.Context) error {
 }
 
 type JadwalKaprodi struct {
-	IdJadwalProdi string `json:"id_jadwal_prodi"`
-	KodeMK        string `json:"kodeMK"`
-	Kelas         string `json:"kelas"`
-	KodeRuang     string `json:"kodeRuang"`
-	Hari          string `json:"hari"`
-	JamMulai      string `json:"jamMulai"`
-	JamSelesai    string `json:"jamSelesai"`
+	idJadwal   string `json:"jadwal_id"`
+	KodeMK     string `json:"kode_mk"`
+	KodeRuang  string `json:"kode_ruang"`
+	Kelas      string `json:"kelas"`
+	Hari       string `json:"hari"`
+	JamMulai   string `json:"jam_mulai"`
+	JamSelesai string `json:"jam_selesai"`
+	idsem      string `json:"idsem"`
+	prodi      string `json: "nama_prodi"`
 }
 
 func AddJadwal(c echo.Context) error {
 	idsem := c.Param("idsem")
-	namaProdi := c.Param("prodi")
 	prodi := c.Param("prodi")
-
-	switch namaProdi {
-	case "Informatika":
-		namaProdi = "IF"
-	case "Biologi":
-		namaProdi = "Bio"
-	case "Matematika":
-		namaProdi = "Mat"
-	case "Bioteknologi":
-		namaProdi = "Biotek"
-	case "Statistika":
-		namaProdi = "Stat"
-	case "Fisika":
-		namaProdi = "Fis"
-	case "Kimia":
-		namaProdi = "Kim"
-	}
-
+	log.Println("Prodi dan Idsem", prodi, idsem)
 	// idJadwal := "J-"+idsem+"-"+prodi
 
 	// Mengambil data dari request body
@@ -367,6 +348,7 @@ func AddJadwal(c echo.Context) error {
 		log.Println("Error: Gagal mengambil input jadwal:", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid input"})
 	}
+	fmt.Printf("Parsed Jadwal: %+v\n", jadwal)
 
 	// Membuat koneksi ke database
 	dbConn := db.CreateCon() // Hanya menerima satu nilai yaitu *sql.DB
@@ -387,8 +369,8 @@ func AddJadwal(c echo.Context) error {
 	var count int
 	query := `
 		SELECT COUNT(*) 
-		FROM jadwal_kaprodi 
-		WHERE kode_ruang = ? AND hari = ? AND 
+		FROM jadwal 
+		WHERE kode_ruangan = ? AND hari = ? AND 
 			(
 				(jam_mulai BETWEEN ? AND ?) OR 
 				(jam_selesai BETWEEN ? AND ?) OR 
@@ -410,30 +392,16 @@ func AddJadwal(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Jadwal conflicts with an existing schedule"})
 	}
 
-	// Mengambil IRS ID yang sesuai dari tabel irs berdasarkan NIM
-	var kapasitas int
-	err = tx.QueryRow("SELECT r.kapasitas FROM ruang r WHERE r.kode_ruang = ?", jadwal.KodeRuang).Scan(&kapasitas)
-	if err == sql.ErrNoRows {
-		log.Println("Error: kode ruang tidak ditemukan untuk mahasiswa ini")
-		return c.JSON(http.StatusNotFound, map[string]string{"message": "IRS tidak ditemukan untuk mahasiswa ini"})
-	} else if err != nil {
-		log.Println("Error: Gagal mengambil IRS ID:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal mengambil IRS ID"})
-	}
-	log.Printf("Kapasitas %s ditemukan: %d\n", jadwal.KodeRuang, kapasitas)
-
 	// Memasukkan data ke tabel jadwal_kaprodi
 	_, err = tx.Exec(`
-		INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kapasitas, kelas, idsem, nama_prodi)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		jadwal.KodeMK, jadwal.KodeRuang, jadwal.Hari, jadwal.JamMulai, jadwal.JamSelesai, kapasitas, jadwal.Kelas, idsem, prodi)
+		INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kelas, idsem, nama_prodi)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		jadwal.KodeMK, jadwal.KodeRuang, jadwal.Hari, jadwal.JamMulai, jadwal.JamSelesai, jadwal.Kelas, idsem, prodi)
 	if err != nil {
-		log.Println("Error: Gagal memasukkan data ke jadwal_kaprodi:", err)
+		log.Println("Error: Gagal memasukkan data ke jadwal:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to insert into jadwal_kaprodi"})
 	}
 	log.Println("Jadwal successfully added to jadwal_kaprodi")
-
-	updateStatusJadwal(c, idsem, prodi)
 
 	// Commit transaksi
 	if err := tx.Commit(); err != nil {
@@ -443,6 +411,65 @@ func AddJadwal(c echo.Context) error {
 
 	log.Println("Transaction successfully committed")
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal successfully added"})
+}
+
+// DeleteJadwalHandler adalah handler untuk menghapus jadwal berdasarkan jadwal_id
+func DeleteJadwalHandler(c echo.Context) error {
+	// Mendapatkan jadwal_id dari parameter URL
+	jadwalID := c.Param("jadwal_id")
+	log.Println("Jadwal ID:", jadwalID)
+
+	// Validasi input jadwal_id
+	if jadwalID == "" {
+		log.Println("Error: jadwal_id tidak disediakan")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "jadwal_id tidak boleh kosong"})
+	}
+
+	// Membuat koneksi ke database
+	connection := db.CreateCon()
+	log.Println("Koneksi ke database berhasil")
+
+	// Memulai transaksi
+	tx, err := connection.Begin()
+	if err != nil {
+		log.Println("Error: Gagal memulai transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal memulai transaksi"})
+	}
+	defer tx.Rollback() // Jika ada error, rollback transaksi
+
+	// Menghapus jadwal dari tabel pesertajadwal
+	_, err = tx.Exec("DELETE FROM pesertajadwal WHERE jadwal_id = ?", jadwalID)
+	if err != nil {
+		log.Println("Error: Gagal menghapus data di pesertajadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus data di pesertajadwal"})
+	}
+	log.Println("Data di pesertajadwal berhasil dihapus")
+
+	// Menghapus jadwal dari tabel irs_detail
+	_, err = tx.Exec("DELETE FROM irs_detail WHERE jadwal_id = ?", jadwalID)
+	if err != nil {
+		log.Println("Error: Gagal menghapus data di irs_detail:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus data di irs_detail"})
+	}
+	log.Println("Data di irs_detail berhasil dihapus")
+
+	// Menghapus jadwal dari tabel jadwal
+	_, err = tx.Exec("DELETE FROM jadwal WHERE jadwal_id = ?", jadwalID)
+	if err != nil {
+		log.Println("Error: Gagal menghapus jadwal:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal menghapus jadwal"})
+	}
+	log.Println("Jadwal berhasil dihapus")
+
+	// Commit transaksi
+	if err := tx.Commit(); err != nil {
+		log.Println("Error: Gagal melakukan commit transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Gagal melakukan commit transaksi"})
+	}
+	log.Println("Transaksi berhasil di-commit")
+
+	// Mengembalikan respons sukses
+	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal berhasil dihapus"})
 }
 
 func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
