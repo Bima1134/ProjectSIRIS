@@ -480,13 +480,11 @@ func DeleteJadwalHandler(c echo.Context) error {
 	// Mengembalikan respons sukses
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal berhasil dihapus"})
 }
-
 func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
-	query :=
-		`
-		UPDATE jadwal_prodi
-		SET status = 'belum disetujui'
-		WHERE idsem = ? and nama_prodi = ?
+	query := `
+		SELECT status
+		FROM jadwal_prodi
+		WHERE idsem = ? AND nama_prodi = ?
 	`
 	connection := db.CreateCon()
 
@@ -500,9 +498,34 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 	}
 	defer tx.Rollback()
 
-	log.Printf("Update statu jadwal dengan idsem: %s, prodi: %s\n", idsem, prodi)
+	log.Printf("Executing query: %s", query)
 
-	// Eksekusi query
+	// Mendapatkan status
+	var status string
+	err = tx.QueryRow(query, idsem, prodi).Scan(&status)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal mendapatkan status jadwal",
+		})
+	}
+
+	// Jika status sudah "belum disetujui", tidak perlu update
+	if status == "belum disetujui" {
+		log.Printf("Status jadwal dengan idsem %s, prodi %s sudah 'belum disetujui', tidak ada perubahan\n", idsem, prodi)
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Status jadwal sudah 'belum disetujui', tidak ada perubahan",
+		})
+	}
+
+	// Update status jika berbeda
+	query = `
+		UPDATE jadwal_prodi
+		SET status = 'belum disetujui'
+		WHERE idsem = ? AND nama_prodi = ?
+	`
+	log.Printf("Updating status jadwal dengan idsem: %s, prodi: %s\n", idsem, prodi)
+
 	result, err := tx.Exec(query, idsem, prodi)
 	if err != nil {
 		log.Println("Error: Gagal memperbarui status jadwal:", err)
@@ -519,10 +542,11 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 			"message": "Gagal memeriksa status update",
 		})
 	}
+
 	if rowsAffected == 0 {
-		log.Printf("Warning: Tidak ada jadwal yang ditemukan dengan idsem:%s, prodi:%s", idsem, prodi)
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "Jadwal tidak ditemukan",
+		log.Println("Tidak ada baris yang berubah")
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Tidak ada perubahan pada status jadwal",
 		})
 	}
 
@@ -539,6 +563,8 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 		"message": "Status jadwal berhasil diupdate",
 	})
 }
+
+
 func GetIdSem() (string, error) {
 	query := `
 		SELECT idsem
