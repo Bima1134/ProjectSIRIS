@@ -162,7 +162,7 @@ func UpdateRuang(c echo.Context) error {
 	// Execute the update query
 	query := `
 		UPDATE ruang
-		SET nama_ruang =? gedung = ?, lantai = ?, fungsi = ?, kapasitas = ?
+		SET nama_ruang = ?, gedung = ?, lantai = ?, fungsi = ?, kapasitas = ?
 		WHERE kode_ruang = ?
 	`
 	result, err := dbConn.Exec(query, ruang.NamaRuang, ruang.Gedung, ruang.Lantai, ruang.Fungsi, ruang.Kapasitas, KodeRuang)
