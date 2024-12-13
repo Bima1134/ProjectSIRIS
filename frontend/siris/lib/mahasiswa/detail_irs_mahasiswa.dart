@@ -224,54 +224,55 @@ class IRSDetailPageState extends State<IRSDetailPage> {
     return Scaffold(
       appBar: Navbar(userData: userData),
       body: Container(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.symmetric(horizontal: 40),
+        color: Colors.grey[200],
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 40),
+          margin: EdgeInsets.symmetric(vertical: 40),
+          color: Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Kartu Detail Mahasiswa
-              Card(
-                // elevation: 4,
 
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Detail Mahasiswa",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Nama: ${widget.mahasiswa['nama']}"),
-                              Text("NIM: ${widget.mahasiswa['nim']}"),
-                              Text("Semester: $selectedSemester"),
-                              Text("IPK: $ipk"),
-                            ],
-                          ),
-                          const SizedBox(width: 32),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("IPS: $ips"),
-                              Text("Maks Beban SKS: $maxSks"),
-                              Text("Status IRS: ${irsInfo['status_irs']}"),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Detail Mahasiswa",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Nama: ${widget.mahasiswa['nama']}"),
+                            Text("NIM: ${widget.mahasiswa['nim']}"),
+                            Text("Semester: $selectedSemester"),
+                            Text("IPK: $ipk"),
+                          ],
+                        ),
+                        const SizedBox(width: 32),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("IPS: $ips"),
+                            Text("Maks Beban SKS: $maxSks"),
+                            Text("Status IRS: ${irsInfo['status_irs']}"),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-
+              Divider(),
               // Header Tabel dan Dropdown
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -322,14 +323,17 @@ class IRSDetailPageState extends State<IRSDetailPage> {
               const SizedBox(height: 16),
 
               // Tabel Jadwal IRS
-              Center(
-                child: Container(
-                  // width:
-                  //     double.infinity, // Make the container take the full width
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
+              Container(
+                // width:
+                width:
+                    double.infinity, // Make the container take the full width
+                margin: const EdgeInsets.symmetric(horizontal: 16),
 
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        minWidth: MediaQuery.of(context).size.width),
                     child: DataTable(
                       columnSpacing: 16,
                       headingRowColor: MaterialStateProperty.resolveWith(
@@ -442,9 +446,19 @@ class IRSDetailPageState extends State<IRSDetailPage> {
                       backgroundColor: (selectedSemester <
                               widget.mahasiswa['semester'])
                           ? Colors.grey // Tombol menjadi abu-abu jika disabled
-                          : null,
+                          : Colors.blue, // Warna biru untuk tombol aktif
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            10), // Membuat sudut tombol melengkung
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16, // Padding horizontal dalam tombol
+                        vertical: 12, // Padding vertical dalam tombol
+                      ),
                     ),
-                    child: const Text('Setuju'),
+                    child: const Text('Setuju',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
@@ -466,8 +480,18 @@ class IRSDetailPageState extends State<IRSDetailPage> {
                               irsInfo['status_irs'] != 'Disetujui'
                           ? Colors.grey // Tombol menjadi abu-abu jika disabled
                           : Colors.red, // Tombol merah jika aktif
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            10), // Membuat sudut tombol melengkung
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16, // Padding horizontal dalam tombol
+                        vertical: 12, // Padding vertical dalam tombol
+                      ),
                     ),
-                    child: const Text('Unapprove'),
+                    child: const Text('Batal Setujui',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
