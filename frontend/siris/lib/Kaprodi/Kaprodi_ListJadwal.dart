@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:siris/Kaprodi/Kaprodi_AddJadwal.dart';
 import 'package:siris/Kaprodi/Kaprodi_EditJadwal.dart';
+import 'package:siris/Kaprodi/Kaprodi_AddBatchJadwal.dart';
 
 import 'package:siris/class/jadwalKaprodi.dart';
 
@@ -112,6 +113,9 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
 //   List<Ruang> paginatedList = []; // To hold the current page data
   Set<int> selectedJadwal = {}; // Store selected room names
   bool selectAll = false;
+  int currentPage = 1; // Track the current page
+  int rowsPerPage = 10; // Number of rows per page
+  List<JadwalKaprodiView> paginatedList = [];
 
   @override
   void initState() {
@@ -135,7 +139,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                 jadwalKaprodi = data
                     .map((item) => JadwalKaprodiView.fromJson(item))
                     .toList();
-                // updatePaginatedData(); // Update paginated data after fetching
+                updatePaginatedData(); // Update paginated data after fetching
               });
             } else {
               setState(() {
@@ -245,6 +249,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                 // Refresh data jadwal
                 setState(() {
                   fetchJadwalData();
+                  updatePaginatedData();
                 });
               },
               child: const Text('Ya'),
@@ -312,6 +317,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                 await deleteSelectedJadwal(selectedJadwal.toList());
                 setState(() {
                   fetchJadwalData();
+                  updatePaginatedData();
                 });
               },
               child: const Text('Ya'),
@@ -320,6 +326,15 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
         );
       },
     );
+  }
+
+  void updatePaginatedData() {
+    final startIndex = (currentPage - 1) * rowsPerPage;
+    final endIndex = startIndex + rowsPerPage;
+    setState(() {
+      paginatedList = jadwalKaprodi.sublist(startIndex,
+          endIndex < jadwalKaprodi.length ? endIndex : jadwalKaprodi.length);
+    });
   }
 
   @override
@@ -411,6 +426,14 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                               horizontal: 16, vertical: 12),
                         ),
                         onPressed: () {
+                          Navigator.push(
+                            context, // context should be available if used within StatefulWidget
+                            MaterialPageRoute(
+                              builder: (context) => MyAddJadwalBatchPage(
+                                  onCsvUploaded:
+                                      fetchJadwalData), // Navigate to ListRuangPage
+                            ),
+                          );
                           // Add the navigation logic here
                           // Navigator.push(
                           //   context, // context should be available if used within StatefulWidget
@@ -685,7 +708,7 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                           ),
                         ],
                         // rows: []
-                        rows: jadwalKaprodi
+                        rows: paginatedList
                             .map(
                               (jadwal) => DataRow(
                                 // selected: selectedJadwal.contains(ruang.namaRuang),
@@ -715,19 +738,22 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                                   DataCell(Text(jadwal.sks.toString() ?? '0')),
                                   DataCell(Text(jadwal.sifat ?? 'N/A')),
                                   DataCell(
-                                    SizedBox(
+                                    Container(
                                       height:
-                                          50.0, // Menentukan tinggi yang diinginkan
-                                      child: Container(
-                                        width:
-                                            250, // Lebar tetap untuk membatasi
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 3.0),
-                                        child: Wrap(
+                                          60.0, // Set the height for the DataCell
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 3.0),
+                                      child: SingleChildScrollView(
+                                        child: Column(
                                           children: jadwal.dosenPengampu
-                                              .map((dosen) => Text(
-                                                    dosen,
-                                                    softWrap: true,
+                                              .map((dosen) => Container(
+                                                    padding: EdgeInsets.symmetric(
+                                                        vertical:
+                                                            2.0), // Optional padding
+                                                    child: Text(
+                                                      dosen,
+                                                      softWrap: true,
+                                                    ),
                                                   ))
                                               .toList(),
                                         ),
@@ -840,7 +866,32 @@ class _ListJadwalKaprodiPageState extends State<ListJadwalKaprodiPage> {
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [],
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: currentPage > 1
+                          ? () {
+                              setState(() {
+                                currentPage--;
+                                updatePaginatedData(); // Refresh the data
+                              });
+                            }
+                          : null,
+                    ),
+                    Text('Page $currentPage'),
+                    IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      onPressed:
+                          currentPage * rowsPerPage < jadwalKaprodi.length
+                              ? () {
+                                  setState(() {
+                                    currentPage++;
+                                    updatePaginatedData(); // Refresh the data
+                                  });
+                                }
+                              : null,
+                    ),
+                  ],
                 ),
               ],
             ),
