@@ -116,64 +116,71 @@ class DaftarMahasiswaPerwalianPageState
     return Scaffold(
       appBar: Navbar(userData: userData),
       body: LayoutBuilder(builder: (context, constraints) {
-        return Center(
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 32),
-                child: const Text(
-                  'Daftar Mahasiswa Perwalian',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Dropdown untuk memilih angkatan
-                    DropdownButton<int>(
-                      hint: const Text("Pilih Angkatan"),
-                      value: selectedAngkatan,
-                      onChanged: (int? newValue) {
-                        setState(() {
-                          selectedAngkatan = newValue;
-                        });
-                        fetchMahasiswaPerwalian(); // Mem-fetch data mahasiswa sesuai angkatan
-                      },
-                      items:
-                          angkatanList.map<DropdownMenuItem<int>>((int value) {
-                        return DropdownMenuItem<int>(
-                          value: value,
-                          child: Text('Angkatan $value'),
-                        );
-                      }).toList(),
+        return Container(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            color: Colors.grey[200],
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              margin: EdgeInsets.symmetric(vertical: 40),
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 32),
+                    child: const Text(
+                      'Daftar Mahasiswa Perwalian',
+                      style:
+                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
-                    // Tabel Mahasiswa
-                    isLoading
-                        ? const CircularProgressIndicator()
-                        : MahasiswaTable(
-                            mahasiswaList: mahasiswaList,
-                            selectedAngkatan: selectedAngkatan,
-                            irsInfo: irsInfo,
-                            onDetailPressed: (mahasiswa) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => IRSDetailPage(
-                                    mahasiswa: mahasiswa,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        // Dropdown untuk memilih angkatan
+                        DropdownButton<int>(
+                          hint: const Text("Pilih Angkatan"),
+                          value: selectedAngkatan,
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              selectedAngkatan = newValue;
+                            });
+                            fetchMahasiswaPerwalian(); // Mem-fetch data mahasiswa sesuai angkatan
+                          },
+                          items: angkatanList
+                              .map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text('Angkatan $value'),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+                        // Tabel Mahasiswa
+                        isLoading
+                            ? const CircularProgressIndicator()
+                            : MahasiswaTable(
+                                mahasiswaList: mahasiswaList,
+                                selectedAngkatan: selectedAngkatan,
+                                irsInfo: irsInfo,
+                                onDetailPressed: (mahasiswa) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => IRSDetailPage(
+                                        mahasiswa: mahasiswa,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
+            ));
       }),
     );
   }
@@ -196,94 +203,93 @@ class MahasiswaTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Card(
-        // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        // elevation: 4,
-        margin: const EdgeInsets.all(16),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-          ),
-          child: Column(
-            children: [
-              // Header tabel
-              Container(
+      // child: Card(
+      //   // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      //   // elevation: 4,
+      //   margin: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          // color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            // Header tabel
+            Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF162953), // Biru tua
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: Row(
+                  children: const [
+                    Expanded(child: Text('NIM', style: _headerTextStyle)),
+                    Expanded(child: Text('Nama', style: _headerTextStyle)),
+                    Expanded(child: Text('Status', style: _headerTextStyle)),
+                    SizedBox(
+                        width: 80,
+                        child: Text('Aksi', style: _headerTextStyle)),
+                  ],
+                ),
+              ),
+            ),
+            // Isi tabel
+            ...mahasiswaList.map((mahasiswa) {
+              return Container(
                 decoration: const BoxDecoration(
-                  color: Color(0xFF162953), // Biru tua
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                  border: Border(
+                      bottom: BorderSide(color: Colors.grey, width: 0.5)),
                 ),
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
-                    children: const [
-                      Expanded(child: Text('NIM', style: _headerTextStyle)),
-                      Expanded(child: Text('Nama', style: _headerTextStyle)),
-                      Expanded(child: Text('Status', style: _headerTextStyle)),
+                    children: [
+                      Expanded(
+                        child: Text(mahasiswa['nim'] ?? '',
+                            style: _contentTextStyle),
+                      ),
+                      Expanded(
+                        child: Text(mahasiswa['nama'] ?? '',
+                            style: _contentTextStyle),
+                      ),
+                      Expanded(
+                        child: Text(mahasiswa['status_irs'] ?? 'Tidak Ada Data',
+                            style: _contentTextStyle),
+                      ),
                       SizedBox(
-                          width: 80,
-                          child: Text('Aksi', style: _headerTextStyle)),
-                    ],
-                  ),
-                ),
-              ),
-              // Isi tabel
-              ...mahasiswaList.map((mahasiswa) {
-                return Container(
-                  decoration: const BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(color: Colors.grey, width: 0.5)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(mahasiswa['nim'] ?? '',
-                              style: _contentTextStyle),
-                        ),
-                        Expanded(
-                          child: Text(mahasiswa['nama'] ?? '',
-                              style: _contentTextStyle),
-                        ),
-                        Expanded(
-                          child: Text(
-                              mahasiswa['status_irs'] ?? 'Tidak Ada Data',
-                              style: _contentTextStyle),
-                        ),
-                        SizedBox(
-                          width: 80,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF0066CC), // Biru tua
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                        width: 80,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            onPressed: () => onDetailPressed(mahasiswa),
-                            child: const Text(
-                              'Detail',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white, // Warna putih
-                              ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                          ),
+                          onPressed: () => onDetailPressed(mahasiswa),
+                          child: const Text(
+                            'Detail',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white, // Warna putih
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ],
-          ),
+                ),
+              );
+            }).toList(),
+          ],
         ),
       ),
+      // ),
     );
   }
 }
