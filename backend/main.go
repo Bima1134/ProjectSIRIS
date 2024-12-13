@@ -73,7 +73,7 @@ func main() {
 	e.GET("/dekan/jadwal/:idsem", controller.GetAllJadwalProdi)
 	e.PUT("/dekan/jadwal/approve/:idjadwal", controller.ApproveJadwal)
 	e.GET("/dekan/jadwal/detail/:idjadwal", controller.GetDetailJadwal)
-
+	e.GET("/dokumen-jadwal/:idJadwal", controller.GetDokumenJadwal)
 	// Ruang Related
 	e.GET("/dekan/ruang/:idsem", controller.GetAllRuangProdi)
 	e.PUT("/dekan/ruang/approve/:idalokasi", controller.ApproveRuang)

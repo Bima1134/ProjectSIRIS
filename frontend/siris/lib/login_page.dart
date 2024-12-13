@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final loggerLogin = Logger('_LoginScreenState');
 
@@ -32,7 +33,12 @@ Future<void> _login() async {
   if (response.statusCode == 200) {
     // Jika berhasil login
     final data = json.decode(response.body);
-    
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('email', _emailController.text);
+    prefs.setString('role', data['role']);
+    prefs.setString('currentLoginAs', data['role']);
+
+
     // Pengecekan role
     if(mounted){
       data['currentLoginAs'] = data['role'];

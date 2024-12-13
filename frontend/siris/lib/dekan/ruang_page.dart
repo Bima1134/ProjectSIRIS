@@ -147,7 +147,7 @@ class RuangPageState extends State<RuangPage> {
                 SingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                    child: PaginatedDataTable(
+                    child: DataTable(
                       columnSpacing: 16.0,
                       headingRowColor: WidgetStateProperty.resolveWith(
                         (states) => Color(0xFF162953),
@@ -178,13 +178,129 @@ class RuangPageState extends State<RuangPage> {
                           ),
                         ),
                       ],
-                        source: RuangDataSource(
-                                  ruangProdi,
-                                  (idAlokasi, idsem) => approveRuang(context, idAlokasi, idsem),
-                                  (idAlokasi) => Navigator.push(context, MaterialPageRoute(
-                                    builder:  (context) => DetailRuangPage(
-                                                            userData: userData, idAlokasiRuang: idAlokasi)))
+                      rows: ruangProdi.map((ruang) {
+                        final isDisetujui = ruang.status.toLowerCase() == "sudah disetujui";
+                        final isDiisi = ruang.status.toLowerCase() == "belum diisi";
+                        return DataRow(
+                          color: WidgetStateProperty.resolveWith<Color?>(
+                            (Set<WidgetState> states) {
+                              return Colors.white; // Apply row color
+                            },
+                          ),
+                          cells: [
+                          DataCell(Text(ruang.idAlokasi)),
+                          DataCell(Text(ruang.namaProdi)),
+                          DataCell(Text(ruang.status)),
+                          DataCell(
+                            Row(
+                              children: [
+                                isDiisi?
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  ),
+                                  onPressed: () {
+                                    detailRuang(context, ruang.idAlokasi);
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.info, color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Detail',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                                 )
+                                :Container(
+                                  child:
+                                    !isDisetujui ?
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          ),
+                                          onPressed: () {
+                                            detailRuang(context, ruang.idAlokasi);
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.info, color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Detail',
+                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8,),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          ),
+                                          onPressed: () {
+                                            approveRuang(context, ruang.idAlokasi, ruang.idSem); // Memanggil callback saat tombol ditekan
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.check, color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Setujui',
+                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ) 
+                                    : ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        ),
+                                        onPressed: () {
+                                          detailRuang(context, ruang.idAlokasi);
+                                        },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Icon(Icons.info, color: Colors.white),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Detail',
+                                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  )
+                              ],
+                            ),
+                          ),
+                        ]);
+                      }).toList()
                     ),
                   ),
                 ),
@@ -289,9 +405,10 @@ class RuangPageState extends State<RuangPage> {
   }
 
   Future<Object> detailRuang(BuildContext context, String idAlokasi) async {
-    return Navigator.push(context, MaterialPageRoute(
-                                    builder:  (context) => DetailRuangPage(
-                                                            userData: userData, idAlokasiRuang: idAlokasi)));
+    return Navigator.push(context, 
+      MaterialPageRoute(
+        builder:  (context) => DetailRuangPage(
+                                userData: userData, idAlokasiRuang: idAlokasi)));
   }
 }
 

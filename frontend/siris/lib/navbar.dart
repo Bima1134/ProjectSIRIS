@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:siris/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siris/route/routers.dart';
 
 class Navbar extends StatefulWidget implements PreferredSizeWidget {
   final Map<String, dynamic> userData; // Tambahkan parameter untuk userData
@@ -13,6 +16,7 @@ class Navbar extends StatefulWidget implements PreferredSizeWidget {
 
 class NavbarState extends State<Navbar> {
   get userData => widget.userData;
+  SharedPreferences? prefs; 
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +27,20 @@ class NavbarState extends State<Navbar> {
       return _buildMobileLayout(context);
     }
   }
+  
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _loadPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+  }
 
   List<Widget> _buildButtons(BuildContext context) {
     List<Widget> buttons = [];
 
-    if (userData['currentLoginAs'] == 'Mahasiswa') {
+    if (prefs?.getString('currentLoginAs') == 'Mahasiswa') {
       buttons.add(_buildMenuItem(Icons.book, 'IRS', onTap: () {
         Navigator.pushNamed(context, '/irs', arguments: userData);
       }));
@@ -36,43 +49,35 @@ class NavbarState extends State<Navbar> {
         Navigator.pushNamed(context, '/Jadwal', arguments: userData);
       }));
     } 
-    else if(userData['currentLoginAs'] == 'Bagian Akademik'){
+    else if(prefs?.getString('currentLoginAs') == 'Bagian Akademik'){
      buttons.addAll([
-    _buildMenuItem(
-      Icons.room,
-      'Ruang',
-      onTap: () {
-        Navigator.pushNamed(context, '/ruang', arguments: userData);
-      },
-    ),
-    _buildMenuItem(
-      Icons.edit,
-      'Alokasi Ruang',
-      onTap: () {
-        Navigator.pushNamed(context, '/alokasi-ruang', arguments: userData);
-      },
-    ),
-  ]);
+      _buildMenuItem(
+        Icons.room,
+        'Ruang',
+        onTap: () {
+          Navigator.pushNamed(context, '/BA/ruang', arguments: userData);
+        },
+      ),
+      _buildMenuItem(
+        Icons.edit,
+        'Alokasi Ruang',
+        onTap: () {
+          Navigator.pushNamed(context, '/BA/alokasi-ruang', arguments: userData);
+        },
+      ),
+      ]);
       }
     else  {
-      if (userData['currentLoginAs'] == 'Dosen') {
+      if (prefs?.getString('role') == 'Dekan' || prefs?.getString('role') == 'Kaprodi'){
+        String? newRole = prefs?.getString('currentLoginAs');
+          buttons.add(_buildSwitchRole(newRole!));
+      }
+      if (prefs?.getString('currentLoginAs') == 'Dosen') {
         buttons.add(_buildMenuItem(Icons.person, 'Daftar Mahasiswa Perwalian', onTap: () {
           Navigator.pushNamed(context, '/Perwalian', arguments: userData);
         }));
       }
-      if (userData['role'] == 'Dekan' || userData['role'] == 'Kaprodi'){
-          buttons.add(_buildSwitchRole(userData['currentLoginAs']));
-          if(userData['currentLoginAs'] == 'Kaprodi'){
-                buttons.add(_buildMenuItem(
-            Icons.room,
-            'Mata Kuliah',
-            onTap: () {
-              Navigator.pushNamed(context, '/matkul', arguments: userData);
-            },
-    ));
-          }
-      }
-      if(userData['role'] == 'Dekan'){
+      if(prefs?.getString('role') == 'Dekan'){
           buttons.add(_buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
           Navigator.pushNamed(context, '/dekan/jadwal/', arguments: userData);
         }));
@@ -80,7 +85,7 @@ class NavbarState extends State<Navbar> {
           Navigator.pushNamed(context, '/dekan/ruang/', arguments: userData);
         }));
       }
-      else if(userData['role'] == 'Kaprodi'){
+      else if(prefs?.getString('role') == 'Kaprodi'){
         buttons.add(_buildMenuItem(Icons.schedule, "Jadwal", onTap: () {
           Navigator.pushNamed(context, '/kaprodi/jadwal/', arguments: userData);
         }));
@@ -90,7 +95,7 @@ class NavbarState extends State<Navbar> {
       }
     }
 
-    buttons.add(_buildLogoutButton());
+    buttons.add(_buildLogoutButton(context));
     return buttons;
   }
 
@@ -126,9 +131,20 @@ class NavbarState extends State<Navbar> {
                   ),
                 ],
               ),
-              Row(
-                children: _buildButtons(context),
-              ),
+              FutureBuilder(future: _loadPrefs(), builder: (context, snapshot){
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator()); // Loading state
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  return Center(
+                    child: Row(
+                      children: _buildButtons(context),
+                    ),
+                  );
+                }
+              })
+              
             ],
           ),
         ),
@@ -161,22 +177,12 @@ class NavbarState extends State<Navbar> {
             onChanged: (String? newRole) {
               setState(() {
                 if (newRole != role){
-                  userData['currentLoginAs'] = newRole;
+                  prefs?.setString('currentLoginAs', newRole!);
                 }
-                // Redirect sesuai role yang dipilih
-                if (newRole == 'Dosen') {
-                  Navigator.pushNamed(context, '/dosen/dashboard', arguments: userData);
-                } else if (newRole == 'Dekan') {
-                  Navigator.pushNamed(context, '/dekan/dashboard', arguments: userData);
-                } else if (newRole == 'Kaprodi') {
-                  Navigator.pushNamed(context, '/kaprodi/dashboard', arguments: userData);
-                }
-                else{
-                  Navigator.pushNamed(context, '/404', arguments: userData);
-                }
+                Navigator.pushNamed(context, '/dashboard', arguments: userData);
               });
             },
-            items: <String>["Mahasiswa", 'Dosen', userData['role']].map<DropdownMenuItem<String>>((String value) {
+            items: <String>[role, 'Dosen'].map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -202,10 +208,12 @@ class NavbarState extends State<Navbar> {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        // Handle logout
+        userData.clear();
+        loggerLogin.info(userData);
+        Navigator.pushReplacementNamed(context, '/login');
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red,

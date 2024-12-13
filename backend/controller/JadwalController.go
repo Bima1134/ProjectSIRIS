@@ -1174,3 +1174,35 @@ func GetDetailJadwal(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, groupedJadwals)
 }
+
+func GetDokumenJadwal(c echo.Context) error {
+	dbConn := db.CreateCon()
+
+	// Log: Parameter yang diterima
+	idJadwal := c.Param("idJadwal")
+	fmt.Printf("Fetching allocation data for id_jadwal_prodi: %s\n", idJadwal)
+
+	// Log: Memulai query database
+	var DataAlokasi models.JadwalProdiResponse
+	fmt.Println("Executing database query...")
+
+	err := dbConn.QueryRow("SELECT id_jadwal_prodi, idsem, nama_prodi, status FROM jadwal_prodi WHERE id_jadwal_prodi = ?", idJadwal).
+		Scan(&DataAlokasi.JadwalIDProdi, &DataAlokasi.IdSem, &DataAlokasi.NamaProdi, &DataAlokasi.Status)
+
+	// Log: Memeriksa hasil query
+	if err == sql.ErrNoRows {
+		fmt.Println("No data found for the provided id_jadwal_prodi.")
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "Data not found"})
+	}
+
+	if err != nil {
+		// Log: Menangkap error dari database
+		fmt.Printf("Error fetching data from database: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("Error fetching data: %v", err)})
+	}
+
+	// Log: Data berhasil diambil
+	fmt.Printf("Data fetched successfully: %+v\n", DataAlokasi)
+
+	return c.JSON(http.StatusOK, DataAlokasi)
+}

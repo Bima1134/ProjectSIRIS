@@ -193,7 +193,7 @@ Future<void> fetchAlokasiData(String idsem) async {
                           constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
                           child: DataTable(
                             columnSpacing: 16.0,
-                            headingRowColor: MaterialStateProperty.resolveWith(
+                            headingRowColor: WidgetStateProperty.resolveWith(
                               (states) => const Color(0xFF162953),
                             ),
                             columns: const [

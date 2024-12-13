@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:siris/navbar.dart';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 final loggerDashboard = Logger('DashboardState');
@@ -20,21 +21,28 @@ class DashboardState extends State<Dashboard> {
   get userData => widget.userData;
   String totalSks = '0';
   String ipk = '0.0';
-
+  SharedPreferences? prefs; 
   @override
   void initState() {
     super.initState();
-    fetchData();
+        _loadPrefs();
+    if (userData['currentLoginAs'] == 'Mahasiswa'){
+      fetchDataMahasiswa();
+    }
   }
 
-  Future<void> fetchData() async {
+  Future<void> _loadPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+  }
+  
+  Future<void> fetchDataMahasiswa() async {
    final nim = widget.userData['identifier'];
     final semester = widget.userData['semester'];
     final String apiUrl = 'http://localhost:8080/mahasiswa/info-mahasiswa/$nim?semester=$semester'; // Ganti dengan endpoint API Anda
 
     try {
+      loggerDashboard.info("Fetching Data Mahasiswa URL: $apiUrl"); 
       final response = await http.get(Uri.parse(apiUrl));
-
       if (response.statusCode == 200) {
         // Decode the JSON response
         final data = json.decode(response.body);
@@ -47,14 +55,14 @@ class DashboardState extends State<Dashboard> {
           totalSks = 'Error';
           ipk = 'Error';
         });
-        print('Failed to load data: ${response.statusCode}');
+        debugPrint('Failed to load data: ${response.statusCode}');
       }
     } catch (e) {
       setState(() {
         totalSks = 'Error';
         ipk = 'Error';
       });
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
     }
   }
 
@@ -323,9 +331,9 @@ class DashboardState extends State<Dashboard> {
                       ), 
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundImage: MemoryImage(
-                          base64Decode(userData['profile_image_base64']),
-                        ),
+                        backgroundImage: userData['profile_image_base64'] != null && userData['profile_image_base64'].isNotEmpty
+                            ? MemoryImage(base64Decode(userData['profile_image_base64']))
+                            : AssetImage('images/Default_pfp.png'),
                         backgroundColor: Colors.transparent,
                       ),
                     ),

@@ -268,3 +268,87 @@ func GetAvailableRuang(c echo.Context) error {
 	// Kirim hasil ke client
 	return c.JSON(http.StatusOK, ruangList)
 }
+
+func updateStatusAlokasi(c echo.Context, idsem string, prodi string) error {
+	query := `
+		SELECT status
+		FROM alokasi_ruang
+		WHERE idsem = ? AND nama_prodi = ?
+	`
+	connection := db.CreateCon()
+
+	// Memulai transaksi database
+	tx, err := connection.Begin()
+	if err != nil {
+		log.Println("Error: Gagal memulai transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memulai transaksi",
+		})
+	}
+	defer tx.Rollback()
+
+	log.Printf("Executing query: %s", query)
+
+	// Mendapatkan status
+	var status string
+	err = tx.QueryRow(query, idsem, prodi).Scan(&status)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal mendapatkan status alokasi ruang",
+		})
+	}
+
+	// Jika status sudah "belum disetujui", tidak perlu update
+	if status == "belum disetujui" {
+		log.Printf("Status alokasi ruang dengan idsem %s, prodi %s sudah 'belum disetujui', tidak ada perubahan\n", idsem, prodi)
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Status alokasi ruang sudah 'belum disetujui', tidak ada perubahan",
+		})
+	}
+
+	// Update status jika berbeda
+	query = `
+		UPDATE alokasi_ruang
+		SET status = 'belum disetujui'
+		WHERE idsem = ? AND nama_prodi = ?
+	`
+	log.Printf("Updating status alokasi ruang dengan idsem: %s, prodi: %s\n", idsem, prodi)
+
+	result, err := tx.Exec(query, idsem, prodi)
+	if err != nil {
+		log.Println("Error: Gagal memperbarui status alokasi ruang:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memperbarui status alokasi ruang",
+		})
+	}
+
+	// Memastikan baris diupdate
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error: Gagal mendapatkan jumlah baris yang diperbarui:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal memeriksa status update",
+		})
+	}
+
+	if rowsAffected == 0 {
+		log.Println("Tidak ada baris yang berubah")
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Tidak ada perubahan pada status alokasi ruang",
+		})
+	}
+
+	// Commit transaksi
+	if err := tx.Commit(); err != nil {
+		log.Println("Error: Gagal melakukan commit transaksi:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Gagal mengupdate status alokasi ruang",
+		})
+	}
+
+	log.Printf("Status alokasi ruang dengan idsem %s, prodi %s berhasil diupdate\n", idsem, prodi)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Status alokasi ruang berhasil diupdate",
+	})
+}

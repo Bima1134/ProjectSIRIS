@@ -147,7 +147,7 @@ class JadwalPageState extends State<JadwalPage> {
                 SingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                    child: PaginatedDataTable(
+                    child: DataTable(
                       columnSpacing: 16.0,
                       headingRowColor: WidgetStateProperty.resolveWith(
                         (states) => Color(0xFF162953),
@@ -178,13 +178,142 @@ class JadwalPageState extends State<JadwalPage> {
                           ),
                         ),
                       ],
-                        source: JadwalDataSource(
-                                  jadwalProdi,
-                                  (idJadwal, idsem) => approveJadwal(context, idJadwal, idsem),
-                                  (idJadwal) => Navigator.push(context, MaterialPageRoute(
-                                    builder:  (context) => DetailJadwalPage(
-                                                            userData: userData, idJadwalProdi: idJadwal)))
+                        rows: jadwalProdi.map((jadwal) {
+                          final isDisetujui = jadwal.status.toLowerCase() == "sudah disetujui";
+                          final isDiisi = jadwal.status.toLowerCase() == "belum diisi";
+                          return DataRow(
+                            color: WidgetStateProperty.resolveWith<Color?>(
+                              (Set<WidgetState> states) {
+                                return Colors.white; // Apply row color
+                              },
+                            ),
+                            cells: [
+                            DataCell(Text(jadwal.idJadwal)),
+                            DataCell(Text(jadwal.namaProdi)),
+                            DataCell(isDisetujui ? Container( 
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                decoration: BoxDecoration(color: Colors.green, borderRadius:BorderRadius.circular(8),),  // Corrected here
+                                child: Text(jadwal.status, style: TextStyle(fontSize: 16, color: Colors.white),
                                 )
+                              ): Text(jadwal.status)),
+                            DataCell(
+                              Row(
+                                children: [
+                                  isDiisi?
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                    onPressed: () {
+                                      detailJadwal(context, jadwal.idJadwal);
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.info, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Detail',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                  :Container(
+                                    child:
+                                      !isDisetujui ?
+                                      Row(
+                                        children: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            ),
+                                            onPressed: () {
+                                              detailJadwal(context, jadwal.idJadwal);
+                                            },
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(Icons.info, color: Colors.white),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Detail',
+                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8,),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            ),
+                                            onPressed: () {
+                                              approveJadwal(context, jadwal.idJadwal, jadwal.idSem); // Memanggil callback saat tombol ditekan
+                                            },
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(Icons.check, color: Colors.white),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Setujui',
+                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ) 
+                                      : ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          ),
+                                          onPressed: () {
+                                            detailJadwal(context, jadwal.idJadwal);
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                              Icon(Icons.info, color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Detail',
+                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    )
+                                  ],  
+                                  ),
+                            ),
+                          ]);
+                        }).toList()
+
+                        // JadwalDataSource(
+                        //           jadwalProdi,
+                        //           (idJadwal, idsem) => approveJadwal(context, idJadwal, idsem),
+                        //           (idJadwal) => Navigator.push(context, MaterialPageRoute(
+                        //             builder:  (context) => DetailJadwalPage(
+                        //                                     userData: userData, idJadwalProdi: idJadwal)))
+                        //         )
                     ),
                   ),
                 ),
