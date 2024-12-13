@@ -1,12 +1,19 @@
 package controller
 
 import (
+	"time"
 	"SIRIS/db"
 	"SIRIS/models"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"encoding/csv"
+
+	"io"
+
+
+	
 
 	"github.com/labstack/echo/v4"
 )
@@ -722,4 +729,82 @@ func GetRuangbyProdi(c echo.Context) error {
 	// Return the result as JSON
 	log.Printf("DEBUG: Approved rooms for prodi %s: %v\n", namaProdi, ruangList)
 	return c.JSON(http.StatusOK, ruangList)
+}
+
+func UploadCSVJadwal(c echo.Context) error {
+	// Get the file from the form
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Failed to get file"})
+	}
+
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to open the file"})
+	}
+	defer src.Close()
+
+	// Parse the CSV file
+	reader := csv.NewReader(src)
+	var lines [][]string
+	for {
+		line, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Error reading CSV file"})
+		}
+		lines = append(lines, line)
+	}
+
+	// Process each line and insert into the database
+	dbConn := db.CreateCon()
+	for _, line := range lines {
+		if len(line) < 7 {
+			continue // Skip invalid rows (you can add more validation)
+		}
+
+		// Convert the data from CSV to proper types
+		kodeMK := line[0]
+		kodeRuang := line[1]
+		hari := line[2]
+		jamMulai := line[3] // Assume this is in a valid time format (e.g., "08:00")
+		// kapasitas, err := strconv.Atoi(line[4]) // Convert kapasitas to int
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid kapasitas value"})
+		}
+		kelas := line[4]
+		idsem := line[5]
+		namaProdi := line[6]
+
+		// Get the SKS value from the database
+		var sks int
+		err = dbConn.QueryRow(`SELECT sks FROM mata_kuliah WHERE kode_mk = ?`, kodeMK).Scan(&sks)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed to retrieve SKS from database"})
+		}
+
+		// Calculate jam_selesai based on jamMulai and SKS (50 minutes per SKS)
+		jamMulaiTime, err := time.Parse("15:04:05", jamMulai) // Convert jamMulai to a time object
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid jamMulai format"})
+		}
+
+		// Calculate jam_selesai by adding SKS * 50 minutes to jamMulai
+		jamSelesaiTime := jamMulaiTime.Add(time.Duration(sks * 50) * time.Minute)
+
+		// Format jam_selesai back to a string
+		jamSelesai := jamSelesaiTime.Format("15:04:05")
+
+
+		// Insert new data into the database
+		insertQuery := `INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kelas, idsem, nama_prodi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		_, err = dbConn.Exec(insertQuery, kodeMK, kodeRuang, hari, jamMulai, jamSelesai, kelas, idsem, namaProdi)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Failed to insert data: %v", err)})
+		}
+	}
+	return c.JSON(http.StatusOK, map[string]string{"message": "CSV data uploaded and inserted successfully"})
 }
