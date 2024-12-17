@@ -5,6 +5,10 @@ import 'dart:convert';
 import 'package:siris/navbar.dart';
 import 'package:siris/class/JadwalIRS.dart';
 import 'package:logging/logging.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'dart:io';
+import 'package:printing/printing.dart'; // For printing support
 
 final loggerIRS = Logger('IRSPageState');
 
@@ -110,7 +114,11 @@ Widget build(BuildContext context) {
                           fetchIRSJadwal(semester);
                         },
                       ),
-                      _buildEditButton()
+                     Row(children: [
+                      _buildEditButton(),
+                      SizedBox(width: 16),
+                      buildPrintButton()
+                     ],)
                     ],
                   ),
                 ),
@@ -122,6 +130,7 @@ Widget build(BuildContext context) {
                     child: ConstrainedBox(
                       constraints: BoxConstraints(minWidth: constraints.maxWidth),
                       child: DataTable(
+                        dataRowMinHeight: 48.0,
                         columnSpacing: 16.0,
                         headingRowColor: MaterialStateProperty.resolveWith(
                           (states) => const Color(0xFF162953),
@@ -282,7 +291,364 @@ Widget _buildEditButton() {
 
 }
 
+Widget buildPrintButton() {
+  return ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.yellow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // Rounded edges
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    ),
+    onPressed: () async {
+      // Generate PDF
+      final pdf = pw.Document();
+      final imageBytes = (await http.get(Uri.parse('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMe3WJmoGtCnaETU1I4ucvv253bR9A0ag5hA&s'))).bodyBytes;
+      final headers = ['NO', 'KODE', 'MATA KULIAH', 'KELAS', 'SKS', 'RUANG', 'STATUS', 'NAMA DOSEN'];
 
+  final data = [
+    {
+      'main': ['1', 'PAK6702', 'Teori Bahasa dan Otonata', 'D', '3', 'A303', 'BARU', 'Priyo Sidiq Sasono, S.T., M.Kom.,\nEtta Wanita, S.H., M.M.,\nDr. Yova Fadhilah Asyari, S.S., M.Si.'],
+      'sub': 'Senin pukul 13:30 - 15:30',
+    },
+    {
+      'main': ['2', 'PAK6503', 'Pengembangan Berbasis Platform', 'D', '3', 'E101', 'BARU', 'Sandy Kurniawan, S.Kom., M.Kom.,\nAdhi Seya Paryono, M.Kom.,\nJustin Tatikowa, S.Kom., M.T.'],
+      'sub': 'Selasa pukul 13:00 - 16:20',
+    },
+    {
+      'main': ['3', 'PAK6903', 'Pembanglian Mesin', 'D', '3', 'E101', 'BARU', 'Dr. Reto Kusumaringrat, S.Si., M.Kom.,\nBisyrah, E.Brg., M.G.'],
+      'sub': 'Rabu pukul 09:40 - 12:10',
+    },
+    {
+      'main': ['4', 'PAK6504', 'Proyek Perangkat Lunak', 'D', '3', 'E101', 'BARU', 'Dinar Muktira Kusno Nugroho, S.T.,\nM.Tech.(Comp.), Ph.D.,\nDwi Puji Wardani, S.Si., M.T.,\nYunita Dwi Putri Aryani, S.Kom., M.Kom.'],
+      'sub': 'Rabu pukul 15:40 - 18:10',
+    },
+    {
+      'main': ['5', 'PAK6502', 'Komputasi Terbesar dan Paralel', 'D', '3', 'E101', 'BARU', 'Canh Anh Ayuyao, S.Kom., M.T.,\nAdhi Seya Paryono, M.Kom.,\nDwi Agus Wibowo, S.Si., M.Kom.,\nElda Nugroho, S.Si., M.Kom.'],
+      'sub': 'Kamis pukul 15:40 - 18:10',
+    },
+    {
+      'main': ['6', 'PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
+      'sub': 'Jumat pukul 07:00 - 09:30',
+    },
+  ];
+
+      // Add a page to the PDF
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          
+          build: (pw.Context context) {
+            return pw.Container(
+              padding: pw.EdgeInsets.all(24),
+              child: pw.Column(
+                // mainAxisSize: pw.MainAxisSize.min,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.center,
+                    children :[ pw.Column(
+                      children: [
+                         pw.Text("ISIAN RENCANA STUDI", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                         pw.Text("Semester Ganjil TA 2024/2025", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                      ]
+                    )
+                    ]
+                  ),
+                  // pw.Text("Nama: Muhammad Naufal Rifqi Setiawan", style: pw.TextStyle(fontSize: 12)),
+                  // pw.Text("NIM: 24060122130045", style: pw.TextStyle(fontSize: 12)),
+                  // pw.Text("Prodi: Informatika", style: pw.TextStyle(fontSize: 12)),
+                  // pw.Text("Dosen Pembimbing: Adhe Setya", style: pw.TextStyle(fontSize: 12)),
+                  pw.Divider(),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+
+                  pw.Container(
+                  margin: pw.EdgeInsets.symmetric(vertical: 16),
+                  width: PdfPageFormat.a4.width / 2,
+                  child: pw.Table(
+                    columnWidths: const {
+                      0: pw.FractionColumnWidth(0.4),
+                      1: pw.FractionColumnWidth(0.6),
+                    },
+                    children: [
+                      pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: pw.EdgeInsets.all(3.0),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('Nama',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                                pw.Text(':',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                              ],
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(3.0),
+                            child: pw.Text(
+                                "Muhammad Naufal Rifqi Setiawan",
+                                style:  pw.TextStyle(
+                                     fontSize: 8)),
+                          ),
+                        ],
+                      ),
+
+                                            pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: pw.EdgeInsets.all(3.0),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('NIM',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                                pw.Text(':',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                              ],
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(3.0),
+                            child: pw.Text(
+                                "24060122130045",
+                                style:  pw.TextStyle(
+                                     fontSize: 8)),
+                          ),
+                        ],
+                      ),
+
+                                            pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: pw.EdgeInsets.all(3.0),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('Program Studi',
+                                    style:
+                                        pw.TextStyle( fontSize: 8)),
+                                pw.Text(':',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                              ],
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(3.0),
+                            child: pw.Text(
+                                "Informatika",
+                                style:  pw.TextStyle(
+                                    fontSize: 8)),
+                          ),
+                        ],
+                      ),
+
+                       pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: pw.EdgeInsets.all(3.0),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('Dosen Wali',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                                pw.Text(':',
+                                    style:
+                                        pw.TextStyle(fontSize: 8)),
+                              ],
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(3.0),
+                            child: pw.Text(
+                                "Adhe Setya Pramayoga, M.T.",
+                                style:  pw.TextStyle(
+                                    fontSize: 8)),
+                          ),
+                        ],
+                      ),
+                    
+                    ]
+                  ),
+                ),
+
+pw.Container(
+  height: 80, // Set the maximum height
+  width: 80 * (3 / 4), // Dynamically calculate width to keep 3:4 ratio
+  child: pw.Image(
+    pw.MemoryImage(imageBytes),
+    fit: pw.BoxFit.cover, // Ensures the image fits while maintaining aspect ratio
+  ),
+),
+                  ]),
+
+                  pw.Divider(),
+
+pw.Padding(
+          padding: const pw.EdgeInsets.all(10),
+          child: pw.Table(
+            border: pw.TableBorder.all(width: 0.5, color: PdfColors.black),
+            children: [
+              // Add the header row
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                children: headers
+                    .map((header) => pw.Padding(
+                          padding: const pw.EdgeInsets.symmetric(horizontal: 5),
+                          child: pw.Text(header,
+                              style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold, fontSize: 5),
+                              textAlign: pw.TextAlign.center),
+                        ))
+                    .toList(),
+              ),
+              // Add rows with sub-row for day and time
+              for (var row in data) ...[
+                pw.TableRow(
+                  children: (row['main'] as List<dynamic>)
+                      .map<pw.Widget>((cell) => pw.Padding(
+                            padding: const pw.EdgeInsets.all(5),
+                            child: pw.Text(cell,
+                                style: const pw.TextStyle(fontSize: 6),
+                                textAlign: pw.TextAlign.left),
+                          ))
+                      .toList(),
+                ),
+                // Sub-row for day and time
+pw.TableRow(
+  children: [
+    pw.Container(), // Empty cell (first column)
+    pw.Padding(
+      padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+      child: pw.Text(
+        row['sub']?.toString() ?? '',
+        style: pw.TextStyle(fontSize: 5),
+        textAlign: pw.TextAlign.left,
+      ),
+    ), // This cell will span
+    pw.SizedBox(), 
+    pw.SizedBox(), 
+    pw.SizedBox(), // Empty cell (third column)
+    pw.SizedBox(), 
+    pw.SizedBox(), 
+
+  ],
+),
+
+              ],
+            ],
+          ),
+        ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children:[
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: 
+            [
+              pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "Pembimbing Akademik",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+              pw.SizedBox(height: 40),
+                            pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "Adhe Setya Pramayoga, M.T.",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+                            pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "NIP. 199112092024061001",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+            ])
+            ,
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: 
+            [
+              pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "Semarang, 17 Desember 2024",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+              pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "Mahasiswa",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+                            pw.SizedBox(height: 40),
+              pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "Muhammad Naufal Rifqi Setiawan",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+              pw.Align(
+                alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                child: pw.Text(
+                  "NIM.24060122130045",
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ),
+
+            ])
+          ] 
+        )
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      // Print or share the PDF
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    },
+    child: const Row(
+      mainAxisSize: MainAxisSize.min, // Keeps the button compact
+      children: [
+        Icon(
+          Icons.document_scanner, // Edit icon
+          color: Colors.white,
+        ),
+        SizedBox(width: 8), // Space between icon and text
+        Text(
+          'Cetak IRS',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
   
 
   
