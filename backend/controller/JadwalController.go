@@ -603,7 +603,7 @@ func GetIRSJadwal(c echo.Context) error {
     j.jam_selesai, 
     j.kelas, 
     mk.sks, 
-    GROUP_CONCAT(d.nama SEPARATOR ', ') AS dosen_pengampu,
+    GROUP_CONCAT(d.nama SEPARATOR '\n') AS dosen_pengampu,
     CASE
         WHEN EXISTS (
             SELECT 1
