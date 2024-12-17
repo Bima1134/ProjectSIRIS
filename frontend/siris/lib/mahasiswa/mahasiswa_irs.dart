@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:printing/printing.dart'; // For printing support
 
 final loggerIRS = Logger('IRSPageState');
+int ipdf = 1;
 
 class IRSPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -26,7 +27,6 @@ class IRSPage extends StatefulWidget {
 class IRSPageState extends State<IRSPage> {  
   List<JadwalIRS> jadwalIRS = [];
   int? selectedSemester;
-  
   late int semester;
   
   get userData => widget.userData;
@@ -230,7 +230,6 @@ Widget build(BuildContext context) {
                             DataCell(Text(jadwal.SKS?.toString() ?? '0')), // Pastikan untuk menangani null pada SKS
                             DataCell(Text(jadwal.status ?? 'N/A')),
                             DataCell(Text(jadwal.DosenPengampu?.join(", ") ?? 'N/A')),
-
                           ]);
                         }).toList(),
                       ),
@@ -304,40 +303,49 @@ Widget buildPrintButton() {
       // Generate PDF
       final pdf = pw.Document();
       final imageBytes = (await http.get(Uri.parse('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMe3WJmoGtCnaETU1I4ucvv253bR9A0ag5hA&s'))).bodyBytes;
-      final headers = ['NO', 'KODE', 'MATA KULIAH', 'KELAS', 'SKS', 'RUANG', 'STATUS', 'NAMA DOSEN'];
-
-  final data = [
-    {
-      'main': ['1', 'PAK6702', 'Teori Bahasa dan Otonata', 'D', '3', 'A303', 'BARU', 'Priyo Sidiq Sasono, S.T., M.Kom.,\nEtta Wanita, S.H., M.M.,\nDr. Yova Fadhilah Asyari, S.S., M.Si.'],
-      'sub': 'Senin pukul 13:30 - 15:30',
-    },
-    {
-      'main': ['2', 'PAK6503', 'Pengembangan Berbasis Platform', 'D', '3', 'E101', 'BARU', 'Sandy Kurniawan, S.Kom., M.Kom.,\nAdhi Seya Paryono, M.Kom.,\nJustin Tatikowa, S.Kom., M.T.'],
-      'sub': 'Selasa pukul 13:00 - 16:20',
-    },
-    {
-      'main': ['3', 'PAK6903', 'Pembanglian Mesin', 'D', '3', 'E101', 'BARU', 'Dr. Reto Kusumaringrat, S.Si., M.Kom.,\nBisyrah, E.Brg., M.G.'],
-      'sub': 'Rabu pukul 09:40 - 12:10',
-    },
-    {
-      'main': ['4', 'PAK6504', 'Proyek Perangkat Lunak', 'D', '3', 'E101', 'BARU', 'Dinar Muktira Kusno Nugroho, S.T.,\nM.Tech.(Comp.), Ph.D.,\nDwi Puji Wardani, S.Si., M.T.,\nYunita Dwi Putri Aryani, S.Kom., M.Kom.'],
-      'sub': 'Rabu pukul 15:40 - 18:10',
-    },
-    {
-      'main': ['5', 'PAK6502', 'Komputasi Terbesar dan Paralel', 'D', '3', 'E101', 'BARU', 'Canh Anh Ayuyao, S.Kom., M.T.,\nAdhi Seya Paryono, M.Kom.,\nDwi Agus Wibowo, S.Si., M.Kom.,\nElda Nugroho, S.Si., M.Kom.'],
-      'sub': 'Kamis pukul 15:40 - 18:10',
-    },
-    {
-      'main': ['6', 'PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
-      'sub': 'Jumat pukul 07:00 - 09:30',
-    },
-  ];
-
+      final data = [
+        {
+          'main': ['PAK6702', 'Teori Bahasa dan Otonata', 'D', '3', 'A303', 'BARU', 'Priyo Sidiq Sasono, S.T., M.Kom.,\nEtta Wanita, S.H., M.M.,\nDr. Yova Fadhilah Asyari, S.S., M.Si.'],
+          'sub': 'Senin pukul 13:30 - 15:30',
+        },
+        {
+          'main': ['PAK6503', 'Pengembangan Berbasis Platform', 'D', '3', 'E101', 'BARU', 'Sandy Kurniawan, S.Kom., M.Kom.,\nAdhi Seya Paryono, M.Kom.,\nJustin Tatikowa, S.Kom., M.T.'],
+          'sub': 'Selasa pukul 13:00 - 16:20',
+        },
+        {
+          'main': ['PAK6903', 'Pembelajaran Mesin', 'D', '3', 'E101', 'BARU', 'Dr. Reto Kusumaringrat, S.Si., M.Kom.,\nBisyrah, E.Brg., M.G.'],
+          'sub': 'Rabu pukul 09:40 - 12:10',
+        },
+        {
+          'main': ['PAK6504', 'Proyek Perangkat Lunak', 'D', '3', 'E101', 'BARU', 'Dinar Muktira Kusno Nugroho, S.T.,\nM.Tech.(Comp.), Ph.D.,\nDwi Puji Wardani, S.Si., M.T.,\nYunita Dwi Putri Aryani, S.Kom., M.Kom.'],
+          'sub': 'Rabu pukul 15:40 - 18:10',
+        },
+        {
+          'main': ['PAK6502', 'Komputasi Terbesar dan Paralel', 'D', '3', 'E101', 'BARU', 'Canh Anh Ayuyao, S.Kom., M.T.,\nAdhi Seya Paryono, M.Kom.,\nDwi Agus Wibowo, S.Si., M.Kom.,\nElda Nugroho, S.Si., M.Kom.'],
+          'sub': 'Kamis pukul 15:40 - 18:10',
+        },
+        {
+          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
+          'sub': 'Jumat pukul 07:00 - 09:30',
+        },
+        {
+          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
+          'sub': 'Jumat pukul 07:00 - 09:30',
+        },
+        {
+          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
+          'sub': 'Jumat pukul 07:00 - 09:30',
+        },
+        {
+          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
+          'sub': 'Jumat pukul 07:00 - 09:30',
+        },
+      ];
       // Add a page to the PDF
       pdf.addPage(
         pw.Page(
+          margin: pw.EdgeInsets.zero,
           pageFormat: PdfPageFormat.a4,
-          
           build: (pw.Context context) {
             return pw.Container(
               padding: pw.EdgeInsets.all(24),
@@ -345,15 +353,15 @@ Widget buildPrintButton() {
                 // mainAxisSize: pw.MainAxisSize.min,
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.center,
-                    children :[ pw.Column(
-                      children: [
+                    children :[ 
+                      pw.Column(
+                        children: [
                          pw.Text("ISIAN RENCANA STUDI", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
                          pw.Text("Semester Ganjil TA 2024/2025", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                      ]
-                    )
+                        ]
+                      )
                     ]
                   ),
                   // pw.Text("Nama: Muhammad Naufal Rifqi Setiawan", style: pw.TextStyle(fontSize: 12)),
@@ -364,267 +372,356 @@ Widget buildPrintButton() {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-
-                  pw.Container(
-                  margin: pw.EdgeInsets.symmetric(vertical: 16),
-                  width: PdfPageFormat.a4.width / 2,
-                  child: pw.Table(
-                    columnWidths: const {
-                      0: pw.FractionColumnWidth(0.4),
-                      1: pw.FractionColumnWidth(0.6),
-                    },
-                    children: [
-                      pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(3.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      pw.Container(
+                        margin: pw.EdgeInsets.symmetric(vertical: 16),
+                        width: PdfPageFormat.a4.width / 2,
+                        child: pw.Table(
+                          columnWidths: const {
+                            0: pw.FractionColumnWidth(0.4),
+                            1: pw.FractionColumnWidth(0.6),
+                          },
+                          children: [
+                            pw.TableRow(
                               children: [
-                                pw.Text('Nama',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
-                                pw.Text(':',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(3.0),
+                                  child: pw.Row(
+                                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      pw.Text('Nama',
+                                        style:
+                                            pw.TextStyle(fontSize: 8)),
+                                      pw.Text(':',
+                                        style:
+                                            pw.TextStyle(fontSize: 8)),
+                                    ],
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(3.0),
+                                  child: pw.Text(
+                                      "Muhammad Naufal Rifqi Setiawan",
+                                      style:  pw.TextStyle(
+                                          fontSize: 8)),
+                                ),
                               ],
                             ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(3.0),
-                            child: pw.Text(
-                                "Muhammad Naufal Rifqi Setiawan",
-                                style:  pw.TextStyle(
-                                     fontSize: 8)),
-                          ),
-                        ],
-                      ),
-
-                                            pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(3.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            pw.TableRow(
                               children: [
-                                pw.Text('NIM',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
-                                pw.Text(':',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(3.0),
+                                  child: pw.Row(
+                                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      pw.Text('NIM',
+                                          style:
+                                              pw.TextStyle(fontSize: 8)),
+                                      pw.Text(':',
+                                          style:
+                                              pw.TextStyle(fontSize: 8)),
+                                    ],
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(3.0),
+                                  child: pw.Text(
+                                      "24060122130045",
+                                      style:  pw.TextStyle(
+                                          fontSize: 8)),
+                                ),
                               ],
                             ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(3.0),
-                            child: pw.Text(
-                                "24060122130045",
-                                style:  pw.TextStyle(
-                                     fontSize: 8)),
-                          ),
-                        ],
-                      ),
-
-                                            pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(3.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            pw.TableRow(
                               children: [
-                                pw.Text('Program Studi',
-                                    style:
-                                        pw.TextStyle( fontSize: 8)),
-                                pw.Text(':',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(3.0),
+                                  child: pw.Row(
+                                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      pw.Text('Program Studi',
+                                        style:
+                                            pw.TextStyle( fontSize: 8)),
+                                      pw.Text(':',
+                                        style:
+                                            pw.TextStyle(fontSize: 8)),
+                                    ],
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(3.0),
+                                  child: pw.Text(
+                                      "Informatika",
+                                      style:  pw.TextStyle(
+                                          fontSize: 8)),
+                                ),
                               ],
                             ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(3.0),
-                            child: pw.Text(
-                                "Informatika",
-                                style:  pw.TextStyle(
-                                    fontSize: 8)),
-                          ),
-                        ],
-                      ),
-
-                       pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(3.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            pw.TableRow(
                               children: [
-                                pw.Text('Dosen Wali',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
-                                pw.Text(':',
-                                    style:
-                                        pw.TextStyle(fontSize: 8)),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(3.0),
+                                  child: pw.Row(
+                                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      pw.Text('Dosen Wali',
+                                        style:
+                                            pw.TextStyle(fontSize: 8)),
+                                      pw.Text(':',
+                                        style:
+                                            pw.TextStyle(fontSize: 8)),
+                                    ],
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(3.0),
+                                  child: pw.Text(
+                                      "Adhe Setya Pramayoga, M.T.",
+                                      style:  pw.TextStyle(
+                                          fontSize: 8)),
+                                ),
                               ],
                             ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(3.0),
-                            child: pw.Text(
-                                "Adhe Setya Pramayoga, M.T.",
-                                style:  pw.TextStyle(
-                                    fontSize: 8)),
-                          ),
-                        ],
+                          ]
+                        ),
                       ),
-                    
+                      pw.Container(
+                        height: 80, // Set the maximum height
+                        width: 80 * (3 / 4), // Dynamically calculate width to keep 3:4 ratio
+                        child: pw.Image(
+                          pw.MemoryImage(imageBytes),
+                          fit: pw.BoxFit.cover, // Ensures the image fits while maintaining aspect ratio
+                        ),
+                      ),
                     ]
                   ),
-                ),
-
-pw.Container(
-  height: 80, // Set the maximum height
-  width: 80 * (3 / 4), // Dynamically calculate width to keep 3:4 ratio
-  child: pw.Image(
-    pw.MemoryImage(imageBytes),
-    fit: pw.BoxFit.cover, // Ensures the image fits while maintaining aspect ratio
-  ),
-),
-                  ]),
-
                   pw.Divider(),
-
-pw.Padding(
-          padding: const pw.EdgeInsets.all(10),
-          child: pw.Table(
-            border: pw.TableBorder.all(width: 0.5, color: PdfColors.black),
-            children: [
-              // Add the header row
-              pw.TableRow(
-                decoration: pw.BoxDecoration(color: PdfColors.grey300),
-                children: headers
-                    .map((header) => pw.Padding(
-                          padding: const pw.EdgeInsets.symmetric(horizontal: 5),
-                          child: pw.Text(header,
-                              style: pw.TextStyle(
-                                  fontWeight: pw.FontWeight.bold, fontSize: 5),
-                              textAlign: pw.TextAlign.center),
-                        ))
-                    .toList(),
-              ),
-              // Add rows with sub-row for day and time
-              for (var row in data) ...[
-                pw.TableRow(
-                  children: (row['main'] as List<dynamic>)
-                      .map<pw.Widget>((cell) => pw.Padding(
-                            padding: const pw.EdgeInsets.all(5),
-                            child: pw.Text(cell,
-                                style: const pw.TextStyle(fontSize: 6),
-                                textAlign: pw.TextAlign.left),
-                          ))
-                      .toList(),
-                ),
-                // Sub-row for day and time
-pw.TableRow(
-  children: [
-    pw.Container(), // Empty cell (first column)
-    pw.Padding(
-      padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
-      child: pw.Text(
-        row['sub']?.toString() ?? '',
-        style: pw.TextStyle(fontSize: 5),
-        textAlign: pw.TextAlign.left,
-      ),
-    ), // This cell will span
-    pw.SizedBox(), 
-    pw.SizedBox(), 
-    pw.SizedBox(), // Empty cell (third column)
-    pw.SizedBox(), 
-    pw.SizedBox(), 
-
-  ],
-),
-
-              ],
-            ],
-          ),
-        ),
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: pw.CrossAxisAlignment.end,
-          children:[
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: 
-            [
-              pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "Pembimbing Akademik",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-              pw.SizedBox(height: 40),
-                            pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "Adhe Setya Pramayoga, M.T.",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-                            pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "NIP. 199112092024061001",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-            ])
-            ,
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: 
-            [
-              pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "Semarang, 17 Desember 2024",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-              pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "Mahasiswa",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-                            pw.SizedBox(height: 40),
-              pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "Muhammad Naufal Rifqi Setiawan",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-              pw.Align(
-                alignment: pw.Alignment.topLeft,  // Aligns text to the left
-                child: pw.Text(
-                  "NIM.24060122130045",
-                  style: pw.TextStyle(fontSize: 8),
-                ),
-              ),
-
-            ])
-          ] 
-        )
+                  pw.Table(
+                    children: [
+                      // Header
+                      pw.TableRow(
+                        children: [
+                          // Merge dua kolom menjadi satu
+                          pw.Table(
+                            //border: pw.TableBorder.symmetric(inside: pw.BorderSide(color: PdfColors.black)),
+                            columnWidths: const {
+                                0: pw.FractionColumnWidth(0.1),
+                                1: pw.FractionColumnWidth(0.1),
+                                2: pw.FractionColumnWidth(0.25),
+                                3: pw.FractionColumnWidth(0.1),
+                                4: pw.FractionColumnWidth(0.1),
+                                5: pw.FractionColumnWidth(0.1),
+                                6: pw.FractionColumnWidth(0.1),
+                                7: pw.FractionColumnWidth(0.5),
+                              },
+                            border: pw.TableBorder.all(width: 0.25, color: PdfColors.black),
+                            defaultColumnWidth: const pw.IntrinsicColumnWidth(flex: 0.5),
+                            children: [
+                              // Row Header
+                              pw.TableRow(
+                                children: [
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('No', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Kode', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Mata Kuliah', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Kelas', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('SKS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Ruang', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                  pw.Container(
+                                    alignment: pw.Alignment.center,
+                                    padding: const pw.EdgeInsets.all(2),
+                                    child: pw.Text('Nama Dosen', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                                  ),
+                                ]
+                              ),
+                            ]
+                          )
+                        ]
+                      ),
+                      // Row Isi Looping
+                      pw.TableRow(
+                        children: [
+                          pw.Table(
+                            columnWidths: const {
+                                0: pw.FractionColumnWidth(0.1),
+                                1: pw.FractionColumnWidth(1.25)
+                              },
+                            border: pw.TableBorder.all(width: 0.25, color: PdfColors.black),
+                            children: [
+                              for(int i = 0; i <data.length; i++) ... [
+                                pw.TableRow(
+                                  children: [
+                                    // Kolom Nomer
+                                    pw.Container(
+                                      alignment: pw.Alignment.center,
+                                      // padding: const pw.EdgeInsets.all(8),
+                                      child: pw.Text((i+1).toString(), style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7), textAlign: pw.TextAlign.center),
+                                    ),
+                                    pw.Table(
+                                      border: pw.TableBorder.all(width: 0.25, color: PdfColors.black),
+                                      children: [
+                                        pw.TableRow(
+                                          children: [
+                                            pw.Table(
+                                              columnWidths: const {
+                                                0: pw.FractionColumnWidth(0.1),
+                                                1: pw.FractionColumnWidth(0.25),
+                                                2: pw.FractionColumnWidth(0.1),
+                                                3: pw.FractionColumnWidth(0.1),
+                                                4: pw.FractionColumnWidth(0.1),
+                                                5: pw.FractionColumnWidth(0.1),
+                                                6: pw.FractionColumnWidth(0.5),
+                                              },
+                                              border: pw.TableBorder.all(width: 0.5, color: PdfColors.black),
+                                              children: [
+                                                  pw.TableRow(
+                                                    children: (data[i]['main'] as List<dynamic>)
+                                                    .map<pw.Widget>((cell) => pw.Padding(
+                                                      padding: const pw.EdgeInsets.all(5),
+                                                      child: pw.Text(cell,
+                                                      style: const pw.TextStyle(fontSize: 7),
+                                                      textAlign: pw.TextAlign.left),
+                                                      ))
+                                                    .toList(),
+                                                  ),
+                                                ],
+                                            ),
+                                          ]
+                                        ),
+                                        pw.TableRow(
+                                          children: [
+                                            pw.Table(
+                                              border: pw.TableBorder.all(width: 0.25, color: PdfColors.black),
+                                              children: [
+                                                pw.TableRow(
+                                                  children: [
+                                                    pw.Container(
+                                                      alignment: pw.Alignment.centerLeft,
+                                                      padding: const pw.EdgeInsets.all(2),
+                                                      child: pw.Text(
+                                                        ' ${data[i]['sub']?.toString()}' ?? '',
+                                                        style: pw.TextStyle(fontSize: 7),
+                                                        textAlign: pw.TextAlign.left,
+                                                      ),
+                                                    ),
+                                                  ])
+                                              ] 
+                                            ),
+                                          ]
+                                        )
+                                      ]
+                                    )
+                                  ]
+                                ),
+                              ]
+                            ]
+                          )
+                        ]
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children:[
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "Pembimbing Akademik",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                          pw.SizedBox(height: 40),
+                                        pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "Adhe Setya Pramayoga, M.T.",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                                        pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "NIP. 199112092024061001",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                        ]
+                      ),
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "Semarang, 17 Desember 2024",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                          pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "Mahasiswa",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                                        pw.SizedBox(height: 40),
+                          pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "Muhammad Naufal Rifqi Setiawan",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                          pw.Align(
+                            alignment: pw.Alignment.topLeft,  // Aligns text to the left
+                            child: pw.Text(
+                              "NIM.24060122130045",
+                              style: pw.TextStyle(fontSize: 8),
+                            ),
+                          ),
+                        ]
+                      )
+                    ] 
+                  )
                 ],
               ),
             );
           },
         ),
+    
       );
-
       // Print or share the PDF
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => pdf.save(),
