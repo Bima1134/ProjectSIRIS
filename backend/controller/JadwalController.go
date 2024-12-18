@@ -1114,6 +1114,19 @@ func ApproveJadwal(c echo.Context) error {
 	})
 }
 
+type Jadwal12 struct {
+	JadwalID      int      `json:"id_jadwal"`
+	KodeMK        string   `json:"kode_mk"`
+	NamaMK        string   `json:"nama_mk"`
+	KodeRuangan   string   `json:"kode_ruangan"`
+	Hari          string   `json:"hari"`
+	JamMulai      string   `json:"jam_mulai"`
+	JamSelesai    string   `json:"jam_selesai"`
+	DosenPengampu []string `json:"dosen_pengampu"`
+	Kelas         string   `json:"kelas"`
+	SKS           int      `json:"sks"`
+}
+
 func GetDetailJadwal(c echo.Context) error {
 	idJadwal := c.Param("idjadwal")
 
@@ -1153,10 +1166,10 @@ func GetDetailJadwal(c echo.Context) error {
 	}
 	defer rows.Close()
 
-	groupedJadwals := make(map[string][]models.Jadwal)
+	groupedJadwals := make(map[int][]Jadwal12)
 
 	for rows.Next() {
-		var jadwal models.Jadwal
+		var jadwal Jadwal12
 		var dosenPengampuString string
 
 		if err := rows.Scan(
