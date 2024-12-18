@@ -5,8 +5,6 @@ import 'package:siris/Kaprodi/Kaprodi_AddJadwal.dart';
 import 'package:siris/Kaprodi/Kaprodi_EditJadwal.dart';
 import 'package:siris/Kaprodi/Kaprodi_AddBatchJadwal.dart';
 
-import 'package:siris/class/jadwalKaprodi.dart';
-
 class JadwalKaprodiView {
   final int jadwalID;
   final String kodeMk;

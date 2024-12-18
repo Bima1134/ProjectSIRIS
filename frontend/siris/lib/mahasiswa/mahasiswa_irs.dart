@@ -7,7 +7,6 @@ import 'package:siris/class/JadwalIRS.dart';
 import 'package:logging/logging.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'dart:io';
 import 'package:printing/printing.dart'; // For printing support
 
 final loggerIRS = Logger('IRSPageState');
@@ -626,7 +625,7 @@ Widget buildPrintButton() {
                                                       alignment: pw.Alignment.centerLeft,
                                                       padding: const pw.EdgeInsets.all(2),
                                                       child: pw.Text(
-                                                        ' ${data[i]['sub']?.toString()}' ?? '',
+                                                        ' ${data[i]['sub']?.toString()}',
                                                         style: pw.TextStyle(fontSize: 7),
                                                         textAlign: pw.TextAlign.left,
                                                       ),

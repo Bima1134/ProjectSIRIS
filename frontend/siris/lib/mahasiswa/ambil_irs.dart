@@ -51,19 +51,15 @@ class AmbilIRSState extends State<AmbilIRS> {
 
 
   void updateMaxSks() {
-  if (ips != null) {
-    if (double.tryParse(ips) != null) {
-      double parsedIps = double.parse(ips);
-      if (parsedIps >= 3) {
-        maxSks = 24;
-      } else if (parsedIps >= 2.5 && parsedIps < 3) {
-        maxSks = 22;
-      } else {
-        maxSks = 20;
-      }
+  if (double.tryParse(ips) != null) {
+    double parsedIps = double.parse(ips);
+    if (parsedIps >= 3) {
+      maxSks = 24;
+    } else if (parsedIps >= 2.5 && parsedIps < 3) {
+      maxSks = 22;
+    } else {
+      maxSks = 20;
     }
-  } else {
-    maxSks = 20; // Default jika `ips` tidak valid
   }
   setState(() {}); // Perbarui UI jika diperlukan
 }

@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:siris/Kaprodi/Kaprodi_AddJadwal.dart';
 import 'package:siris/class/MataKuliah.dart';
 import 'package:siris/class/Ruang.dart';
-import 'package:siris/navbar.dart';
 
 class EditJadwalPage extends StatefulWidget {
   final Map<String, dynamic> userData;

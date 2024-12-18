@@ -42,12 +42,7 @@ Future<void> _login() async {
     // Pengecekan role
     if(mounted){
       data['currentLoginAs'] = data['role'];
-      // if(data['currentLoginAs'] == "Bagian Akademik"){
-      //   Navigator.pushNamed(context, '/test', arguments: data);
-      // }
-      // else{
         Navigator.pushNamed(context, '/dashboard', arguments: data);
-      // }
     }
   
   } else {

@@ -8,7 +8,7 @@ class JadwalPDFPage extends StatelessWidget {
   final List<JadwalIRS> jadwalIRS;
   var userData;
   
-  JadwalPDFPage({required this.jadwalIRS, required this.userData});
+  JadwalPDFPage({super.key, required this.jadwalIRS, required this.userData});
 
   // Fungsi untuk membuat PDF
   Future<void> _generatePDF(BuildContext context) async {
