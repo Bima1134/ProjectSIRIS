@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:siris/mahasiswa/ambil_irs.dart';
 import 'dart:convert';
 import 'package:siris/navbar.dart';
@@ -28,23 +29,28 @@ class IRSPageState extends State<IRSPage> {
   List<JadwalIRS> jadwalIRS = [];
   int? selectedSemester;
   late int semester;
-  
+  DateTime today = DateTime.now();  
+  String getFormattedDate() {
+    return DateFormat('d MMMM yyyy').format(today);
+  } 
+
   get userData => widget.userData;
 
   @override
   void initState() {
     super.initState();
-
+    
     // Set semester default, misalnya dari userData["semester"]
     selectedSemester = userData["semester"];
     fetchIRSJadwal(selectedSemester!);
-
+    
   }
   Future<void> fetchIRSJadwal(int semester) async {
   final nim = widget.userData["identifier"];
+  final prodi = widget.userData['jurusan'];
   final url = 'http://localhost:8080/mahasiswa/$nim/jadwal-irs?semester=$semester';
   loggerIRS.info('Fetching jadwal for semester: $semester at URL: $url');
-
+  debugPrint("Prodi : $prodi");
   try {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -79,6 +85,23 @@ class IRSPageState extends State<IRSPage> {
     }
   }
 }
+
+mapJadwal(jadwalIRS) {
+          return jadwalIRS.map((jadwal) {
+            return {
+              'main': [
+                jadwal.KodeMK,
+                jadwal.NamaMK,
+                jadwal.Kelas,
+                jadwal.SKS.toString(),
+                jadwal.Ruangan,
+                jadwal.status,
+                jadwal.DosenPengampu.join(','),
+              ],
+              'sub': "${jadwal.Hari} pukul ${jadwal.JamMulai} - ${jadwal.JamSelesai}",
+            };
+          }).toList();
+  }
 
 
   @override
@@ -245,6 +268,9 @@ Widget build(BuildContext context) {
   );
 }
 
+
+
+
 Widget _buildEditButton() {
   final bool isButtonEnabled = selectedSemester == widget.userData['semester'];
 
@@ -288,8 +314,6 @@ Widget _buildEditButton() {
   );
 }
 
-}
-
 Widget buildPrintButton() {
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
@@ -302,45 +326,12 @@ Widget buildPrintButton() {
     onPressed: () async {
       // Generate PDF
       final pdf = pw.Document();
-      final imageBytes = (await http.get(Uri.parse('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMe3WJmoGtCnaETU1I4ucvv253bR9A0ag5hA&s'))).bodyBytes;
-      final data = [
-        {
-          'main': ['PAK6702', 'Teori Bahasa dan Otonata', 'D', '3', 'A303', 'BARU', 'Priyo Sidiq Sasono, S.T., M.Kom.,\nEtta Wanita, S.H., M.M.,\nDr. Yova Fadhilah Asyari, S.S., M.Si.'],
-          'sub': 'Senin pukul 13:30 - 15:30',
-        },
-        {
-          'main': ['PAK6503', 'Pengembangan Berbasis Platform', 'D', '3', 'E101', 'BARU', 'Sandy Kurniawan, S.Kom., M.Kom.,\nAdhi Seya Paryono, M.Kom.,\nJustin Tatikowa, S.Kom., M.T.'],
-          'sub': 'Selasa pukul 13:00 - 16:20',
-        },
-        {
-          'main': ['PAK6903', 'Pembelajaran Mesin', 'D', '3', 'E101', 'BARU', 'Dr. Reto Kusumaringrat, S.Si., M.Kom.,\nBisyrah, E.Brg., M.G.'],
-          'sub': 'Rabu pukul 09:40 - 12:10',
-        },
-        {
-          'main': ['PAK6504', 'Proyek Perangkat Lunak', 'D', '3', 'E101', 'BARU', 'Dinar Muktira Kusno Nugroho, S.T.,\nM.Tech.(Comp.), Ph.D.,\nDwi Puji Wardani, S.Si., M.T.,\nYunita Dwi Putri Aryani, S.Kom., M.Kom.'],
-          'sub': 'Rabu pukul 15:40 - 18:10',
-        },
-        {
-          'main': ['PAK6502', 'Komputasi Terbesar dan Paralel', 'D', '3', 'E101', 'BARU', 'Canh Anh Ayuyao, S.Kom., M.T.,\nAdhi Seya Paryono, M.Kom.,\nDwi Agus Wibowo, S.Si., M.Kom.,\nElda Nugroho, S.Si., M.Kom.'],
-          'sub': 'Kamis pukul 15:40 - 18:10',
-        },
-        {
-          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
-          'sub': 'Jumat pukul 07:00 - 09:30',
-        },
-        {
-          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
-          'sub': 'Jumat pukul 07:00 - 09:30',
-        },
-        {
-          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
-          'sub': 'Jumat pukul 07:00 - 09:30',
-        },
-        {
-          'main': ['PAK6503', 'Sistem Informasi', 'D', '3', 'A303', 'BARU', 'Enza Nuralia, S.Si., M.Kom.,\nIndra Wicaksono, S.T., M.T.I.'],
-          'sub': 'Jumat pukul 07:00 - 09:30',
-        },
-      ];
+      final imageBytes = widget.userData['profile_image'];
+      // final data = mapJadwal(jadwalIRS);
+      final userData = widget.userData;
+      final data = mapJadwal(jadwalIRS);
+      final String tanggal = getFormattedDate();
+      
       // Add a page to the PDF
       pdf.addPage(
         pw.Page(
@@ -400,7 +391,7 @@ Widget buildPrintButton() {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(3.0),
                                   child: pw.Text(
-                                      "Muhammad Naufal Rifqi Setiawan",
+                                      widget.userData['name'],
                                       style:  pw.TextStyle(
                                           fontSize: 8)),
                                 ),
@@ -425,7 +416,7 @@ Widget buildPrintButton() {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(3.0),
                                   child: pw.Text(
-                                      "24060122130045",
+                                      widget.userData['identifier'],
                                       style:  pw.TextStyle(
                                           fontSize: 8)),
                                 ),
@@ -450,7 +441,7 @@ Widget buildPrintButton() {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(3.0),
                                   child: pw.Text(
-                                      "Informatika",
+                                      widget.userData['jurusan'],
                                       style:  pw.TextStyle(
                                           fontSize: 8)),
                                 ),
@@ -475,7 +466,7 @@ Widget buildPrintButton() {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(3.0),
                                   child: pw.Text(
-                                      "Adhe Setya Pramayoga, M.T.",
+                                      widget.userData['dosen_wali_name'],
                                       style:  pw.TextStyle(
                                           fontSize: 8)),
                                 ),
@@ -488,7 +479,7 @@ Widget buildPrintButton() {
                         height: 80, // Set the maximum height
                         width: 80 * (3 / 4), // Dynamically calculate width to keep 3:4 ratio
                         child: pw.Image(
-                          pw.MemoryImage(imageBytes),
+                          pw.MemoryImage(base64Decode(userData['profile_image_base64'])),
                           fit: pw.BoxFit.cover, // Ensures the image fits while maintaining aspect ratio
                         ),
                       ),
@@ -666,14 +657,14 @@ Widget buildPrintButton() {
                                         pw.Align(
                             alignment: pw.Alignment.topLeft,  // Aligns text to the left
                             child: pw.Text(
-                              "Adhe Setya Pramayoga, M.T.",
+                              widget.userData['dosen_wali_name'],
                               style: pw.TextStyle(fontSize: 8),
                             ),
                           ),
                                         pw.Align(
                             alignment: pw.Alignment.topLeft,  // Aligns text to the left
                             child: pw.Text(
-                              "NIP. 199112092024061001",
+                              "NIP. ${widget.userData['dosen_wali_nip']}",
                               style: pw.TextStyle(fontSize: 8),
                             ),
                           ),
@@ -685,7 +676,7 @@ Widget buildPrintButton() {
                           pw.Align(
                             alignment: pw.Alignment.topLeft,  // Aligns text to the left
                             child: pw.Text(
-                              "Semarang, 17 Desember 2024",
+                              "Semarang ,$tanggal",
                               style: pw.TextStyle(fontSize: 8),
                             ),
                           ),
@@ -700,14 +691,14 @@ Widget buildPrintButton() {
                           pw.Align(
                             alignment: pw.Alignment.topLeft,  // Aligns text to the left
                             child: pw.Text(
-                              "Muhammad Naufal Rifqi Setiawan",
+                              widget.userData['name'],
                               style: pw.TextStyle(fontSize: 8),
                             ),
                           ),
                           pw.Align(
                             alignment: pw.Alignment.topLeft,  // Aligns text to the left
                             child: pw.Text(
-                              "NIM.24060122130045",
+                              "NIM.${widget.userData['identifier']}",
                               style: pw.TextStyle(fontSize: 8),
                             ),
                           ),
@@ -746,6 +737,10 @@ Widget buildPrintButton() {
     ),
   );
 }
+
+}
+
+
   
 
   
