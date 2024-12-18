@@ -1,19 +1,16 @@
 package controller
 
 import (
-	"time"
 	"SIRIS/db"
 	"SIRIS/models"
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
-	"encoding/csv"
+	"time"
 
 	"io"
-
-
-	
 
 	"github.com/labstack/echo/v4"
 )
@@ -344,14 +341,9 @@ type JadwalKaprodi struct {
 }
 
 func AddJadwal(c echo.Context) error {
-	idsem, err := GetIdSem()
-	if err != nil {
-		log.Println("Error: Gagal mendapatkan idsem:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"message": "Failed to fetch idsem",
-		})
-	}	
+
 	prodi := c.Param("prodi")
+	idsem := c.Param("idsem")
 	log.Println("Prodi dan Idsem", prodi, idsem)
 	// idJadwal := "J-"+idsem+"-"+prodi
 
@@ -488,6 +480,7 @@ func DeleteJadwalHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "Jadwal berhasil dihapus"})
 }
 func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
+	log.Println("idsem dan prodi :", idsem, prodi)
 	query := `
 		SELECT status
 		FROM jadwal_prodi
@@ -570,7 +563,6 @@ func updateStatusJadwal(c echo.Context, idsem string, prodi string) error {
 		"message": "Status jadwal berhasil diupdate",
 	})
 }
-
 
 func GetIdSem() (string, error) {
 	query := `
@@ -662,7 +654,6 @@ func DeleteMultipleJadwal(c echo.Context) error {
 	})
 }
 
-
 func GetRuangbyProdi(c echo.Context) error {
 	// Get the `namaProdi` parameter from the request
 	namaProdi := c.Param("namaProdi")
@@ -708,7 +699,7 @@ func GetRuangbyProdi(c echo.Context) error {
 	var ruangList []models.Ruang
 	for rows.Next() {
 		var ruang models.Ruang
-		if err := rows.Scan(&ruang.KodeRuang,&ruang.NamaRuang,&ruang.Gedung,&ruang.Lantai,&ruang.Fungsi,&ruang.Kapasitas); err != nil {
+		if err := rows.Scan(&ruang.KodeRuang, &ruang.NamaRuang, &ruang.Gedung, &ruang.Lantai, &ruang.Fungsi, &ruang.Kapasitas); err != nil {
 			log.Println("ERROR: Failed to scan query result:", err)
 			return c.JSON(http.StatusInternalServerError, map[string]string{
 				"message": "Gagal memproses hasil daftar ruang",
@@ -793,11 +784,10 @@ func UploadCSVJadwal(c echo.Context) error {
 		}
 
 		// Calculate jam_selesai by adding SKS * 50 minutes to jamMulai
-		jamSelesaiTime := jamMulaiTime.Add(time.Duration(sks * 50) * time.Minute)
+		jamSelesaiTime := jamMulaiTime.Add(time.Duration(sks*50) * time.Minute)
 
 		// Format jam_selesai back to a string
 		jamSelesai := jamSelesaiTime.Format("15:04:05")
-
 
 		// Insert new data into the database
 		insertQuery := `INSERT INTO jadwal (kode_mk, kode_ruangan, hari, jam_mulai, jam_selesai, kelas, idsem, nama_prodi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`

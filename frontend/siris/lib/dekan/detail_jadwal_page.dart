@@ -287,7 +287,7 @@ class DetailJadwalPageState extends State<DetailJadwalPage>{
                             },
                           ),
                           cells: [
-                          DataCell(Text(jadwal.idJadwal)),
+                          DataCell(Text(jadwal.idJadwal.toString())),
                           DataCell(Text(jadwal.KodeMK)),
                           DataCell(Text(jadwal.NamaMK)),
                           DataCell(Text(jadwal.Ruangan)),

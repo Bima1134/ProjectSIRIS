@@ -207,8 +207,9 @@ class _AddJadwalPageState extends State<AddJadwalPage> {
 
   Future<void> addJadwal() async {
     final prodi = widget.userData['nama_prodi'];
+    final idsem = "20241";
     final url =
-        'http://localhost:8080/kaprodi/add-jadwal/${userData['nama_prodi']}';
+        'http://localhost:8080/kaprodi/add-jadwal/$prodi/$idsem';
     loggerAddJadwal.info("Adding Jadwal URL: $url");
     debugPrint("Prodi : $prodi");
     // Data yang akan dikirimkan
